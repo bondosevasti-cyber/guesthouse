@@ -1,0 +1,248 @@
+{
+  "cities": [
+    {
+      "name_ka": "თბილისი",
+      "name_en": "Tbilisi"
+    },
+    {
+      "name_ka": "ქუთაისი",
+      "name_en": "Kutaisi"
+    },
+    {
+      "name_ka": "ბათუმი",
+      "name_en": "Batumi"
+    },
+    {
+      "name_ka": "რუსთავი",
+      "name_en": "Rustavi"
+    },
+    {
+      "name_ka": "ზუგდიდი",
+      "name_en": "Zugdidi"
+    },
+    {
+      "name_ka": "გორი",
+      "name_en": "Gori"
+    },
+    {
+      "name_ka": "ფოთი",
+      "name_en": "Poti"
+    },
+    {
+      "name_ka": "სამტრედია",
+      "name_en": "Samtredia"
+    },
+    {
+      "name_ka": "ხაშური",
+      "name_en": "Khashuri"
+    },
+    {
+      "name_ka": "სენაკი",
+      "name_en": "Senaki"
+    },
+    {
+      "name_ka": "ზესტაფონი",
+      "name_en": "Zestafoni"
+    },
+    {
+      "name_ka": "თელავი",
+      "name_en": "Telavi"
+    },
+    {
+      "name_ka": "ოზურგეთი",
+      "name_en": "Ozurgeti"
+    },
+    {
+      "name_ka": "მარნეული",
+      "name_en": "Marneuli"
+    },
+    {
+      "name_ka": "ჭიათურა",
+      "name_en": "Chiatura"
+    },
+    {
+      "name_ka": "წყალტუბო",
+      "name_en": "Tsqaltubo"
+    },
+    {
+      "name_ka": "ახალციხე",
+      "name_en": "Akhaltsikhe"
+    },
+    {
+      "name_ka": "ქობულეთი",
+      "name_en": "Kobuleti"
+    },
+    {
+      "name_ka": "მცხეთა",
+      "name_en": "Mtskheta"
+    },
+    {
+      "name_ka": "გარდაბანი",
+      "name_en": "Gardabani"
+    },
+    {
+      "name_ka": "ტყიბული",
+      "name_en": "Tkibuli"
+    },
+    {
+      "name_ka": "ხონი",
+      "name_en": "Khoni"
+    },
+    {
+      "name_ka": "ბორჯომი",
+      "name_en": "Borjomi"
+    },
+    {
+      "name_ka": "საგარეჯო",
+      "name_en": "Sagarejo"
+    },
+    {
+      "name_ka": "ახალქალაქი",
+      "name_en": "Akhalkalaki"
+    },
+    {
+      "name_ka": "გურჯაანი",
+      "name_en": "Gurjaani"
+    },
+    {
+      "name_ka": "კასპი",
+      "name_en": "Kaspi"
+    },
+    {
+      "name_ka": "წნორი",
+      "name_en": "Tsnori"
+    },
+    {
+      "name_ka": "ლანჩხუთი",
+      "name_en": "Lanchkhuti"
+    },
+    {
+      "name_ka": "დუშეთი",
+      "name_en": "Dusheti"
+    },
+    {
+      "name_ka": "საჩხერე",
+      "name_en": "Sachkhere"
+    },
+    {
+      "name_ka": "ქარელი",
+      "name_en": "Kareli"
+    },
+    {
+      "name_ka": "დედოფლისწყარო",
+      "name_en": "Dedoplistsqaro"
+    },
+    {
+      "name_ka": "ლაგოდეხი",
+      "name_en": "Lagodekhi"
+    },
+    {
+      "name_ka": "ნინოწმინდა",
+      "name_en": "Ninotsminda"
+    },
+    {
+      "name_ka": "აბაშა",
+      "name_en": "Abasha"
+    },
+    {
+      "name_ka": "წალენჯიხა",
+      "name_en": "Tsalenjikha"
+    },
+    {
+      "name_ka": "ახმეტა",
+      "name_en": "Akhmeta"
+    },
+    {
+      "name_ka": "ყვარელი",
+      "name_en": "Kvareli"
+    },
+    {
+      "name_ka": "ცაგერი",
+      "name_en": "Tsageri"
+    },
+    {
+      "name_ka": "თეთრიწყარო",
+      "name_en": "Tetritsqaro"
+    },
+    {
+      "name_ka": "ამბროლაური",
+      "name_en": "Ambrolauri"
+    },
+    {
+      "name_ka": "ონი",
+      "name_en": "Oni"
+    },
+    {
+      "name_ka": "ბაღდათი",
+      "name_en": "Baghdati"
+    },
+    {
+      "name_ka": "ვანი",
+      "name_en": "Vani"
+    },
+    {
+      "name_ka": "ხობი",
+      "name_en": "Khobi"
+    },
+    {
+      "name_ka": "მარტვილი",
+      "name_en": "Martvili"
+    },
+    {
+      "name_ka": "ჯვარი",
+      "name_en": "Jvari"
+    },
+    {
+      "name_ka": "წალკა",
+      "name_en": "Tsalka"
+    },
+    {
+      "name_ka": "დმანისი",
+      "name_en": "Dmanisi"
+    },
+    {
+      "name_ka": "სიღნაღი",
+      "name_en": "Sighnaghi"
+    },
+    {
+      "name_ka": "ჩხოროწყუ",
+      "name_en": "Chkhorotsqu"
+    },
+    {
+      "name_ka": "თიანეთი",
+      "name_en": "Tianeti"
+    },
+    {
+      "name_ka": "მესტია",
+      "name_en": "Mestia"
+    },
+    {
+      "name_ka": "შუახევი",
+      "name_en": "Shuakhevi"
+    },
+    {
+      "name_ka": "ხულო",
+      "name_en": "Khulo"
+    },
+    {
+      "name_ka": "ქედა",
+      "name_en": "Keda"
+    },
+    {
+      "name_ka": "ასპინძა",
+      "name_en": "Aspindza"
+    },
+    {
+      "name_ka": "ადიგენი",
+      "name_en": "Adigeni"
+    },
+    {
+      "name_ka": "ლენტეხი",
+      "name_en": "Lentekhi"
+    },
+    {
+      "name_ka": "ყაზბეგი",
+      "name_en": "Kazbegi"
+    }
+  ]
+}
