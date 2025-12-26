@@ -102,6 +102,7 @@
             border-bottom-color: transparent;
         }
     </style>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 
 <body class="bg-gray-50 min-h-screen">
@@ -113,13 +114,16 @@
                 GeorgiaTravel
             </div>
             <div class="flex items-center space-x-3">
-                <button onclick="openAuthModal('login')"
-                    class="text-white font-medium hover:text-emerald-300 transition-colors drop-shadow-md">
-                    შესვლა
+                <button onclick="openAddModal()"
+                    class="bg-emerald-500/80 hover:bg-emerald-500 backdrop-blur-md text-white font-bold py-2 px-4 rounded-full transition-all shadow-sm flex items-center">
+                    <svg class="w-4 h-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                    </svg>
+                    დამატება
                 </button>
                 <button onclick="openAuthModal('register')"
                     class="bg-white/20 hover:bg-white/30 backdrop-blur-md text-white font-bold py-2 px-5 rounded-full border border-white/40 transition-all shadow-sm">
-                    რეგისტრაცია
+                    შესვლა
                 </button>
             </div>
         </div>
@@ -218,9 +222,9 @@
 
                 <!-- Button (Visual) -->
                 <div class="md:col-span-2 flex items-end">
-                    <button type="button"
-                        class="w-full bg-emerald-500 hover:bg-emerald-600 text-white font-bold py-3 px-4 rounded-xl shadow-lg transform transition hover:-translate-y-0.5"
-                        disabled>Live Filter</button>
+                    <button type="button" onclick="filterProperties()"
+                        class="w-full bg-emerald-500 hover:bg-emerald-600 text-white font-bold py-3 px-4 rounded-xl shadow-lg transform transition hover:-translate-y-0.5">Live
+                        Filter</button>
                 </div>
             </div>
         </div>
@@ -597,96 +601,423 @@
         </div>
     </div>
 
+    <!-- ADD PROPERTY MODAL -->
+    <div id="addModal" class="fixed inset-0 z-[60] hidden" role="dialog" aria-modal="true">
+        <div id="addBackdrop"
+            class="absolute inset-0 bg-black/50 backdrop-blur-md opacity-0 transition-opacity duration-300">
+        </div>
+        <div class="absolute inset-0 flex justify-center items-center p-4 pointer-events-none">
+            <div id="addContent"
+                class="bg-white w-full max-w-2xl rounded-2xl shadow-2xl p-6 relative opacity-0 transform scale-95 transition-all duration-300 pointer-events-auto max-h-[90vh] overflow-y-auto">
+                <h2 class="text-2xl font-bold text-gray-900 mb-6">ახალი განცხადების დამატება</h2>
+
+                <form id="addPropertyForm" onsubmit="submitProperty(event)" class="space-y-4">
+                    <!-- Name -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">სახელი</label>
+                        <input type="text" id="addName" required
+                            class="w-full px-4 py-2 border rounded-xl focus:ring-2 focus:ring-emerald-500 outline-none">
+                    </div>
+
+                    <!-- Location & Price Row -->
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">მდებარეობა</label>
+                            <select id="addLocation" required
+                                class="w-full px-4 py-2 border rounded-xl focus:ring-2 focus:ring-emerald-500 outline-none bg-white">
+                                <option value="">აირჩიეთ...</option>
+                                <!-- Populated by JS -->
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">ფასი (₾)</label>
+                            <input type="number" id="addPrice" required min="1"
+                                class="w-full px-4 py-2 border rounded-xl focus:ring-2 focus:ring-emerald-500 outline-none">
+                        </div>
+                    </div>
+
+                    <!-- Type & Tier Row -->
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">ტიპი</label>
+                            <select id="addType" required
+                                class="w-full px-4 py-2 border rounded-xl focus:ring-2 focus:ring-emerald-500 outline-none bg-white">
+                                <option value="">აირჩიეთ...</option>
+                                <option value="სასტუმრო">სასტუმრო</option>
+                                <option value="საოჯახო სასტუმრო">საოჯახო სასტუმრო</option>
+                                <option value="აპარტამენტი">აპარტამენტი</option>
+                                <option value="ბინა">ბინა</option>
+                                <option value="კოტეჯი">კოტეჯი</option>
+                                <option value="კერძო სახლი">კერძო სახლი</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">სტატუსი</label>
+                            <select id="addTier" required
+                                class="w-full px-4 py-2 border rounded-xl focus:ring-2 focus:ring-emerald-500 outline-none bg-white">
+                                <option value="regular">რეგულარული</option>
+                                <option value="vip">VIP</option>
+                                <option value="vip-plus">VIP +</option>
+                                <option value="super-vip">SUPER VIP</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Image Upload -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">მთავარი სურათი</label>
+                        <input type="file" id="addImage" required accept="image/*"
+                            class="w-full px-4 py-2 border rounded-xl focus:ring-2 focus:ring-emerald-500 outline-none file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-emerald-50 file:text-emerald-700 hover:file:bg-emerald-100">
+                    </div>
+
+                    <!-- Buttons -->
+                    <div class="flex justify-end space-x-3 pt-4 border-t mt-6">
+                        <button type="button" onclick="closeAddModal()"
+                            class="px-5 py-2 text-gray-600 font-medium hover:bg-gray-100 rounded-xl transition-colors">გაუქმება</button>
+                        <button type="submit"
+                            class="px-5 py-2 bg-emerald-500 text-white font-bold rounded-xl hover:bg-emerald-600 shadow-lg transition-transform transform active:scale-95">დამატება</button>
+                    </div>
+                </form>
+
+                <button onclick="closeAddModal()" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600">
+                    <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </div>
 
     <script>
-        // CONFIG
-        const propertyTypes = ["სასტუმრო", "საოჯახო სასტუმრო", "აპარტამენტი", "ბინა", "კოტეჯი", "კერძო სახლი"];
-        const propertyImages = [
-            "https://images.unsplash.com/photo-1566073771259-6a8506099945?w=500&q=80", "https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?w=500&q=80",
-            "https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?w=500&q=80", "https://images.unsplash.com/photo-1596394516093-501ba68a0ba6?w=500&q=80",
-            "https://images.unsplash.com/photo-1510798831971-661eb04b3739?w=500&q=80", "https://images.unsplash.com/photo-1587061949409-02df41d5e562?w=500&q=80",
-            "https://images.unsplash.com/photo-1445019980597-93fa8acb246c?w=500&q=80", "https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?w=500&q=80",
-            "https://images.unsplash.com/photo-1613977257363-707ba9348227?w=500&q=80", "https://images.unsplash.com/photo-1590490360182-c33d57733427?w=500&q=80"
-        ];
-        let allGeorgianCities = [];
-
-        // MOCK DATA HELPERS
-        const amenitiesList = [
-            { icon: "Wifi", label: "WiFi" }, { icon: "Tv", label: "ტელევიზორი" }, { icon: "Snow", label: "კონდიციონერი" },
-            { icon: "Flame", label: "გათბობა" }, { icon: "Parking", label: "პარკინგი" }, { icon: "Kitchen", label: "სამზარეულო" },
-            { icon: "Balcony", label: "აივანი" }, { icon: "Pool", label: "აუზი" }
-        ];
-
-        const getIconSVG = (name) => {
-            if (name === "Wifi") return '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.111 16.404a5.5 5.5 0 017.778 0M12 20h.01m-7.08-7.071c3.904-3.905 10.236-3.905 14.141 0M1.394 9.393c5.857-5.857 15.355-5.857 21.213 0" />';
-            if (name === "Snow") return '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />';
-            return '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />';
+        // ==========================================
+        //  CONFIGURATION & CONSTANTS
+        // ==========================================
+        const CONFIG = {
+            SUPABASE_URL: 'https://akmbyvovhubccznrzotv.supabase.co',
+            SUPABASE_KEY: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFrbWJ5dm92aHViY2N6bnJ6b3R2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjY3NTgwMTAsImV4cCI6MjA4MjMzNDAxMH0.oHLvbx5_4hYATF-hQkJvp0oxZ6ljUfGKYP-Mf7_CVtM',
+            DEFAULT_IMAGE: "https://images.unsplash.com/photo-1566073771259-6a8506099945?w=500&q=80",
+            ITEMS_PER_PAGE: 15
         };
 
-        const generateMonths = (basePrice) => {
-            const months = ["იან", "თებ", "მარ", "აპრ", "მაი", "ივნ", "ივლ", "აგვ", "სექ", "ოქტ", "ნოე", "დეკ"];
-            return months.map(m => {
-                const variance = Math.floor(Math.random() * 40) - 20;
-                return { month: m, price: basePrice + variance };
-            });
-        };
+        const AMENITIES_DATA = [
+            { key: "Wifi", label: "WiFi", iconPath: "M8.111 16.404a5.5 5.5 0 017.778 0M12 20h.01m-7.08-7.071c3.904-3.905 10.236-3.905 14.141 0M1.394 9.393c5.857-5.857 15.355-5.857 21.213 0" },
+            { key: "Tv", label: "ტელევიზორი", iconPath: "M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" },
+            { key: "Snow", label: "კონდიციონერი", iconPath: "M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" },
+            { key: "Flame", label: "გათბობა", iconPath: "M17.657 18.657A8 8 0 016.343 7.343S7 9 9 10c0-2 .5-5 2.986-7C14 5 16.09 5.777 17.656 7.343A7.975 7.975 0 0120 13a7.975 7.975 0 01-2.343 5.657z" },
+            { key: "Parking", label: "პარკინგი", iconPath: "M8 14v3m4-3v3m4-3v3M3 21h18M3 10h18M3 7l9-4 9 4M4 10h16v11H4V10z" },
+            { key: "Kitchen", label: "სამზარეულო", iconPath: "M3 3h18v18H3V3zm2 2v14h14V5H5zm2 2h10v2H7V7zm0 4h10v2H7v-2z" },
+            { key: "Balcony", label: "აივანი", iconPath: "M3 3h18v18H3V3zm2 2v10h14V5H5zm2 12v2h10v-2H7z" },
+            { key: "Pool", label: "აუზი", iconPath: "M6 3v12" }
+        ];
 
-        const generateProperties = (count) => {
-            const props = [];
-            let hasSuperVip = false;
-
-            const cityNames = allGeorgianCities.map(c => c.name_ka);
-
-            for (let i = 1; i <= count; i++) {
-                const type = propertyTypes[Math.floor(Math.random() * propertyTypes.length)];
-                const loc = cityNames.length > 0 ? cityNames[Math.floor(Math.random() * cityNames.length)] : "Unknown";
-                let tier = 'regular';
-                const rand = Math.random();
-                if (!hasSuperVip) { tier = 'super-vip'; hasSuperVip = true; }
-                else { if (rand > 0.8) tier = 'vip-plus'; else if (rand > 0.6) tier = 'vip'; }
-
-                const basePrice = Math.floor(Math.random() * 400) + 80;
-                const myAmenities = amenitiesList.sort(() => 0.5 - Math.random()).slice(0, Math.floor(Math.random() * 4) + 4);
-
-                props.push({
-                    id: i,
-                    name: `${loc} ${type === 'კოტეჯი' ? 'Cottage' : 'Residence'} ${i}`,
-                    location: loc,
-                    type: type,
-                    tier: tier,
-                    price: basePrice,
-                    rating: (Math.random() * (5.0 - 4.0) + 4.0).toFixed(1),
-                    reviews: Math.floor(Math.random() * 300) + 10,
-                    image: propertyImages[Math.floor(Math.random() * propertyImages.length)],
-                    tags: i % 3 === 0 ? ["საუზმე", "ხედი"] : ["WiFi"],
-                    phone: "+995 555 " + Math.floor(100000 + Math.random() * 900000),
-                    description: `გაატარეთ დაუვიწყარი დრო ამ შესანიშნავ ${type}-ში, რომელიც მდებარეობს ${loc}-ის ცენტრში. ჩვენ გთავაზობთ მაღალი ხარისხის მომსახურებას, მყუდრო გარემოს და ულამაზეს ხედებს. იდეალურია როგორც ოჯახური დასვენებისთვის, ასევე მეგობრებთან ერთად დროის გასატარებლად.`,
-                    amenities: myAmenities,
-                    monthlyPrices: generateMonths(basePrice)
-                });
+        // ==========================================
+        //  STATE MANAGEMENT
+        // ==========================================
+        const State = {
+            supabase: null,
+            properties: [],
+            filteredProperties: [],
+            cities: [],
+            visibleCount: CONFIG.ITEMS_PER_PAGE,
+            filters: {
+                location: '',
+                type: ''
             }
-            return props;
         };
 
-        let allProperties = [];
+        // ==========================================
+        //  DOM ELEMENTS
+        // ==========================================
+        const DOM = {
+            navbar: document.getElementById('navbar'),
+            // Filter Inputs
+            locationInput: document.getElementById('locationInput'),
+            locationList: document.getElementById('locationList'),
+            locationUL: document.getElementById('locationUL'),
+            locationSearch: document.getElementById('locationSearch'),
+            locationDropdown: document.getElementById('locationDropdown'),
+            typeInput: document.getElementById('typeInput'),
+            typeList: document.getElementById('typeList'),
+            typeDropdown: document.getElementById('typeDropdown'),
+            // Results
+            resultsGrid: document.getElementById('resultsGrid'),
+            noResults: document.getElementById('noResults'),
+            showMoreContainer: document.getElementById('showMoreContainer'),
+            showMoreBtn: document.getElementById('showMoreBtn'),
+            remainingCountSpan: document.getElementById('remainingCount'),
+            // Modals
+            propertyModal: document.getElementById('propertyModal'),
+            modalBackdrop: document.getElementById('modalBackdrop'),
+            modalContent: document.getElementById('modalContent'),
+            addModal: document.getElementById('addModal'),
+            addBackdrop: document.getElementById('addBackdrop'),
+            addContent: document.getElementById('addContent'),
+            addLocationSelect: document.getElementById('addLocation'),
+            authModal: document.getElementById('authModal'),
+            authBackdrop: document.getElementById('authBackdrop'),
+            authContent: document.getElementById('authContent'),
+            // Auth Tabs
+            tabLogin: document.getElementById('tabLogin'),
+            tabRegister: document.getElementById('tabRegister'),
+            nameFieldContainer: document.getElementById('nameFieldContainer'),
+            authSubmitText: document.getElementById('authSubmitText'),
+            authFooterText: document.getElementById('authFooterText'),
+            // Property Modal Detailed Elements
+            mTitle: document.getElementById('modalTitle'),
+            mImage: document.getElementById('modalImage'),
+            mLocation: document.getElementById('modalLocation'),
+            mPrice: document.getElementById('modalPrice'),
+            mRating: document.getElementById('modalRating'),
+            mDesc: document.getElementById('modalDescription'),
+            mPhone: document.getElementById('modalPhone'),
+            mBadge: document.getElementById('modalTypeBadge'),
+            mAmenities: document.getElementById('modalAmenities'),
+            mPricing: document.getElementById('modalPricing')
+        };
 
-        const sortProperties = (props) => {
+        // ==========================================
+        //  INITIALIZATION
+        // ==========================================
+        document.addEventListener('DOMContentLoaded', async () => {
+            initSupabase();
+            attachEventListeners();
+            // Load data in parallel
+            await Promise.all([fetchLocations(), fetchProperties()]);
+        });
+
+        function initSupabase() {
+            if (typeof window.supabase !== 'undefined' && window.supabase.createClient) {
+                try {
+                    State.supabase = window.supabase.createClient(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_KEY);
+                    console.log("Supabase Client Initialized");
+                } catch (err) {
+                    console.error("Supabase Initialization Failed:", err);
+                }
+            } else {
+                console.error("Supabase SDK is missing.");
+            }
+        }
+
+        // ==========================================
+        //  DATA FETCHING
+        // ==========================================
+        async function fetchLocations() {
+            // Hardcoded locations to prevent fetch errors
+            const cities = [
+                { name_ka: "თბილისი" }, { name_ka: "ბათუმი" }, { name_ka: "ქუთაისი" }, { name_ka: "რუსთავი" },
+                { name_ka: "გორი" }, { name_ka: "ზუგდიდი" }, { name_ka: "ფოთი" }, { name_ka: "ქობულეთი" },
+                { name_ka: "ხაშური" }, { name_ka: "სამტრედია" }, { name_ka: "სენაკი" }, { name_ka: "ზესტაფონი" },
+                { name_ka: "მარნეული" }, { name_ka: "თელავი" }, { name_ka: "ახალციხე" }, { name_ka: "ოზურგეთი" },
+                { name_ka: "კასპი" }, { name_ka: "ჭიათურა" }, { name_ka: "წყალტუბო" }, { name_ka: "საგარეჯო" },
+                { name_ka: "გარდაბანი" }, { name_ka: "ბორჯომი" }, { name_ka: "ტყიბული" }, { name_ka: "ხონი" },
+                { name_ka: "ბოლნისი" }, { name_ka: "ახალქალაქი" }, { name_ka: "გურჯაანი" }, { name_ka: "მცხეთა" },
+                { name_ka: "ყვარელი" }, { name_ka: "ახმეტა" }, { name_ka: "ქარელი" }, { name_ka: "ლაგოდეხი" },
+                { name_ka: "დედოფლისწყარო" }, { name_ka: "დუშეთი" }, { name_ka: "საჩხერე" }, { name_ka: "აბაშა" },
+                { name_ka: "წნორი" }, { name_ka: "ნინოწმინდა" }, { name_ka: "თერჯოლა" }, { name_ka: "ხობი" },
+                { name_ka: "მარტვილი" }, { name_ka: "ვალე" }, { name_ka: "ჯვარი" }, { name_ka: "ბაღდათი" },
+                { name_ka: "ვანი" }, { name_ka: "თეთრიწყარო" }, { name_ka: "სნო" }, { name_ka: "სტეფანწმინდა" },
+                { name_ka: "გუდაური" }, { name_ka: "ბაკურიანი" }, { name_ka: "მესტია" }, { name_ka: "სიღნაღი" },
+                { name_ka: "ურეკი" }, { name_ka: "ანაკლია" }, { name_ka: "ბახმარო" }, { name_ka: "შოვი" },
+                { name_ka: "საირმე" }, { name_ka: "აბასთუმანი" }, { name_ka: "სარფი" }, { name_ka: "გონიო" },
+                { name_ka: "მწვანე კონცხი" }, { name_ka: "შეკვეთილი" }
+            ];
+
+            State.cities = cities.sort((a, b) => a.name_ka.localeCompare(b.name_ka));
+            renderLocationList(State.cities);
+            populateAddModalLocations();
+        }
+
+        async function fetchProperties() {
+            if (!State.supabase) {
+                console.warn("Skipping fetch: Supabase not ready");
+                return;
+            }
+            try {
+                const { data, error } = await State.supabase.from('guesthouse ge').select('*');
+                if (error) throw error;
+
+                if (data) {
+                    State.properties = data.map(normalizeProperty);
+                    filterProperties(); // This calls render
+                }
+            } catch (error) {
+                console.error('Error fetching properties:', error);
+                DOM.resultsGrid.innerHTML = '<div class="col-span-full text-center text-red-500">მონაცემების ჩატვირთვა ვერ მოხერხდა.</div>';
+            }
+        }
+
+        function normalizeProperty(p) {
+            // Ensure all fields exist for UI
+            return {
+                ...p,
+                image: p.image_url || CONFIG.DEFAULT_IMAGE,
+                amenities: AMENITIES_DATA.slice(0, 5), // Mock amenities since they aren't in simple DB schema usually
+                monthlyPrices: generateMockPrices(p.price || 100),
+                tags: (p.type === "კოტეჯი" || p.type === "სასტუმრო") ? ["ხედი", "მთები"] : ["WiFi", "ცენტრი"],
+                tier: p.tier || 'regular',
+                rating: p.rating || 5.0,
+                reviews: p.reviews || 0,
+                description: p.description || `შესანიშნავი ${p.type} - ${p.name}`,
+                phone: p.phone || "+995 555 000 000"
+            };
+        }
+
+        function generateMockPrices(base) {
+            const months = ["იან", "თებ", "მარ", "აპრ", "მაი", "ივნ", "ივლ", "აგვ", "სექ", "ოქტ", "ნოე", "დეკ"];
+            return months.map(m => ({
+                month: m,
+                price: Math.max(50, base + Math.floor(Math.random() * 40) - 20)
+            }));
+        }
+
+        // ==========================================
+        //  RENDERING & UI LOGIC
+        // ==========================================
+        function render() {
+            const grid = DOM.resultsGrid;
+            grid.innerHTML = '';
+
+            if (State.filteredProperties.length === 0) {
+                grid.classList.add('hidden');
+                DOM.noResults.classList.remove('hidden');
+                DOM.showMoreContainer.classList.add('hidden');
+                return;
+            }
+
+            grid.classList.remove('hidden');
+            DOM.noResults.classList.add('hidden');
+
+            const toShow = State.filteredProperties.slice(0, State.visibleCount);
+            toShow.forEach(prop => {
+                grid.insertAdjacentHTML('beforeend', createCardHTML(prop));
+            });
+
+            const remaining = State.filteredProperties.length - State.visibleCount;
+            if (remaining > 0) {
+                DOM.showMoreContainer.classList.remove('hidden');
+                DOM.remainingCountSpan.textContent = remaining;
+            } else {
+                DOM.showMoreContainer.classList.add('hidden');
+            }
+        }
+
+        function createCardHTML(prop) {
+            // Click handler to open modal
+            const clickAttr = `onclick="openModal(${prop.id})"`;
+
+            let badge = '';
+            if (prop.tier === 'super-vip') badge = '<span class="bg-gradient-to-r from-yellow-400 to-yellow-600 text-white text-[10px] font-bold px-2 py-1 rounded shadow-sm uppercase tracking-wider ml-2">SUPER VIP</span>';
+            else if (prop.tier === 'vip-plus') badge = '<span class="bg-purple-600 text-white text-[10px] font-bold px-2 py-1 rounded shadow-sm uppercase tracking-wider ml-2">VIP +</span>';
+            else if (prop.tier === 'vip') badge = '<span class="bg-blue-500 text-white text-[10px] font-bold px-2 py-1 rounded shadow-sm uppercase tracking-wider ml-2">VIP</span>';
+
+            // Super VIP Layout
+            if (prop.tier === 'super-vip') {
+                return `
+            <div ${clickAttr} class="col-span-1 sm:col-span-2 lg:col-span-3 bg-white rounded-2xl shadow-xl overflow-hidden cursor-pointer fade-in group border-2 border-yellow-400/30 transform hover:scale-[1.01] transition-all duration-300">
+                <div class="flex flex-col md:flex-row h-full md:h-80">
+                    <div class="md:w-2/3 h-64 md:h-full relative overflow-hidden">
+                        <img src="${prop.image}" class="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-700">
+                        <div class="absolute top-4 left-4 flex items-center">
+                            <span class="bg-white/90 backdrop-blur-md px-3 py-1 rounded-lg text-sm font-bold text-gray-800 shadow-sm uppercase">${prop.type}</span>
+                            ${badge}
+                        </div>
+                    </div>
+                    <div class="md:w-1/3 p-8 flex flex-col justify-center bg-gradient-to-br from-white to-orange-50">
+                        <h3 class="font-extrabold text-3xl mb-2 text-gray-900 group-hover:text-amber-600 transition-colors">${prop.name}</h3>
+                        <p class="text-gray-500 mb-6 flex items-center">
+                            <svg class="w-5 h-5 mr-1 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                            ${prop.location}
+                        </p>
+                        <div class="text-emerald-600 font-bold text-3xl mt-auto">₾${prop.price}</div>
+                    </div>
+                </div>
+            </div>`;
+            }
+
+            // Standard Layout
+            const glowClass = prop.tier === 'vip-plus' ? 'ring-2 ring-purple-400 ring-offset-2' : prop.tier === 'vip' ? 'ring-1 ring-blue-200' : '';
+            return `
+        <div ${clickAttr} class="bg-white rounded-xl shadow-md hover:shadow-xl transition-all duration-300 overflow-hidden cursor-pointer fade-in group ${glowClass}">
+            <div class="relative h-56 overflow-hidden">
+                <img src="${prop.image}" class="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-500">
+                <div class="absolute top-3 left-3 flex items-center">
+                    <span class="bg-white/90 backdrop-blur-sm px-2 py-1 rounded-md text-xs font-bold text-gray-800 shadow-sm uppercase tracking-wide">${prop.type}</span>
+                    ${badge}
+                </div>
+                <div class="absolute bottom-3 right-3 bg-gray-900/80 backdrop-blur-sm text-white px-2 py-1 rounded-md text-sm font-bold flex items-center shadow-sm">
+                    <span class="text-yellow-400 mr-1">★</span> ${prop.rating}
+                </div>
+            </div>
+            <div class="p-5">
+                <h3 class="font-bold text-lg text-gray-900 leading-tight mb-1 truncate group-hover:text-emerald-600 transition-colors">${prop.name}</h3>
+                <p class="text-sm text-gray-500 flex items-center mb-3">
+                    <svg class="w-4 h-4 mr-1 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                    ${prop.location}
+                </p>
+                <div class="flex justify-between items-center pt-3 border-t border-gray-100">
+                   <div class="text-emerald-600 font-bold text-xl">₾${prop.price}</div>
+                </div>
+            </div>
+        </div>`;
+        }
+
+        function renderLocationList(cities) {
+            DOM.locationUL.innerHTML = '';
+            const liAll = document.createElement('li');
+            liAll.className = 'px-4 py-2 hover:bg-gray-100 cursor-pointer text-gray-900';
+            liAll.textContent = "ყველა";
+            liAll.dataset.value = "";
+            liAll.onclick = () => selectLocation("", "ყველა");
+            DOM.locationUL.appendChild(liAll);
+
+            cities.forEach(city => {
+                const li = document.createElement('li');
+                li.className = 'px-4 py-2 hover:bg-gray-100 cursor-pointer text-gray-900';
+                li.textContent = city.name_ka;
+                li.dataset.value = city.name_ka;
+                li.onclick = () => selectLocation(city.name_ka, city.name_ka);
+                DOM.locationUL.appendChild(li);
+            });
+        }
+
+        function populateAddModalLocations() {
+            if (!DOM.addLocationSelect) return;
+            DOM.addLocationSelect.innerHTML = '<option value="">აირჩიეთ...</option>';
+            State.cities.forEach(city => {
+                const option = document.createElement('option');
+                option.value = city.name_ka;
+                option.textContent = city.name_ka;
+                DOM.addLocationSelect.appendChild(option);
+            });
+        }
+
+        function filterProperties() {
             const tierOrder = { 'super-vip': 0, 'vip-plus': 1, 'vip': 2, 'regular': 3 };
-            return props.sort((a, b) => tierOrder[a.tier] - tierOrder[b.tier]);
-        };
 
-        // DOM ELEMENTS
-        const locationInput = document.getElementById('locationInput');
-        const locationList = document.getElementById('locationList');
-        const locationSearch = document.getElementById('locationSearch');
-        const locationUL = document.getElementById('locationUL');
+            State.filteredProperties = State.properties.filter(p => {
+                const locMatch = !State.filters.location || p.location === State.filters.location;
+                const typeMatch = !State.filters.type || p.type === State.filters.type;
+                return locMatch && typeMatch;
+            }).sort((a, b) => {
+                const tierOrder = { 'super-vip': 0, 'vip-plus': 1, 'vip': 2, 'regular': 3 };
+                const scoreA = tierOrder[a.tier] !== undefined ? tierOrder[a.tier] : 3;
+                const scoreB = tierOrder[b.tier] !== undefined ? tierOrder[b.tier] : 3;
 
-        // Custom Type Dropdown Elements
-        const typeInput = document.getElementById('typeInput');
-        const typeList = document.getElementById('typeList');
-        let selectedTypeValue = '';
+                if (scoreA !== scoreB) {
+                    return scoreA - scoreB;
+                }
+                // Secondary sort: Newest first (assuming higher ID is newer)
+                return (b.id || 0) - (a.id || 0);
+            });
 
-        // Common Dropdown Toggle
+            State.visibleCount = CONFIG.ITEMS_PER_PAGE;
+            render();
+        }
+
+        // ==========================================
+        //  INTERACTIONS & HANDLERS
+        // ==========================================
         function toggleDropdown(list, show) {
             if (show) {
                 list.classList.remove('opacity-0', 'scale-y-90', 'pointer-events-none', '-translate-y-2');
@@ -696,357 +1027,254 @@
                 list.classList.add('opacity-0', 'scale-y-90', 'pointer-events-none', '-translate-y-2');
             }
         }
-        const resultsGrid = document.getElementById('resultsGrid');
-        const noResults = document.getElementById('noResults');
-        const showMoreContainer = document.getElementById('showMoreContainer');
-        const showMoreBtn = document.getElementById('showMoreBtn');
-        const remainingCountSpan = document.getElementById('remainingCount');
 
-        // MODAL ELEMENTS
-        const propertyModal = document.getElementById('propertyModal');
-        const modalBackdrop = document.getElementById('modalBackdrop');
-        const modalContent = document.getElementById('modalContent');
-
-        // AUTH MODAL ELEMENTS
-        const authModal = document.getElementById('authModal');
-        const authBackdrop = document.getElementById('authBackdrop');
-        const authContent = document.getElementById('authContent');
-        const tabLogin = document.getElementById('tabLogin');
-        const tabRegister = document.getElementById('tabRegister');
-        const nameFieldContainer = document.getElementById('nameFieldContainer');
-        const authSubmitText = document.getElementById('authSubmitText');
-        const authFooterText = document.getElementById('authFooterText');
-
-        // STATE
-        let currentFilteredProps = [];
-        let visibleCount = 15;
-        let selectedLocationValue = '';
-
-        // --- LOCATION DROPDOWN ---
-        async function fetchLocations() {
-            try {
-                const response = await fetch('georgian_cities.json');
-                const data = await response.json();
-                allGeorgianCities = data.cities.sort((a, b) => a.name_ka.localeCompare(b.name_ka));
-                renderLocationList(allGeorgianCities);
-            } catch (error) {
-                console.error('Error fetching locations:', error);
-            }
+        function selectLocation(val, text) {
+            State.filters.location = val;
+            DOM.locationInput.value = text === "ყველა" ? "" : text;
+            toggleDropdown(DOM.locationList, false);
+            filterProperties();
         }
 
-        function renderLocationList(cities) {
-            locationUL.innerHTML = '';
-            const li = document.createElement('li');
-            li.className = 'px-4 py-2 hover:bg-gray-100 cursor-pointer';
-            li.textContent = "ყველა";
-            li.dataset.value = "";
-            locationUL.appendChild(li);
-
-            cities.forEach(city => {
-                const li = document.createElement('li');
-                li.className = 'px-4 py-2 hover:bg-gray-100 cursor-pointer';
-                li.textContent = city.name_ka;
-                li.dataset.value = city.name_ka;
-                locationUL.appendChild(li);
-            });
+        function selectType(val, text) {
+            State.filters.type = val;
+            DOM.typeInput.value = val ? text : "";
+            toggleDropdown(DOM.typeList, false);
+            filterProperties();
         }
 
-        locationInput.addEventListener('click', (e) => {
-            e.stopPropagation();
-            const isHidden = locationList.classList.contains('opacity-0');
-            // Close others
-            toggleDropdown(typeList, false);
-            toggleDropdown(locationList, isHidden);
-        });
-
-        locationSearch.addEventListener('input', (e) => {
-            const searchTerm = e.target.value.toLowerCase();
-            const filteredCities = allGeorgianCities.filter(city =>
-                city.name_ka.toLowerCase().includes(searchTerm)
-            );
-            renderLocationList(filteredCities);
-        });
-
-        // Prevent click on search input from closing dropdown
-        locationSearch.addEventListener('click', (e) => e.stopPropagation());
-
-        locationUL.addEventListener('click', (e) => {
-            if (e.target.tagName === 'LI') {
-                locationInput.value = e.target.textContent;
-                selectedLocationValue = e.target.dataset.value;
-                toggleDropdown(locationList, false);
-                filterProperties();
-            }
-        });
-
-        // --- TYPE DROPDOWN ---
-        typeInput.addEventListener('click', (e) => {
-            e.stopPropagation();
-            const isHidden = typeList.classList.contains('opacity-0');
-            toggleDropdown(locationList, false);
-            toggleDropdown(typeList, isHidden);
-        });
-
-        typeList.addEventListener('click', (e) => {
-            if (e.target.tagName === 'LI') {
-                const val = e.target.dataset.value;
-                const text = e.target.textContent;
-                typeInput.value = text;
-                selectedTypeValue = val;
-                toggleDropdown(typeList, false);
-                filterProperties();
-            }
-        });
-
-        document.addEventListener('click', (e) => {
-            if (!document.getElementById('locationDropdown').contains(e.target)) {
-                toggleDropdown(locationList, false);
-            }
-            if (!document.getElementById('typeDropdown').contains(e.target)) {
-                toggleDropdown(typeList, false);
-            }
-        });
-        // --- END LOCATION & TYPE DROPDOWN ---
-
-        // RENDER CARD HTML
-        function getCardHTML(prop) {
-            const isSuperVip = prop.tier === 'super-vip';
-            let badgeHTML = '';
-            if (prop.tier === 'super-vip') badgeHTML = `<span class="bg-gradient-to-r from-yellow-400 to-yellow-600 text-white text-[10px] font-bold px-2 py-1 rounded shadow-sm uppercase tracking-wider ml-2">SUPER VIP</span>`;
-            else if (prop.tier === 'vip-plus') badgeHTML = `<span class="bg-purple-600 text-white text-[10px] font-bold px-2 py-1 rounded shadow-sm uppercase tracking-wider ml-2">VIP +</span>`;
-            else if (prop.tier === 'vip') badgeHTML = `<span class="bg-blue-500 text-white text-[10px] font-bold px-2 py-1 rounded shadow-sm uppercase tracking-wider ml-2">VIP</span>`;
-
-            const clickAction = `onclick="openModal(${prop.id})"`;
-
-            if (isSuperVip) {
-                return `
-                            <div ${clickAction} class="col-span-1 sm:col-span-2 lg:col-span-3 bg-white rounded-2xl shadow-xl overflow-hidden cursor-pointer fade-in group border-2 border-yellow-400/30 transform hover:scale-[1.01] transition-all duration-300">
-                                <div class="flex flex-col md:flex-row h-full md:h-80">
-                                    <div class="md:w-2/3 h-64 md:h-full relative overflow-hidden">
-                                        <img src="https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?w=800&q=80" alt="${prop.name}" class="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-700">
-                                        <div class="absolute top-4 left-4 flex items-center">
-                                            <div class="bg-white/90 backdrop-blur-md px-3 py-1 rounded-lg text-sm font-bold text-gray-800 shadow-sm uppercase">
-                                                ${prop.type}
-                                            </div>
-                                            ${badgeHTML}
-                                        </div>
-                                    </div>
-                                    <div class="md:w-1/3 p-8 flex flex-col justify-center bg-gradient-to-br from-white to-orange-50">
-                                        <h3 class="font-extrabold text-3xl mb-2 text-gray-900 group-hover:text-amber-600 transition-colors">${prop.name}</h3>
-                                        <p class="text-gray-500 mb-6 flex items-center">
-                                            <svg class="w-5 h-5 mr-1 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
-                                            ${prop.location}, Georgia
-                                        </p>
-                                        <div class="flex flex-wrap gap-2 mb-6">
-                                            ${prop.tags.map(tag => `<span class="bg-orange-100 text-orange-700 px-3 py-1 rounded-full text-sm font-medium">${tag}</span>`).join('')}
-                                            <span class="bg-orange-100 text-orange-700 px-3 py-1 rounded-full text-sm font-medium">პრემიუმ მომსახურება</span>
-                                        </div>
-                                        <div class="mt-auto flex items-center justify-between">
-                                            <div class="text-emerald-600 font-bold text-3xl">₾${prop.price}</div>
-                                            <button class="bg-gray-900 text-white px-6 py-3 rounded-xl font-bold hover:bg-gray-800 transition shadow-lg">ნახვა</button>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        `;
-            }
-
-            const glowClass = prop.tier === 'vip-plus' ? 'ring-2 ring-purple-400 ring-offset-2' : prop.tier === 'vip' ? 'ring-1 ring-blue-200' : '';
-            return `
-                        <div ${clickAction} class="bg-white rounded-xl shadow-md hover:shadow-xl transition-all duration-300 overflow-hidden cursor-pointer fade-in group ${glowClass}">
-                            <div class="relative h-56 overflow-hidden">
-                                <img src="${prop.image}" alt="${prop.name}" class="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-500">
-                                <div class="absolute top-3 left-3 flex items-center">
-                                    <div class="bg-white/90 backdrop-blur-sm px-2 py-1 rounded-md text-xs font-bold text-gray-800 shadow-sm uppercase tracking-wide">
-                                        ${prop.type}
-                                    </div>
-                                    ${badgeHTML}
-                                </div>
-                                <div class="absolute bottom-3 right-3 bg-gray-900/80 backdrop-blur-sm text-white px-2 py-1 rounded-md text-sm font-bold flex items-center shadow-sm">
-                                    <span class="text-yellow-400 mr-1">★</span> ${prop.rating}
-                                </div>
-                            </div>
-                            <div class="p-5">
-                                <h3 class="font-bold text-lg text-gray-900 leading-tight mb-1 truncate group-hover:text-emerald-600 transition-colors">${prop.name}</h3>
-                                <p class="text-sm text-gray-500 flex items-center mb-3">
-                                    <svg class="w-4 h-4 mr-1 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
-                                    ${prop.location}
-                                </p>
-                                <div class="flex justify-between items-center pt-3 border-t border-gray-100">
-                                    <div class="text-xs text-gray-400">${prop.reviews} შეფასება</div>
-                                    <div class="text-emerald-600 font-bold text-xl">₾${prop.price}</div>
-                                </div>
-                            </div>
-                        </div>
-                    `;
-        }
-
-        function render() {
-            resultsGrid.innerHTML = '';
-            const propsToShow = currentFilteredProps.slice(0, visibleCount);
-            if (propsToShow.length === 0) {
-                resultsGrid.classList.add('hidden');
-                noResults.classList.remove('hidden');
-                showMoreContainer.classList.add('hidden');
-                return;
-            }
-            resultsGrid.classList.remove('hidden');
-            noResults.classList.add('hidden');
-            propsToShow.forEach(prop => {
-                resultsGrid.insertAdjacentHTML('beforeend', getCardHTML(prop));
-            });
-            if (currentFilteredProps.length > visibleCount) {
-                showMoreContainer.classList.remove('hidden');
-                remainingCountSpan.textContent = currentFilteredProps.length - visibleCount;
-            } else {
-                showMoreContainer.classList.add('hidden');
-            }
-        }
-
-        // FILTER LOGIC
-        function filterProperties() {
-            const selectedType = selectedTypeValue;
-            let filtered = allProperties.filter(p => {
-                const matchLoc = selectedLocationValue ? p.location === selectedLocationValue : true;
-                const matchType = selectedType ? p.type === selectedType : true;
-                return matchLoc && matchType;
-            });
-            currentFilteredProps = sortProperties(filtered);
-            visibleCount = 15;
-            render();
-        }
-
-        // --- PROPERTY MODAL LOGIC ---
-        function openModal(id) {
-            const prop = allProperties.find(p => p.id === id);
+        // --- PROPERTY MODAL ---
+        window.openModal = function (id) {
+            const prop = State.properties.find(p => p.id === id);
             if (!prop) return;
 
-            document.getElementById('modalTitle').textContent = prop.name;
-            document.getElementById('modalImage').src = prop.image;
-            document.getElementById('modalLocation').innerHTML = `
-                        <svg class="w-5 h-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
-                        ${prop.location}, საქართველო`;
-            document.getElementById('modalPrice').textContent = `₾${prop.price}`;
-            document.getElementById('modalRating').textContent = prop.rating;
-            document.getElementById('modalDescription').textContent = prop.description;
-            document.getElementById('modalPhone').textContent = prop.phone;
-            document.getElementById('modalTypeBadge').textContent = prop.type;
-
-            document.getElementById('modalAmenities').innerHTML = prop.amenities.map(am => `
-                        <div class="flex items-center space-x-2 bg-slate-50 p-2 rounded-lg border border-slate-100">
-                            <div class="text-emerald-500"><svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">${getIconSVG(am.icon)}</svg></div>
-                            <span class="text-sm font-medium text-gray-700">${am.label}</span>
-                        </div>
-                    `).join('');
-
-            document.getElementById('modalPricing').innerHTML = prop.monthlyPrices.map(mp => `
-                        <div class="flex flex-col items-center justify-center bg-white border border-gray-100 rounded-xl p-3 min-w-[80px] shadow-sm">
-                            <span class="text-xs font-bold text-gray-400 uppercase mb-1">${mp.month}</span>
-                            <span class="text-emerald-600 font-bold text-lg">₾${mp.price}</span>
-                        </div>
-                    `).join('');
-
-            propertyModal.classList.remove('hidden');
+            configureModalContent(prop);
+            DOM.propertyModal.classList.remove('hidden');
             setTimeout(() => {
-                modalBackdrop.classList.remove('opacity-0');
-                modalContent.classList.remove('opacity-0', 'scale-95');
-                modalContent.classList.add('modal-enter');
+                DOM.modalBackdrop.classList.remove('opacity-0');
+                DOM.modalContent.classList.remove('opacity-0', 'scale-95');
+                DOM.modalContent.classList.add('modal-enter');
             }, 10);
             document.body.classList.add('no-scroll');
-        }
+        };
 
-        function closeModal() {
-            modalBackdrop.classList.add('opacity-0');
-            modalContent.classList.remove('modal-enter');
-            modalContent.classList.add('opacity-0', 'scale-95');
+        window.closeModal = function () {
+            DOM.modalBackdrop.classList.add('opacity-0');
+            DOM.modalContent.classList.remove('modal-enter');
+            DOM.modalContent.classList.add('opacity-0', 'scale-95');
             setTimeout(() => {
-                propertyModal.classList.add('hidden');
+                DOM.propertyModal.classList.add('hidden');
                 document.body.classList.remove('no-scroll');
             }, 300);
+        };
+
+        function configureModalContent(prop) {
+            DOM.mTitle.textContent = prop.name;
+            DOM.mImage.src = prop.image;
+            DOM.mLocation.innerHTML = `<svg class="w-5 h-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg> ${prop.location}, საქართველო`;
+            DOM.mPrice.textContent = `₾${prop.price}`;
+            DOM.mRating.textContent = prop.rating;
+            DOM.mDesc.textContent = prop.description;
+            DOM.mPhone.textContent = prop.phone;
+            DOM.mBadge.textContent = prop.type;
+
+            DOM.mAmenities.innerHTML = prop.amenities.map(am => `
+            <div class="flex items-center space-x-2 bg-slate-50 p-2 rounded-lg border border-slate-100">
+                <div class="text-emerald-500"><svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="${am.iconPath}"/></svg></div>
+                <span class="text-sm font-medium text-gray-700">${am.label}</span>
+            </div>`).join('');
+
+            DOM.mPricing.innerHTML = prop.monthlyPrices.map(mp => `
+            <div class="flex flex-col items-center justify-center bg-white border border-gray-100 rounded-xl p-3 min-w-[80px] shadow-sm">
+                <span class="text-xs font-bold text-gray-400 uppercase mb-1">${mp.month}</span>
+                <span class="text-emerald-600 font-bold text-lg">₾${mp.price}</span>
+            </div>`).join('');
         }
 
-        // --- AUTH MODAL LOGIC ---
-        function openAuthModal(mode) {
-            authModal.classList.remove('hidden');
+        // --- ADD MODAL ---
+        window.openAddModal = function () {
+            DOM.addModal.classList.remove('hidden');
             setTimeout(() => {
-                authBackdrop.classList.remove('opacity-0');
-                authContent.classList.remove('opacity-0', 'scale-95');
-                authContent.classList.add('modal-enter');
+                DOM.addBackdrop.classList.remove('opacity-0');
+                DOM.addContent.classList.remove('opacity-0', 'scale-95');
+                DOM.addContent.classList.add('modal-enter');
+            }, 10);
+            document.body.classList.add('no-scroll');
+        };
+
+        window.closeAddModal = function () {
+            DOM.addBackdrop.classList.add('opacity-0');
+            DOM.addContent.classList.remove('modal-enter');
+            DOM.addContent.classList.add('opacity-0', 'scale-95');
+            setTimeout(() => {
+                DOM.addModal.classList.add('hidden');
+                document.body.classList.remove('no-scroll');
+            }, 300);
+        };
+
+        window.submitProperty = async function (e) {
+            e.preventDefault();
+            const btn = e.target.querySelector('button[type="submit"]');
+            const origText = btn.innerText;
+            btn.innerText = "იტვირთება...";
+            btn.disabled = true;
+
+            try {
+                const file = document.getElementById('addImage').files[0];
+                if (!file) throw new Error("სურათი სავალდებულოა");
+
+                const fileName = `${Date.now()}_${file.name.replace(/\s+/g, '-')}`;
+                const { data: upData, error: upError } = await State.supabase.storage.from('guesthouse statement').upload(fileName, file);
+                if (upError) throw upError;
+
+                const { data: { publicUrl } } = State.supabase.storage.from('guesthouse statement').getPublicUrl(fileName);
+
+                const newProp = {
+                    name: document.getElementById('addName').value,
+                    location: document.getElementById('addLocation').value,
+                    price: parseInt(document.getElementById('addPrice').value),
+                    type: document.getElementById('addType').value,
+                    tier: document.getElementById('addTier').value,
+                    image_url: publicUrl,
+                    rating: 5.0,
+                    reviews: 0,
+                    description: "ახალი განცხადება",
+                    phone: "+995 555 11 22 33"
+                };
+
+                const { error: insError } = await State.supabase.from('guesthouse ge').insert([newProp]);
+                if (insError) throw insError;
+
+                alert("წარმატებით დაემატა!");
+                document.getElementById('addPropertyForm').reset();
+                closeAddModal();
+                fetchProperties(); // Refresh
+            } catch (err) {
+                console.error(err);
+                alert("შეცდომა: " + err.message);
+            } finally {
+                btn.innerText = origText;
+                btn.disabled = false;
+            }
+        };
+
+        // --- AUTH MODAL ---
+        window.openAuthModal = function (mode) {
+            DOM.authModal.classList.remove('hidden');
+            setTimeout(() => {
+                DOM.authBackdrop.classList.remove('opacity-0');
+                DOM.authContent.classList.remove('opacity-0', 'scale-95');
+                DOM.authContent.classList.add('modal-enter');
             }, 10);
             document.body.classList.add('no-scroll');
             switchAuthTab(mode);
-        }
+        };
 
-        function closeAuthModal() {
-            authBackdrop.classList.add('opacity-0');
-            authContent.classList.remove('modal-enter');
-            authContent.classList.add('opacity-0', 'scale-95');
+        window.closeAuthModal = function () {
+            DOM.authBackdrop.classList.add('opacity-0');
+            DOM.authContent.classList.remove('modal-enter');
+            DOM.authContent.classList.add('opacity-0', 'scale-95');
             setTimeout(() => {
-                authModal.classList.add('hidden');
+                DOM.authModal.classList.add('hidden');
                 document.body.classList.remove('no-scroll');
             }, 300);
-        }
+        };
 
-        function switchAuthTab(mode) {
+        window.switchAuthTab = function (mode) {
             if (mode === 'login') {
-                tabLogin.classList.add('auth-tab-active');
-                tabLogin.classList.remove('auth-tab-inactive');
-                tabRegister.classList.add('auth-tab-inactive');
-                tabRegister.classList.remove('auth-tab-active');
-
-                nameFieldContainer.classList.add('hidden');
-                authSubmitText.textContent = 'შესვლა';
-                authFooterText.textContent = 'დაგავიწყდათ პაროლი?';
+                DOM.tabLogin.classList.replace('auth-tab-inactive', 'auth-tab-active');
+                DOM.tabRegister.classList.replace('auth-tab-active', 'auth-tab-inactive');
+                DOM.nameFieldContainer.classList.add('hidden');
+                DOM.authSubmitText.textContent = 'შესვლა';
+                DOM.authFooterText.textContent = 'დაგავიწყდათ პაროლი?';
+                DOM.authFooterText.onclick = null;
             } else {
-                tabRegister.classList.add('auth-tab-active');
-                tabRegister.classList.remove('auth-tab-inactive');
-                tabLogin.classList.add('auth-tab-inactive');
-                tabLogin.classList.remove('auth-tab-active');
-
-                nameFieldContainer.classList.remove('hidden');
-                authSubmitText.textContent = 'რეგისტრაცია';
-                authFooterText.textContent = 'უკვე გაქვთ ანგარიში? შესვლა';
-
-                // Add click handler to footer text to switch back to login
-                authFooterText.onclick = () => switchAuthTab('login');
+                DOM.tabRegister.classList.replace('auth-tab-inactive', 'auth-tab-active');
+                DOM.tabLogin.classList.replace('auth-tab-active', 'auth-tab-inactive');
+                DOM.nameFieldContainer.classList.remove('hidden');
+                DOM.authSubmitText.textContent = 'რეგისტრაცია';
+                DOM.authFooterText.textContent = 'უკვე გაქვთ ანგარიში? შესვლა';
+                DOM.authFooterText.onclick = () => switchAuthTab('login');
             }
+        };
+
+        // ==========================================
+        //  EVENT LISTENERS ATTACHMENT
+        // ==========================================
+        function attachEventListeners() {
+            // Location Dropdown
+            if (DOM.locationInput) {
+                DOM.locationInput.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const hidden = DOM.locationList.classList.contains('opacity-0');
+                    toggleDropdown(DOM.typeList, false);
+                    toggleDropdown(DOM.locationList, hidden);
+                });
+            }
+
+            if (DOM.locationSearch) {
+                DOM.locationSearch.addEventListener('click', e => e.stopPropagation());
+                DOM.locationSearch.addEventListener('input', (e) => {
+                    const term = e.target.value.toLowerCase();
+                    const filtered = State.cities.filter(c => c.name_ka.toLowerCase().includes(term));
+                    renderLocationList(filtered);
+                });
+            }
+
+            // Type Dropdown
+            if (DOM.typeInput) {
+                DOM.typeInput.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const hidden = DOM.typeList.classList.contains('opacity-0');
+                    toggleDropdown(DOM.locationList, false);
+                    toggleDropdown(DOM.typeList, hidden);
+                });
+            }
+
+            if (DOM.typeList) {
+                DOM.typeList.addEventListener('click', (e) => {
+                    if (e.target.tagName === 'LI') {
+                        selectType(e.target.dataset.value, e.target.textContent.trim());
+                    }
+                });
+            }
+
+            // Click Outside
+            document.addEventListener('click', (e) => {
+                if (DOM.locationDropdown && !DOM.locationDropdown.contains(e.target)) toggleDropdown(DOM.locationList, false);
+                if (DOM.typeDropdown && !DOM.typeDropdown.contains(e.target)) toggleDropdown(DOM.typeList, false);
+            });
+
+            // Navbar Scroll
+            window.addEventListener('scroll', () => {
+                if (window.scrollY > 50) {
+                    DOM.navbar.classList.add('bg-black/50', 'backdrop-blur-md');
+                } else {
+                    DOM.navbar.classList.remove('bg-black/50', 'backdrop-blur-md');
+                }
+            });
+
+            // Show More
+            if (DOM.showMoreBtn) {
+                DOM.showMoreBtn.addEventListener('click', () => {
+                    State.visibleCount += CONFIG.ITEMS_PER_PAGE;
+                    render();
+                });
+            }
+
+            // Modal Backdrops
+            if (DOM.modalBackdrop) DOM.modalBackdrop.addEventListener('click', window.closeModal);
+            if (DOM.authBackdrop) DOM.authBackdrop.addEventListener('click', window.closeAuthModal);
+            if (DOM.addBackdrop) DOM.addBackdrop.addEventListener('click', window.closeAddModal);
+
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape') {
+                    window.closeModal();
+                    window.closeAuthModal();
+                    window.closeAddModal();
+                }
+            });
         }
-
-        // EVENT LISTENERS
-        modalBackdrop.addEventListener('click', closeModal);
-        authBackdrop.addEventListener('click', closeAuthModal);
-        document.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape') {
-                closeModal();
-                closeAuthModal();
-            }
-        });
-
-        showMoreBtn.addEventListener('click', () => { visibleCount += 15; render(); });
-
-        // Navbar Scroll Effect
-        window.addEventListener('scroll', () => {
-            const nav = document.getElementById('navbar');
-            if (window.scrollY > 50) {
-                nav.classList.add('bg-black/50', 'backdrop-blur-md');
-            } else {
-                nav.classList.remove('bg-black/50', 'backdrop-blur-md');
-            }
-        });
-
-        // INIT
-        async function initialize() {
-            await fetchLocations();
-            allProperties = generateProperties(50);
-            allProperties = sortProperties(allProperties);
-            currentFilteredProps = allProperties;
-            render();
-        }
-
-        initialize();
-
     </script>
-
 </body>
 
 </html>
