@@ -126,81 +126,108 @@
     </nav>
 
     <!-- Hero Section -->
-    <div class="hero-bg h-[60vh] lg:h-[70vh] w-full flex flex-col justify-center items-center px-4 relative">
-        <div class="text-center mb-8 fade-in mt-16">
-            <h1 class="text-4xl md:text-6xl font-bold text-white mb-2 drop-shadow-md tracking-tight">GeorgiaTravel</h1>
-            <p class="text-lg md:text-xl text-white/90 drop-shadow-sm font-medium">აღმოაჩინე შენი იდეალური დასასვენებელი
-                ადგილი საქართველოში</p>
-        </div>
+    <!-- Hero Section Wrapper -->
+    <div class="relative h-[60vh] lg:h-[70vh] w-full">
+        <!-- Layer 1: Background Image (Bottom) -->
+        <div class="hero-bg absolute inset-0 w-full h-full z-0"></div>
 
-        <!-- Search Interface -->
-        <div
-            class="glass-panel p-6 rounded-2xl w-full max-w-4xl grid grid-cols-1 md:grid-cols-12 gap-4 fade-in shadow-2xl">
-            <!-- Location -->
-            <div class="md:col-span-5 relative group" id="locationDropdown">
-                <label for="locationInput"
-                    class="block text-xs font-semibold text-white uppercase tracking-wider mb-1 ml-1 opacity-90">მდებარეობა</label>
-                <div class="relative">
-                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                        <svg class="h-5 w-5 text-gray-700" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                        </svg>
+        <!-- Layer 2: Content (Top) -->
+        <div class="relative z-30 h-full w-full flex flex-col justify-center items-center px-4 pointer-events-none">
+
+            <!-- Title Text -->
+            <div class="text-center mb-8 fade-in mt-16 pointer-events-auto">
+                <h1 class="text-4xl md:text-6xl font-bold text-white mb-2 drop-shadow-md tracking-tight">GeorgiaTravel
+                </h1>
+                <p class="text-lg md:text-xl text-white/90 drop-shadow-sm font-medium">აღმოაჩინე შენი იდეალური
+                    დასასვენებელი
+                    ადგილი საქართველოში</p>
+            </div>
+
+            <!-- Search Interface -->
+            <div
+                class="glass-panel p-6 rounded-2xl w-full max-w-4xl grid grid-cols-1 md:grid-cols-12 gap-4 fade-in shadow-2xl pointer-events-auto">
+                <!-- Location -->
+                <div class="md:col-span-5 relative group" id="locationDropdown">
+                    <label for="locationInput"
+                        class="block text-xs font-semibold text-white uppercase tracking-wider mb-1 ml-1 opacity-90">მდებარეობა</label>
+                    <div class="relative">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <svg class="h-5 w-5 text-gray-700" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                            </svg>
+                        </div>
+                        <input type="text" id="locationInput"
+                            class="block w-full pl-10 pr-3 py-3 border-none rounded-xl text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-white/90 hover:bg-white transition-colors cursor-pointer font-medium"
+                            placeholder="აირჩიეთ ქალაქი..." readonly>
                     </div>
-                    <input type="text" id="locationInput"
-                        class="block w-full pl-10 pr-3 py-3 border-none rounded-xl text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-white/90 hover:bg-white transition-colors cursor-pointer font-medium"
-                        placeholder="აირჩიეთ ქალაქი..." readonly>
+                    <div id="locationList"
+                        class="absolute z-10 mt-1 w-full bg-white rounded-xl shadow-lg max-h-60 overflow-y-auto custom-scrollbar transform origin-top transition-all duration-300 ease-in-out opacity-0 scale-y-90 pointer-events-none -translate-y-2">
+                        <div class="p-2">
+                            <input type="text" id="locationSearch"
+                                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-emerald-500"
+                                placeholder="ძიება...">
+                        </div>
+                        <ul id="locationUL" class="py-1">
+                            <!-- Locations will be injected here -->
+                        </ul>
+                    </div>
                 </div>
-                <div id="locationList"
-                    class="absolute z-10 mt-1 w-full bg-white rounded-xl shadow-lg max-h-60 overflow-y-auto hidden">
-                    <div class="p-2">
-                        <input type="text" id="locationSearch"
-                            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-emerald-500"
-                            placeholder="ძიება...">
+
+                <!-- Type -->
+                <div class="md:col-span-3 relative group" id="typeDropdown">
+                    <label
+                        class="block text-xs font-semibold text-white uppercase tracking-wider mb-1 ml-1 opacity-90">ტიპი</label>
+                    <div class="relative">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <svg class="h-5 w-5 text-gray-700" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+                            </svg>
+                        </div>
+                        <input type="text" id="typeInput" readonly placeholder="აირჩიე ტიპი"
+                            class="w-full pl-10 pr-10 py-3 rounded-xl border-none focus:ring-0 cursor-pointer bg-white/90 backdrop-blur-sm text-gray-900 font-bold shadow-inner transition-all hover:bg-white truncate">
+                        <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                            <svg class="h-4 w-4 text-gray-500 transition-transform duration-300 transform group-hover:rotate-180"
+                                fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M19 9l-7 7-7-7" />
+                            </svg>
+                        </div>
                     </div>
-                    <ul id="locationUL" class="py-1">
-                        <!-- Locations will be injected here -->
+
+                    <!-- Dropdown List -->
+                    <ul id="typeList"
+                        class="absolute z-50 w-full bg-white border border-gray-100 rounded-xl shadow-xl mt-2 max-h-60 overflow-y-auto custom-scrollbar transform origin-top transition-all duration-300 ease-in-out opacity-0 scale-y-90 pointer-events-none -translate-y-2">
+                        <li class="px-4 py-2 hover:bg-gray-100 cursor-pointer text-gray-900" data-value="">ყველა</li>
+                        <li class="px-4 py-2 hover:bg-gray-100 cursor-pointer text-gray-900" data-value="სასტუმრო">
+                            სასტუმრო</li>
+                        <li class="px-4 py-2 hover:bg-gray-100 cursor-pointer text-gray-900"
+                            data-value="საოჯახო სასტუმრო">საოჯახო სასტუმრო</li>
+                        <li class="px-4 py-2 hover:bg-gray-100 cursor-pointer text-gray-900" data-value="აპარტამენტი">
+                            აპარტამენტი</li>
+                        <li class="px-4 py-2 hover:bg-gray-100 cursor-pointer text-gray-900" data-value="ბინა">ბინა</li>
+                        <li class="px-4 py-2 hover:bg-gray-100 cursor-pointer text-gray-900" data-value="კოტეჯი">კოტეჯი
+                        </li>
+                        <li class="px-4 py-2 hover:bg-gray-100 cursor-pointer text-gray-900" data-value="კერძო სახლი">
+                            კერძო სახლი</li>
                     </ul>
                 </div>
-            </div>
 
-            <!-- Type -->
-            <div class="md:col-span-5 relative group">
-                <label for="typeSelect"
-                    class="block text-xs font-semibold text-white uppercase tracking-wider mb-1 ml-1 opacity-90">ტიპი</label>
-                <div class="relative">
-                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                        <svg class="h-5 w-5 text-gray-700" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
-                        </svg>
-                    </div>
-                    <select id="typeSelect"
-                        class="block w-full pl-10 pr-3 py-3 border-none rounded-xl text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-white/90 hover:bg-white transition-colors cursor-pointer appearance-none font-medium">
-                        <option value="">ტიპი (ყველა)</option>
-                        <option value="სასტუმრო">სასტუმრო</option>
-                        <option value="საოჯახო სასტუმრო">საოჯახო სასტუმრო</option>
-                        <option value="აპარტამენტი">აპარტამენტი</option>
-                        <option value="ბინა">ბინა</option>
-                        <option value="კოტეჯი">კოტეჯი</option>
-                        <option value="კერძო სახლი">კერძო სახლი</option>
-                    </select>
+                <!-- Button (Visual) -->
+                <div class="md:col-span-2 flex items-end">
+                    <button type="button"
+                        class="w-full bg-emerald-500 hover:bg-emerald-600 text-white font-bold py-3 px-4 rounded-xl shadow-lg transform transition hover:-translate-y-0.5"
+                        disabled>Live Filter</button>
                 </div>
-            </div>
-
-            <!-- Button (Visual) -->
-            <div class="md:col-span-2 flex items-end">
-                <button type="button"
-                    class="w-full bg-emerald-500 hover:bg-emerald-600 text-white font-bold py-3 px-4 rounded-xl shadow-lg transform transition hover:-translate-y-0.5"
-                    disabled>Live Filter</button>
             </div>
         </div>
     </div>
 
     <!-- Results Section -->
-    <main class="max-w-7xl mx-auto px-4 py-12 -mt-20 relative">
+    <main class="max-w-7xl mx-auto px-4 py-12 mt-12 md:-mt-20 relative z-10">
         <div id="resultsGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
             <!-- Cards injected here -->
         </div>
@@ -653,7 +680,22 @@
         const locationList = document.getElementById('locationList');
         const locationSearch = document.getElementById('locationSearch');
         const locationUL = document.getElementById('locationUL');
-        const typeSelect = document.getElementById('typeSelect');
+
+        // Custom Type Dropdown Elements
+        const typeInput = document.getElementById('typeInput');
+        const typeList = document.getElementById('typeList');
+        let selectedTypeValue = '';
+
+        // Common Dropdown Toggle
+        function toggleDropdown(list, show) {
+            if (show) {
+                list.classList.remove('opacity-0', 'scale-y-90', 'pointer-events-none', '-translate-y-2');
+                list.classList.add('opacity-100', 'scale-y-100', 'pointer-events-auto', 'translate-y-0');
+            } else {
+                list.classList.remove('opacity-100', 'scale-y-100', 'pointer-events-auto', 'translate-y-0');
+                list.classList.add('opacity-0', 'scale-y-90', 'pointer-events-none', '-translate-y-2');
+            }
+        }
         const resultsGrid = document.getElementById('resultsGrid');
         const noResults = document.getElementById('noResults');
         const showMoreContainer = document.getElementById('showMoreContainer');
@@ -709,8 +751,12 @@
             });
         }
 
-        locationInput.addEventListener('click', () => {
-            locationList.classList.toggle('hidden');
+        locationInput.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const isHidden = locationList.classList.contains('opacity-0');
+            // Close others
+            toggleDropdown(typeList, false);
+            toggleDropdown(locationList, isHidden);
         });
 
         locationSearch.addEventListener('input', (e) => {
@@ -721,21 +767,46 @@
             renderLocationList(filteredCities);
         });
 
+        // Prevent click on search input from closing dropdown
+        locationSearch.addEventListener('click', (e) => e.stopPropagation());
+
         locationUL.addEventListener('click', (e) => {
             if (e.target.tagName === 'LI') {
                 locationInput.value = e.target.textContent;
                 selectedLocationValue = e.target.dataset.value;
-                locationList.classList.add('hidden');
+                toggleDropdown(locationList, false);
+                filterProperties();
+            }
+        });
+
+        // --- TYPE DROPDOWN ---
+        typeInput.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const isHidden = typeList.classList.contains('opacity-0');
+            toggleDropdown(locationList, false);
+            toggleDropdown(typeList, isHidden);
+        });
+
+        typeList.addEventListener('click', (e) => {
+            if (e.target.tagName === 'LI') {
+                const val = e.target.dataset.value;
+                const text = e.target.textContent;
+                typeInput.value = text;
+                selectedTypeValue = val;
+                toggleDropdown(typeList, false);
                 filterProperties();
             }
         });
 
         document.addEventListener('click', (e) => {
             if (!document.getElementById('locationDropdown').contains(e.target)) {
-                locationList.classList.add('hidden');
+                toggleDropdown(locationList, false);
+            }
+            if (!document.getElementById('typeDropdown').contains(e.target)) {
+                toggleDropdown(typeList, false);
             }
         });
-        // --- END LOCATION DROPDOWN ---
+        // --- END LOCATION & TYPE DROPDOWN ---
 
         // RENDER CARD HTML
         function getCardHTML(prop) {
@@ -834,7 +905,7 @@
 
         // FILTER LOGIC
         function filterProperties() {
-            const selectedType = typeSelect.value;
+            const selectedType = selectedTypeValue;
             let filtered = allProperties.filter(p => {
                 const matchLoc = selectedLocationValue ? p.location === selectedLocationValue : true;
                 const matchType = selectedType ? p.type === selectedType : true;
@@ -951,7 +1022,6 @@
             }
         });
 
-        typeSelect.addEventListener('change', filterProperties);
         showMoreBtn.addEventListener('click', () => { visibleCount += 15; render(); });
 
         // Navbar Scroll Effect
