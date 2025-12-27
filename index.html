@@ -721,7 +721,7 @@
                         <!-- Dynamic Image Grid -->
                         <div id="uploadGrid" class="grid grid-cols-3 sm:grid-cols-4 gap-2 mt-3 min-h-[100px]">
                             <!-- Add Button -->
-                            <div onclick="document.getElementById('addImages').click()"
+                            <div id="uploadAddBtn" onclick="document.getElementById('addImages').click()"
                                 class="aspect-square border-2 border-dashed border-gray-300 rounded-xl flex flex-col items-center justify-center cursor-pointer hover:border-emerald-500 hover:bg-emerald-50 transition-all group">
                                 <svg class="w-8 h-8 text-gray-400 group-hover:text-emerald-500 mb-1" fill="none"
                                     viewBox="0 0 24 24" stroke="currentColor">
@@ -791,6 +791,8 @@
             cities: [],
             visibleCount: CONFIG.ITEMS_PER_PAGE,
             pendingUploads: [], // Store processed image blobs
+            currentGallery: [], // For fullscreen nav
+            currentImageIndex: 0,
             filters: {
                 location: '',
                 type: ''
@@ -926,16 +928,55 @@
         function normalizeProperty(p) {
             // Ensure all fields exist for UI
             let propAmenities = [];
-            if (p.amenities && Array.isArray(p.amenities)) {
-                // Map array of keys back to AMENITIES_DATA objects
-                propAmenities = p.amenities.map(key => AMENITIES_DATA.find(a => a.key === key)).filter(Boolean);
+            if (p.amenities) {
+                if (Array.isArray(p.amenities)) {
+                    propAmenities = p.amenities.map(key => AMENITIES_DATA.find(a => a.key === key)).filter(Boolean);
+                } else if (typeof p.amenities === 'string') {
+                    // Handle potential string case
+                    try {
+                        const parsed = JSON.parse(p.amenities);
+                        if (Array.isArray(parsed)) {
+                            propAmenities = parsed.map(key => AMENITIES_DATA.find(a => a.key === key)).filter(Boolean);
+                        }
+                    } catch (e) { console.warn("Amenities parse error", e); }
+                }
             }
             if (!propAmenities.length) propAmenities = AMENITIES_DATA.slice(0, 5); // Fallback if empty/legacy
 
+            // Robust Image Parsing
+            let images = [];
+            if (Array.isArray(p.images)) {
+                images = p.images;
+            } else if (typeof p.images === 'string') {
+                try {
+                    const parsed = JSON.parse(p.images);
+                    if (Array.isArray(parsed)) images = parsed;
+                    else images = [p.images];
+                } catch (e) {
+                    // Treat as comma-separated or single url? Assume single if parse fails.
+                    images = [p.images];
+                }
+            }
+
+            // Filter invalid images
+            images = images.filter(url => url && typeof url === 'string' && url.length > 5);
+
+            // Fallback to image_url
+            if (images.length === 0 && p.image_url) {
+                images = [p.image_url];
+            }
+
+            // Final Fallback
+            if (images.length === 0) {
+                images = [CONFIG.DEFAULT_IMAGE];
+            }
+
+            const primaryImage = images[0];
+
             return {
                 ...p,
-                image: p.image_url || CONFIG.DEFAULT_IMAGE, // Primary Image
-                images: p.images || [p.image_url], // All images
+                image: primaryImage, // Primary Image
+                images: images, // All images
                 amenities: propAmenities,
                 monthlyPrices: generateMockPrices(p.price || 100),
                 tags: (p.type === "კოტეჯი" || p.type === "სასტუმრო") ? ["ხედი", "მთები"] : ["WiFi", "ცენტრი"],
@@ -1152,6 +1193,8 @@
             document.body.classList.add('no-scroll');
         };
 
+
+
         window.closeModal = function () {
             DOM.modalBackdrop.classList.add('opacity-0');
             DOM.modalContent.classList.remove('modal-enter');
@@ -1161,6 +1204,93 @@
                 document.body.classList.remove('no-scroll');
             }, 300);
         };
+
+        // --- FULLSCREEN MODAL ---
+        // --- FULLSCREEN MODAL ---
+        window.openFullscreen = function (index) {
+            const modal = document.getElementById('fullscreenModal');
+            const img = document.getElementById('fullscreenImage');
+            if (!modal || !img) return;
+
+            State.currentImageIndex = index;
+            updateFullscreenImage();
+
+            modal.classList.remove('hidden');
+            setTimeout(() => {
+                modal.classList.remove('opacity-0');
+            }, 10);
+        };
+
+        window.closeFullscreen = function () {
+            const modal = document.getElementById('fullscreenModal');
+            if (!modal) return;
+
+            modal.classList.add('opacity-0');
+            setTimeout(() => {
+                modal.classList.add('hidden');
+                document.getElementById('fullscreenImage').src = '';
+            }, 300);
+        };
+
+        window.navigateFullscreen = function (step, event) {
+            if (event) event.stopPropagation();
+            const newIndex = State.currentImageIndex + step;
+            if (newIndex >= 0 && newIndex < State.currentGallery.length) {
+                State.currentImageIndex = newIndex;
+                updateFullscreenImage();
+            }
+        };
+
+        function updateFullscreenImage() {
+            const img = document.getElementById('fullscreenImage');
+            const url = State.currentGallery[State.currentImageIndex];
+            if (img && url) {
+                // simple fade effect could be added here
+                img.style.opacity = '0.5';
+                img.src = url;
+                setTimeout(() => img.style.opacity = '1', 150);
+
+                // Update nav buttons visibility
+                const prev = document.getElementById('fsPrev');
+                const next = document.getElementById('fsNext');
+                if (prev) prev.style.display = State.currentImageIndex > 0 ? 'block' : 'none';
+                if (next) next.style.display = State.currentImageIndex < State.currentGallery.length - 1 ? 'block' : 'none';
+            }
+        }
+
+        // Swipe Support
+        let touchStartX = 0;
+        let touchEndX = 0;
+
+        function initSwipeGestures() {
+            const modal = document.getElementById('fullscreenModal');
+            if (!modal) return;
+
+            modal.addEventListener('touchstart', e => {
+                touchStartX = e.changedTouches[0].screenX;
+            }, { passive: true });
+
+            modal.addEventListener('touchend', e => {
+                touchEndX = e.changedTouches[0].screenX;
+                handleSwipe();
+            }, { passive: true });
+        }
+
+        function handleSwipe() {
+            const diff = touchStartX - touchEndX;
+            if (Math.abs(diff) > 50) { // Threshold
+                if (diff > 0) {
+                    // Swipe Left -> Next
+                    navigateFullscreen(1);
+                } else {
+                    // Swipe Right -> Prev
+                    navigateFullscreen(-1);
+                }
+            }
+        }
+
+        // Call init once
+        document.addEventListener('DOMContentLoaded', initSwipeGestures);
 
         async function configureModalContent(prop) {
             // DOM.mTitle.textContent = prop.name; // Redundant as per request
@@ -1184,9 +1314,16 @@
             const gallery = document.getElementById('modalGallery');
             if (gallery) {
                 const imagesToShow = (prop.images && prop.images.length > 0) ? prop.images : [prop.image_url || CONFIG.DEFAULT_IMAGE];
+                State.currentGallery = imagesToShow; // Update State
+
                 gallery.innerHTML = imagesToShow.map((imgUrl, index) => `
-                    <div class="min-w-full h-full snap-center relative">
+                    <div class="min-w-full h-full snap-center relative group/img">
                         <img src="${imgUrl}" class="w-full h-full object-cover" alt="Gallery Image ${index + 1}">
+                        <button onclick="openFullscreen(${index})" class="absolute bottom-4 right-4 bg-black/50 hover:bg-black/70 text-white p-2 rounded-lg backdrop-blur-sm opacity-0 group-hover/img:opacity-100 transition-opacity duration-300">
+                             <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" />
+                            </svg>
+                        </button>
                     </div>
                 `).join('');
             }
@@ -1261,13 +1398,19 @@
 
         function renderUploadGrid() {
             const grid = document.getElementById('uploadGrid');
-            if (!grid) return;
+            const addButton = document.getElementById('uploadAddBtn');
+            if (!grid || !addButton) return;
 
-            // Keep the "Add" button (first child)
-            const addButton = grid.firstElementChild;
+            // Clear grid but keep reference to everything? No, easiest is to detach button, clear, then re-append.
+            // But we must be careful not to lose the event listeners on the button if any (onclick is inline, so fine).
+
+            // 1. Detach Add Button
+            addButton.remove();
+
+            // 2. Clear Grid HTML (removes old images)
             grid.innerHTML = '';
-            grid.appendChild(addButton);
 
+            // 3. Render Images
             State.pendingUploads.forEach((item, index) => {
                 const div = document.createElement('div');
                 div.className = "relative aspect-square rounded-xl overflow-hidden shadow-sm border border-gray-200 group animate-fade-in";
@@ -1281,8 +1424,9 @@
                 const delBtn = document.createElement('button');
                 delBtn.className = "absolute top-1 right-1 bg-red-500 text-white rounded-full p-1 shadow-md opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-600 focus:outline-none";
                 delBtn.innerHTML = `<svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>`;
+                delBtn.type = "button"; // Prevent form submit
                 delBtn.onclick = (e) => {
-                    e.stopPropagation(); // Prevent grid click
+                    e.stopPropagation();
                     removeImage(index);
                 };
 
@@ -1295,18 +1439,21 @@
                 div.appendChild(delBtn);
                 div.appendChild(sizeBadge);
 
-                // Insert before the add button? No, user requested: "+ button shift to next available".
-                // So typically: [Thumbnail] [Thumbnail] [+]
-                // My logic above cleared grid and re-appended Add Button. 
-                // So I should insert thumbnails BEFORE the Add Button.
-                grid.insertBefore(div, addButton);
+                grid.appendChild(div);
             });
 
-            // Update Add Button visibility or position
-            if (State.pendingUploads.length >= 30) {
-                addButton.classList.add('hidden');
-            } else {
+            // 4. Re-append Add Button if limit not reached
+            if (State.pendingUploads.length < 30) {
                 addButton.classList.remove('hidden');
+                grid.appendChild(addButton);
+            } else {
+                // If limit reached, we can either hide it or just not append it.
+                // Better to append and hide, or just hide if it's external? 
+                // It's inside the grid. So we must append it to keep it in DOM for next time?
+                // Actually, if we remove() it, and don't append, it's GONE from DOM.
+                // We must append it but hide it.
+                addButton.classList.add('hidden');
+                grid.appendChild(addButton);
             }
         }
 
@@ -1558,6 +1705,38 @@
             });
         }
     </script>
+    <!-- FULLSCREEN IMAGE MODAL -->
+    <div id="fullscreenModal"
+        class="fixed inset-0 z-[70] hidden opacity-0 transition-opacity duration-300 bg-black/95 backdrop-blur-xl"
+        onclick="closeFullscreen()">
+        <!-- Close Button -->
+        <button onclick="closeFullscreen()"
+            class="absolute top-4 right-4 bg-black/60 text-white hover:bg-red-500 hover:scale-110 shadow-lg border border-white/10 backdrop-blur-sm transition-all duration-300 p-2 z-50 rounded-full">
+            <svg class="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+        </button>
+
+        <!-- Navigation Buttons -->
+        <button id="fsPrev" onclick="navigateFullscreen(-1, event)"
+            class="absolute left-4 top-1/2 transform -translate-y-1/2 bg-black/60 text-white hover:bg-emerald-500 hover:scale-110 shadow-lg border border-white/10 backdrop-blur-sm transition-all duration-300 p-3 z-50 rounded-full">
+            <svg class="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+            </svg>
+        </button>
+        <button id="fsNext" onclick="navigateFullscreen(1, event)"
+            class="absolute right-4 top-1/2 transform -translate-y-1/2 bg-black/60 text-white hover:bg-emerald-500 hover:scale-110 shadow-lg border border-white/10 backdrop-blur-sm transition-all duration-300 p-3 z-50 rounded-full">
+            <svg class="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+            </svg>
+        </button>
+
+        <div class="w-full h-full flex items-center justify-center p-4">
+            <img id="fullscreenImage" src=""
+                class="max-w-full max-h-full object-contain rounded shadow-2xl transition-opacity duration-150"
+                onclick="event.stopPropagation()">
+        </div>
+    </div>
 </body>
 
 </html>
