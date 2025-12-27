@@ -519,24 +519,54 @@
                     </svg>
                 </button>
                 <div class="overflow-y-auto flex-grow custom-scrollbar">
-                    <div class="relative h-64 md:h-80 w-full">
-                        <img id="modalImage" src="" alt="Property Cover" class="w-full h-full object-cover">
-                        <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
-                        <div class="absolute bottom-6 left-6 md:left-10 text-white">
+                    <!-- Image Gallery Slider -->
+                    <div class="relative h-64 md:h-96 w-full bg-gray-100 group">
+                        <div id="modalGallery"
+                            class="flex overflow-x-auto snap-x snap-mandatory w-full h-full scrollbar-hide">
+                            <!-- Images injected here -->
+                        </div>
+
+                        <!-- Navigation Overlay (Optional, but scrolling is often enough for mobile) -->
+                        <div
+                            class="absolute inset-0 pointer-events-none flex justify-between items-center px-4 opacity-0 group-hover:opacity-100 transition-opacity">
+                            <button
+                                onclick="document.getElementById('modalGallery').scrollBy({left: -300, behavior: 'smooth'})"
+                                class="pointer-events-auto bg-black/50 text-white p-2 rounded-full hover:bg-black/70">
+                                <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M15 19l-7-7 7-7" />
+                                </svg>
+                            </button>
+                            <button
+                                onclick="document.getElementById('modalGallery').scrollBy({left: 300, behavior: 'smooth'})"
+                                class="pointer-events-auto bg-black/50 text-white p-2 rounded-full hover:bg-black/70">
+                                <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M9 5l7 7-7 7" />
+                                </svg>
+                            </button>
+                        </div>
+
+                        <div class="absolute bottom-6 left-6 md:left-10 text-white z-20 pointer-events-none">
                             <span id="modalTypeBadge"
-                                class="bg-emerald-500 text-xs font-bold px-2 py-1 rounded uppercase tracking-wide mb-2 inline-block">Hotel</span>
-                            <h2 id="modalTitle" class="text-3xl md:text-5xl font-bold mb-1 shadow-sm">Property Name</h2>
-                            <p id="modalLocation" class="flex items-center text-lg text-gray-200">
+                                class="bg-emerald-500/90 backdrop-blur text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wide mb-2 inline-block shadow-sm">Hotel</span>
+                            <h2 id="modalTitle" class="text-3xl md:text-5xl font-bold mb-1 drop-shadow-lg">Property Name
+                            </h2>
+                            <p id="modalLocation" class="flex items-center text-lg text-gray-100 drop-shadow-md">
                                 <svg class="w-5 h-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                         d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                         d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                                 </svg>
-                                Location String
+                                <span id="modalLocationText">Location</span>
                             </p>
                         </div>
+                        <div
+                            class="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-black/80 to-transparent pointer-events-none z-10">
+                        </div>
                     </div>
+
                     <div class="px-6 py-8 md:px-10 grid grid-cols-1 lg:grid-cols-3 gap-10">
                         <div class="lg:col-span-2 space-y-8">
                             <div>
@@ -571,12 +601,12 @@
                                 <div class="space-y-3">
                                     <div class="flex items-center space-x-3 mb-4">
                                         <div class="w-12 h-12 bg-gray-200 rounded-full overflow-hidden">
-                                            <img src="https://images.unsplash.com/photo-1570295999919-56ceb5ecca61?w=100&q=80"
-                                                alt="Host" class="w-full h-full object-cover">
+                                            <img id="modalHostImage" src="" alt="Host"
+                                                class="w-full h-full object-cover">
                                         </div>
                                         <div>
                                             <p class="text-sm text-gray-500">მასპინძელი</p>
-                                            <p class="font-bold text-gray-900">გიორგი ბ.</p>
+                                            <p id="modalHostName" class="font-bold text-gray-900"></p>
                                         </div>
                                     </div>
                                     <button
@@ -688,16 +718,24 @@
                     <!-- Multi-Image Upload -->
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">სურათები (მაქს. 30)</label>
-                        <input type="file" id="addImages" required multiple accept="image/*"
-                            onchange="handleImageSelection(this)"
-                            class="w-full px-4 py-2 border rounded-xl focus:ring-2 focus:ring-emerald-500 outline-none file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-emerald-50 file:text-emerald-700 hover:file:bg-emerald-100">
-                        <p class="text-xs text-gray-500 mt-1">სურათები ავტომატურად დაკომპრესირდება WebP ფორმატში.</p>
-
-                        <!-- Previews -->
-                        <div id="imagePreviewContainer"
-                            class="grid grid-cols-3 sm:grid-cols-4 gap-2 mt-3 p-2 bg-gray-50 rounded-xl border border-dashed border-gray-300 min-h-[80px]">
-                            <!-- Previews injected here -->
+                        <!-- Dynamic Image Grid -->
+                        <div id="uploadGrid" class="grid grid-cols-3 sm:grid-cols-4 gap-2 mt-3 min-h-[100px]">
+                            <!-- Add Button -->
+                            <div onclick="document.getElementById('addImages').click()"
+                                class="aspect-square border-2 border-dashed border-gray-300 rounded-xl flex flex-col items-center justify-center cursor-pointer hover:border-emerald-500 hover:bg-emerald-50 transition-all group">
+                                <svg class="w-8 h-8 text-gray-400 group-hover:text-emerald-500 mb-1" fill="none"
+                                    viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M12 4v16m8-8H4" />
+                                </svg>
+                                <span
+                                    class="text-xs text-gray-500 font-medium group-hover:text-emerald-600">დამატება</span>
+                            </div>
+                            <!-- Thumbnails injected here -->
                         </div>
+                        <input type="file" id="addImages" multiple accept="image/*" class="hidden"
+                            onchange="handleImageSelection(this)">
+                        <p class="text-xs text-gray-500 mt-2">მაქსიმუმ 30 სურათი.</p>
                     </div>
 
                     <!-- Buttons -->
@@ -806,7 +844,11 @@
             mPhone: document.getElementById('modalPhone'),
             mBadge: document.getElementById('modalTypeBadge'),
             mAmenities: document.getElementById('modalAmenities'),
-            mPricing: document.getElementById('modalPricing')
+            mBadge: document.getElementById('modalTypeBadge'),
+            mAmenities: document.getElementById('modalAmenities'),
+            mPricing: document.getElementById('modalPricing'),
+            mHostName: document.getElementById('modalHostName'),
+            mHostImage: document.getElementById('modalHostImage')
         };
 
         // ==========================================
@@ -1120,21 +1162,46 @@
             }, 300);
         };
 
-        function configureModalContent(prop) {
-            DOM.mTitle.textContent = prop.name;
-            DOM.mImage.src = prop.image;
-            DOM.mLocation.innerHTML = `<svg class="w-5 h-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg> ${prop.location}, საქართველო`;
+        async function configureModalContent(prop) {
+            // DOM.mTitle.textContent = prop.name; // Redundant as per request
+            DOM.mTitle.style.display = 'none'; // Hide duplicate title
+
+            // DOM.mImage.src = prop.image; // Removed in favor of gallery
+            const locationText = document.getElementById('modalLocationText');
+            if (locationText) locationText.textContent = `${prop.location}, საქართველო`;
+
             DOM.mPrice.textContent = `₾${prop.price}`;
             DOM.mRating.textContent = prop.rating;
-            DOM.mDesc.textContent = prop.description;
-            DOM.mPhone.textContent = prop.phone;
+            DOM.mDesc.textContent = prop.description || prop.name;
+            DOM.mPhone.textContent = prop.phone || "+995 ...";
             DOM.mBadge.textContent = prop.type;
 
-            DOM.mAmenities.innerHTML = prop.amenities.map(am => `
-            <div class="flex items-center space-x-2 bg-slate-50 p-2 rounded-lg border border-slate-100">
-                <div class="text-emerald-500"><svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="${am.iconPath}"/></svg></div>
-                <span class="text-sm font-medium text-gray-700">${am.label}</span>
-            </div>`).join('');
+            // Host Info
+            if (DOM.mHostName) DOM.mHostName.textContent = prop.name;
+            if (DOM.mHostImage) DOM.mHostImage.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(prop.name)}&background=random&color=fff&size=128`;
+
+            // Gallery Population
+            const gallery = document.getElementById('modalGallery');
+            if (gallery) {
+                const imagesToShow = (prop.images && prop.images.length > 0) ? prop.images : [prop.image_url || CONFIG.DEFAULT_IMAGE];
+                gallery.innerHTML = imagesToShow.map((imgUrl, index) => `
+                    <div class="min-w-full h-full snap-center relative">
+                        <img src="${imgUrl}" class="w-full h-full object-cover" alt="Gallery Image ${index + 1}">
+                    </div>
+                `).join('');
+            }
+
+            DOM.mAmenities.innerHTML = prop.amenities.map(am => {
+                // If 'am' is a string (key), find the object. If it's already an object (legacy/normalized), use it.
+                const data = typeof am === 'string' ? AMENITIES_DATA.find(a => a.key === am) : am;
+                if (!data) return ''; // Skip if unknown
+
+                return `
+                <div class="flex items-center space-x-2 bg-slate-50 p-2 rounded-lg border border-slate-100">
+                    <div class="text-emerald-500"><svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="${data.iconPath}"/></svg></div>
+                    <span class="text-sm font-medium text-gray-700">${data.label}</span>
+                </div>`;
+            }).join('');
 
             DOM.mPricing.innerHTML = prop.monthlyPrices.map(mp => `
             <div class="flex flex-col items-center justify-center bg-white border border-gray-100 rounded-xl p-3 min-w-[80px] shadow-sm">
@@ -1161,54 +1228,91 @@
             setTimeout(() => {
                 DOM.addModal.classList.add('hidden');
                 document.body.classList.remove('no-scroll');
-                // Clear previews and pending files
+                // Clear state and UI
                 State.pendingUploads = [];
-                const previewContainer = document.getElementById('imagePreviewContainer');
-                if (previewContainer) previewContainer.innerHTML = '';
+                renderUploadGrid();
             }, 300);
         };
 
         // --- IMAGE PROCESSING ---
+        // --- IMAGE PROCESSING & GRID ---
         window.handleImageSelection = async function (input) {
             const files = Array.from(input.files);
-            const container = document.getElementById('imagePreviewContainer');
+            if (!files.length) return;
 
-            // Clear previous
-            State.pendingUploads = [];
-            container.innerHTML = '<p class="col-span-full text-center text-gray-400 text-sm py-2">ამუშავებს სურათებს...</p>';
-
-            const processedFiles = [];
-
+            // Process each file
             for (const file of files) {
+                if (State.pendingUploads.length >= 30) {
+                    alert("max 30 images allowed");
+                    break;
+                }
                 try {
                     const processed = await processImage(file);
-                    processedFiles.push(processed);
-
-                    // Add Preview
-                    const reader = new FileReader();
-                    reader.onload = (e) => {
-                        const div = document.createElement('div');
-                        div.className = "relative aspect-square rounded-lg overflow-hidden border border-gray-200 shadow-sm group";
-                        div.innerHTML = `
-                            <img src="${e.target.result}" class="w-full h-full object-cover">
-                            <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white text-xs font-bold">
-                                ${(processed.blob.size / 1024).toFixed(0)}KB
-                            </div>
-                        `;
-                        container.appendChild(div);
-                    };
-                    reader.readAsDataURL(processed.blob);
-
+                    State.pendingUploads.push(processed);
                 } catch (error) {
-                    alert(`ვერ მოხერხდა ${file.name}-ის დამუშავება: ${error.message}`);
+                    console.error("Image processing failed:", error);
+                    alert(`Skipped ${file.name}: ${error.message}`);
                 }
             }
 
-            // Remove loading text
-            const loader = container.querySelector('p');
-            if (loader) loader.remove();
+            input.value = ''; // Reset input to allow re-selecting same file
+            renderUploadGrid();
+        };
 
-            State.pendingUploads = processedFiles;
+        function renderUploadGrid() {
+            const grid = document.getElementById('uploadGrid');
+            if (!grid) return;
+
+            // Keep the "Add" button (first child)
+            const addButton = grid.firstElementChild;
+            grid.innerHTML = '';
+            grid.appendChild(addButton);
+
+            State.pendingUploads.forEach((item, index) => {
+                const div = document.createElement('div');
+                div.className = "relative aspect-square rounded-xl overflow-hidden shadow-sm border border-gray-200 group animate-fade-in";
+
+                // Image
+                const img = document.createElement('img');
+                img.src = URL.createObjectURL(item.blob);
+                img.className = "w-full h-full object-cover";
+
+                // Delete Button
+                const delBtn = document.createElement('button');
+                delBtn.className = "absolute top-1 right-1 bg-red-500 text-white rounded-full p-1 shadow-md opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-600 focus:outline-none";
+                delBtn.innerHTML = `<svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>`;
+                delBtn.onclick = (e) => {
+                    e.stopPropagation(); // Prevent grid click
+                    removeImage(index);
+                };
+
+                // Size Badge
+                const sizeBadge = document.createElement('div');
+                sizeBadge.className = "absolute bottom-1 left-1 bg-black/50 backdrop-blur-sm text-white text-[10px] px-1.5 py-0.5 rounded opacity-0 group-hover:opacity-100 transition-opacity";
+                sizeBadge.textContent = `${(item.blob.size / 1024).toFixed(0)}KB`;
+
+                div.appendChild(img);
+                div.appendChild(delBtn);
+                div.appendChild(sizeBadge);
+
+                // Insert before the add button? No, user requested: "+ button shift to next available".
+                // So typically: [Thumbnail] [Thumbnail] [+]
+                // My logic above cleared grid and re-appended Add Button. 
+                // So I should insert thumbnails BEFORE the Add Button.
+                grid.insertBefore(div, addButton);
+            });
+
+            // Update Add Button visibility or position
+            if (State.pendingUploads.length >= 30) {
+                addButton.classList.add('hidden');
+            } else {
+                addButton.classList.remove('hidden');
+            }
+        }
+
+        window.removeImage = function (index) {
+            State.pendingUploads.splice(index, 1);
+            renderUploadGrid();
         };
 
         function processImage(file) {
@@ -1269,6 +1373,7 @@
             });
         }
 
+        // --- ENHANCED SUBMIT PROPERTY (OVERRIDES PREVIOUS) ---
         window.submitProperty = async function (e) {
             e.preventDefault();
             const btn = e.target.querySelector('button[type="submit"]');
@@ -1277,31 +1382,31 @@
             btn.disabled = true;
 
             try {
-                const fileInput = document.getElementById('addImages');
-                const files = Array.from(fileInput.files);
-
-                if (files.length === 0) throw new Error("მინიმუმ 1 სურათი სავალდებულოა");
-                if (files.length > 30) throw new Error("მაქსიმუმ 30 სურათის ატვირთვაა შესაძლებელი");
+                if (!State.pendingUploads || State.pendingUploads.length === 0) throw new Error("მინიმუმ 1 სურათი სავალდებულოა");
+                if (State.pendingUploads.length > 30) throw new Error("მაქსიმუმ 30 სურათის ატვირთვაა შესაძლებელი");
 
                 const imageUrls = [];
 
-                // Upload each file
-                for (const file of files) {
-                    const fileName = `${Date.now()}_${Math.random().toString(36).substring(7)}_${file.name.replace(/\s+/g, '-')}`;
+                // Sequential Upload with unique names
+                for (const item of State.pendingUploads) {
+                    const file = item.blob;
+                    const uniqueId = Math.random().toString(36).substring(2, 9);
+                    const safeName = file.name.replace(/[^a-zA-Z0-9.-]/g, '');
+                    const fileName = `${Date.now()}_${uniqueId}_${safeName}`;
+
                     const { data: upData, error: upError } = await State.supabase.storage.from('guesthouse statement').upload(fileName, file);
 
                     if (upError) {
                         console.error("Upload failed for", file.name, upError);
-                        continue; // Skip failed uploads or throw error?
+                        continue;
                     }
 
                     const { data: { publicUrl } } = State.supabase.storage.from('guesthouse statement').getPublicUrl(fileName);
                     imageUrls.push(publicUrl);
                 }
 
-                if (imageUrls.length === 0) throw new Error("ვერცერთი სურათი ვერ აიტვირთა");
+                if (imageUrls.length === 0) throw new Error("ვერცერთი სურათი ვერ აიტვირთა. სცადეთ თავიდან.");
 
-                // Collect Amenities
                 const selectedAmenities = Array.from(document.querySelectorAll('input[name="amenities"]:checked')).map(cb => cb.value);
 
                 const newProp = {
@@ -1310,8 +1415,8 @@
                     price: parseInt(document.getElementById('addPrice').value),
                     type: document.getElementById('addType').value,
                     tier: document.getElementById('addTier').value,
-                    image_url: imageUrls[0], // Primary
-                    images: imageUrls, // All
+                    image_url: imageUrls[0],
+                    images: imageUrls,
                     amenities: selectedAmenities,
                     description: document.getElementById('addDescription').value,
                     phone: document.getElementById('addPhone').value,
@@ -1325,7 +1430,7 @@
                 alert("წარმატებით დაემატა!");
                 document.getElementById('addPropertyForm').reset();
                 closeAddModal();
-                fetchProperties(); // Refresh
+                fetchProperties();
             } catch (err) {
                 console.error(err);
                 alert("შეცდომა: " + err.message);
