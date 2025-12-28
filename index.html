@@ -1369,8 +1369,11 @@
         // --- ADD MODAL ---
         // --- ADD MODAL ---
         window.openAddModal = function () {
-            if (!State.user) {
-                // Open Pre-Auth Bridge Modal instead of direct login
+            // If user is logged in -> Redirect to Add Property Page
+            if (State.user) {
+                window.location.href = 'add-property.html';
+            } else {
+                // Not logged in -> Show Bridge Modal (Pre-Auth)
                 const preModal = document.getElementById('preAuthModal');
                 if (preModal) {
                     preModal.classList.remove('hidden');
@@ -1379,16 +1382,7 @@
                         preModal.querySelector('div[class*="transform"]').classList.add('opacity-100', 'scale-100');
                     }, 10);
                 }
-                return;
             }
-
-            DOM.addModal.classList.remove('hidden');
-            setTimeout(() => {
-                DOM.addBackdrop.classList.remove('opacity-0');
-                DOM.addContent.classList.remove('opacity-0', 'scale-95');
-                DOM.addContent.classList.add('modal-enter');
-            }, 10);
-            document.body.classList.add('no-scroll');
         };
 
         window.closePreAuthModal = function () {
