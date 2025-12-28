@@ -110,9 +110,8 @@
     <!-- Navbar -->
     <nav class="fixed top-0 left-0 w-full z-40 transition-all duration-300 py-4" id="navbar">
         <div class="max-w-7xl mx-auto px-4 flex justify-between items-center">
-            <div class="text-white font-bold text-2xl drop-shadow-md tracking-tight pointer-events-none">
-                GeorgiaTravel
-            </div>
+            <img src="images/gh_logo.webp" alt="GeorgiaTravel"
+                class="h-10 max-h-[40px] w-auto drop-shadow-md object-contain pointer-events-none">
             <div class="flex items-center space-x-3">
                 <button onclick="openAddModal()"
                     class="bg-emerald-500/80 hover:bg-emerald-500 backdrop-blur-md text-white font-bold py-2 px-4 rounded-full transition-all shadow-sm flex items-center">
@@ -131,15 +130,16 @@
 
     <!-- Hero Section -->
     <!-- Hero Section Wrapper -->
-    <div class="relative h-[60vh] lg:h-[70vh] w-full">
+    <div class="relative min-h-[85vh] lg:h-[70vh] w-full">
         <!-- Layer 1: Background Image (Bottom) -->
         <div class="hero-bg absolute inset-0 w-full h-full z-0"></div>
 
         <!-- Layer 2: Content (Top) -->
-        <div class="relative z-30 h-full w-full flex flex-col justify-center items-center px-4 pointer-events-none">
+        <div
+            class="relative z-30 h-full w-full flex flex-col justify-center items-center px-4 pt-24 md:pt-0 pointer-events-none">
 
             <!-- Title Text -->
-            <div class="text-center mb-8 fade-in mt-16 pointer-events-auto">
+            <div class="text-center mb-8 fade-in pointer-events-auto">
                 <h1 class="text-4xl md:text-6xl font-bold text-white mb-2 drop-shadow-md tracking-tight">GeorgiaTravel
                 </h1>
                 <p class="text-lg md:text-xl text-white/90 drop-shadow-sm font-medium">აღმოაჩინე შენი იდეალური
@@ -149,7 +149,7 @@
 
             <!-- Search Interface -->
             <div
-                class="glass-panel p-6 rounded-2xl w-full max-w-4xl grid grid-cols-1 md:grid-cols-12 gap-4 fade-in shadow-2xl pointer-events-auto">
+                class="glass-panel p-4 md:p-6 rounded-2xl w-full max-w-4xl grid grid-cols-1 md:grid-cols-12 gap-4 fade-in shadow-2xl pointer-events-auto">
                 <!-- Location -->
                 <div class="md:col-span-5 relative group" id="locationDropdown">
                     <label for="locationInput"
@@ -221,7 +221,7 @@
                 </div>
 
                 <!-- Button (Visual) -->
-                <div class="md:col-span-2 flex items-end">
+                <div class="md:col-span-2 flex items-end mt-2 md:mt-0">
                     <button type="button" onclick="filterProperties()"
                         class="w-full bg-emerald-500 hover:bg-emerald-600 text-white font-bold py-3 px-4 rounded-xl shadow-lg transform transition hover:-translate-y-0.5">Live
                         Filter</button>
