@@ -139,19 +139,57 @@
                     <div class="border-t border-gray-100 my-6"></div>
 
                     <!-- Basic Info -->
+                    <!-- Row 1: Name -->
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div class="group">
-                            <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">სათაური /
+                            <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">
                                 სახელი</label>
-                            <input type="text" name="name" required placeholder="მაგ: მყუდრო კოტეჯი ბაკურიანში"
+                            <input type="text" id="firstName" required placeholder="თქვენი სახელი"
                                 class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:border-amber-500 focus:ring-4 focus:ring-amber-500/10 outline-none transition-all placeholder-gray-400 font-medium text-gray-800">
+                        </div>
+                        <div class="group">
+                            <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">
+                                გვარი</label>
+                            <input type="text" id="lastName" required placeholder="თქვენი გვარი"
+                                class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:border-amber-500 focus:ring-4 focus:ring-amber-500/10 outline-none transition-all placeholder-gray-400 font-medium text-gray-800">
+                        </div>
+                    </div>
+
+                    <!-- Row 2: Location -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="group dropdown-container relative">
+                            <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">
+                                რეგიონი</label>
+                            <div class="relative">
+                                <select id="regionSelect" onchange="handleRegionChange(this.value)"
+                                    class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:border-amber-500 focus:ring-4 focus:ring-amber-500/10 outline-none transition-all appearance-none font-medium text-gray-800 cursor-pointer">
+                                    <option value="">აირჩიეთ რეგიონი...</option>
+                                    <option value="თბილისი">თბილისი</option>
+                                    <option value="აჭარა">აჭარა</option>
+                                    <option value="იმერეთი">იმერეთი</option>
+                                    <option value="კახეთი">კახეთი</option>
+                                    <option value="შიდა ქართლი">შიდა ქართლი</option>
+                                    <option value="ქვემო ქართლი">ქვემო ქართლი</option>
+                                    <option value="მცხეთა-მთიანეთი">მცხეთა-მთიანეთი</option>
+                                    <option value="სამეგრელო-ზემო სვანეთი">სამეგრელო-ზემო სვანეთი</option>
+                                    <option value="სამცხე-ჯავახეთი">სამცხე-ჯავახეთი</option>
+                                    <option value="გურია">გურია</option>
+                                    <option value="რაჭა-ლეჩხუმი და ქვემო სვანეთი">რაჭა-ლეჩხუმი და ქვემო სვანეთი</option>
+                                    <option value="აფხაზეთი">აფხაზეთი</option>
+                                </select>
+                                <svg class="w-5 h-5 text-gray-400 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none"
+                                    fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M19 9l-7 7-7-7" />
+                                </svg>
+                            </div>
                         </div>
 
                         <div class="group dropdown-container relative" id="locationContainer">
-                            <label
-                                class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">ლოკაცია</label>
+                            <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">ქალაქი /
+                                სოფელი</label>
                             <div class="relative">
-                                <input type="text" id="locationSearch" placeholder="აირჩიეთ ქალაქი..."
+                                <input type="text" id="locationSearch" placeholder="აირჩიეთ ან ჩაწერეთ..."
                                     class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:border-amber-500 focus:ring-4 focus:ring-amber-500/10 outline-none transition-all font-medium text-gray-800 cursor-pointer"
                                     autocomplete="off">
                                 <input type="hidden" name="location" id="locationValue" required>
@@ -360,21 +398,165 @@
             supabase: supabaseClient,
             pendingUploads: [],
             user: null,
-            cities: []
+            locations: []
         };
 
         // DOM Elements
         const DOM = {
             fileInput: document.getElementById('fileInput'),
+
+            // Name Inputs
+            firstName: document.getElementById('firstName'),
+            lastName: document.getElementById('lastName'),
+
+            // Location Inputs
             locationSearch: document.getElementById('locationSearch'),
             locationValue: document.getElementById('locationValue'),
             citiesDropdown: document.getElementById('citiesDropdown'),
-            locationContainer: document.getElementById('locationContainer')
+            locationContainer: document.getElementById('locationContainer'),
+            regionSelect: document.getElementById('regionSelect')
         };
+
+        // Comprehensive Locations List
+        const GEORGIAN_LOCATIONS = [
+            // Tbilisi
+            { city: "თბილისი", region: "თბილისი" },
+
+            // Adjara
+            { city: "ბათუმი", region: "აჭარა" },
+            { city: "ქობულეთი", region: "აჭარა" },
+            { city: "ჩაქვი", region: "აჭარა" },
+            { city: "გონიო", region: "აჭარა" },
+            { city: "კვარიათი", region: "აჭარა" },
+            { city: "სარფი", region: "აჭარა" },
+            { city: "მახინჯაური", region: "აჭარა" },
+            { city: "ციხისძირი", region: "აჭარა" },
+            { city: "მწვანე კონცხი", region: "აჭარა" },
+            { city: "ხელვაჩაური", region: "აჭარა" },
+            { city: "ქედა", region: "აჭარა" },
+            { city: "შუახევი", region: "აჭარა" },
+            { city: "ხულო", region: "აჭარა" },
+            { city: "გოდერძი", region: "აჭარა" },
+            { city: "ბეშუმი", region: "აჭარა" },
+
+            // Imereti
+            { city: "ქუთაისი", region: "იმერეთი" },
+            { city: "ზესტაფონი", region: "იმერეთი" },
+            { city: "სამტრედია", region: "იმერეთი" },
+            { city: "ჭიათურა", region: "იმერეთი" },
+            { city: "საჩხერე", region: "იმერეთი" },
+            { city: "ტყიბული", region: "იმერეთი" },
+            { city: "წყალტუბო", region: "იმერეთი" },
+            { city: "ბაღდათი", region: "იმერეთი" },
+            { city: "ვანი", region: "იმერეთი" },
+            { city: "ხონი", region: "იმერეთი" },
+            { city: "თერჯოლა", region: "იმერეთი" },
+            { city: "ხარაგაული", region: "იმერეთი" },
+            { city: "საირმე", region: "იმერეთი" },
+
+            // Kvemo Kartli
+            { city: "რუსთავი", region: "ქვემო ქართლი" },
+            { city: "მარნეული", region: "ქვემო ქართლი" },
+            { city: "გარდაბანი", region: "ქვემო ქართლი" },
+            { city: "ბოლნისი", region: "ქვემო ქართლი" },
+            { city: "დმანისი", region: "ქვემო ქართლი" },
+            { city: "წალკა", region: "ქვემო ქართლი" },
+            { city: "თეთრიწყარო", region: "ქვემო ქართლი" },
+            { city: "მანგლისი", region: "ქვემო ქართლი" },
+
+            // Shida Kartli
+            { city: "გორი", region: "შიდა ქართლი" },
+            { city: "კასპი", region: "შიდა ქართლი" },
+            { city: "ქარელი", region: "შიდა ქართლი" },
+            { city: "ხაშური", region: "შიდა ქართლი" },
+            { city: "სურამი", region: "შიდა ქართლი" },
+            { city: "ატენი", region: "შიდა ქართლი" },
+            { city: "ცხინვალი", region: "შიდა ქართლი" },
+
+            // Samegrelo-Zemo Svaneti
+            { city: "ზუგდიდი", region: "სამეგრელო-ზემო სვანეთი" },
+            { city: "ფოთი", region: "სამეგრელო-ზემო სვანეთი" },
+            { city: "სენაკი", region: "სამეგრელო-ზემო სვანეთი" },
+            { city: "მარტვილი", region: "სამეგრელო-ზემო სვანეთი" },
+            { city: "ხობი", region: "სამეგრელო-ზემო სვანეთი" },
+            { city: "წალენჯიხა", region: "სამეგრელო-ზემო სვანეთი" },
+            { city: "ჩხოროწყუ", region: "სამეგრელო-ზემო სვანეთი" },
+            { city: "აბაშა", region: "სამეგრელო-ზემო სვანეთი" },
+            { city: "ჯვარი", region: "სამეგრელო-ზემო სვანეთი" },
+            { city: "მესტია", region: "სამეგრელო-ზემო სვანეთი" },
+            { city: "უშგული", region: "სამეგრელო-ზემო სვანეთი" },
+            { city: "ანაკლია", region: "სამეგრელო-ზემო სვანეთი" },
+            { city: "განმუხური", region: "სამეგრელო-ზემო სვანეთი" },
+
+            // Kakheti
+            { city: "თელავი", region: "კახეთი" },
+            { city: "გურჯაანი", region: "კახეთი" },
+            { city: "სიღნაღი", region: "კახეთი" },
+            { city: "ყვარელი", region: "კახეთი" },
+            { city: "ახმეტა", region: "კახეთი" },
+            { city: "დედოფლისწყარო", region: "კახეთი" },
+            { city: "ლაგოდეხი", region: "კახეთი" },
+            { city: "საგარეჯო", region: "კახეთი" },
+            { city: "წნორი", region: "კახეთი" },
+            { city: "ომალო", region: "კახეთი" },
+            { city: "წინანდალი", region: "კახეთი" },
+            { city: "ნაფარეული", region: "კახეთი" },
+
+            // Samtskhe-Javakheti
+            { city: "ახალციხე", region: "სამცხე-ჯავახეთი" },
+            { city: "ბორჯომი", region: "სამცხე-ჯავახეთი" },
+            { city: "ბაკურიანი", region: "სამცხე-ჯავახეთი" },
+            { city: "ახალქალაქი", region: "სამცხე-ჯავახეთი" },
+            { city: "ნინოწმინდა", region: "სამცხე-ჯავახეთი" },
+            { city: "ადიგენი", region: "სამცხე-ჯავახეთი" },
+            { city: "ასპინძა", region: "სამცხე-ჯავახეთი" },
+            { city: "აბასთუმანი", region: "სამცხე-ჯავახეთი" },
+            { city: "წაღვერი", region: "სამცხე-ჯავახეთი" },
+            { city: "ლიკანი", region: "სამცხე-ჯავახეთი" },
+            { city: "ვალე", region: "სამცხე-ჯავახეთი" },
+
+            // Mtskheta-Mtianeti
+            { city: "მცხეთა", region: "მცხეთა-მთიანეთი" },
+            { city: "დუშეთი", region: "მცხეთა-მთიანეთი" },
+            { city: "თიანეთი", region: "მცხეთა-მთიანეთი" },
+            { city: "სტეფანწმინდა", region: "მცხეთა-მთიანეთი" }, // ყაზბეგი
+            { city: "გუდაური", region: "მცხეთა-მთიანეთი" },
+            { city: "ფასანაური", region: "მცხეთა-მთიანეთი" },
+            { city: "სნო", region: "მცხეთა-მთიანეთი" },
+            { city: "ჯუთა", region: "მცხეთა-მთიანეთი" },
+            { city: "შატილი", region: "მცხეთა-მთიანეთი" },
+            { city: "ჟინვალი", region: "მცხეთა-მთიანეთი" },
+            { city: "ნატახტარი", region: "მცხეთა-მთიანეთი" },
+
+            // Racha-Lechkhumi
+            { city: "ამბროლაური", region: "რაჭა-ლეჩხუმი და ქვემო სვანეთი" },
+            { city: "ონი", region: "რაჭა-ლეჩხუმი და ქვემო სვანეთი" },
+            { city: "ცაგერი", region: "რაჭა-ლეჩხუმი და ქვემო სვანეთი" },
+            { city: "ლენტეხი", region: "რაჭა-ლეჩხუმი და ქვემო სვანეთი" },
+            { city: "შოვი", region: "რაჭა-ლეჩხუმი და ქვემო სვანეთი" },
+            { city: "უწერა", region: "რაჭა-ლეჩხუმი და ქვემო სვანეთი" },
+            { city: "ნიკორწმინდა", region: "რაჭა-ლეჩხუმი და ქვემო სვანეთი" },
+
+            // Guria
+            { city: "ოზურგეთი", region: "გურია" },
+            { city: "ლანჩხუთი", region: "გურია" },
+            { city: "ჩოხატაური", region: "გურია" },
+            { city: "ურეკი", region: "გურია" },
+            { city: "შეკვეთილი", region: "გურია" },
+            { city: "გრიგოლეთი", region: "გურია" },
+            { city: "ბახმარო", region: "გურია" },
+            { city: "გომისმთა", region: "გურია" },
+
+            // Abkhazia
+            { city: "სოხუმი", region: "აფხაზეთი" },
+            { city: "გაგრა", region: "აფხაზეთი" },
+            { city: "ბიჭვინთა", region: "აფხაზეთი" },
+            { city: "ახალი ათონი", region: "აფხაზეთი" }
+        ];
 
         async function init() {
             // Check Session
-            const { data: { session } } = await supabase.auth.getSession();
+            const { data: { session } } = await supabaseClient.auth.getSession();
 
             if (!session) {
                 window.location.href = 'index.html'; // Redirect to login
@@ -382,67 +564,39 @@
             }
 
             State.user = session.user;
+            State.locations = GEORGIAN_LOCATIONS;
 
-            // Load Cities
-            fetchCities();
+            // Setup Listeners
+            setupCityListeners();
+            calculatePriceRange(); // Initial check
         }
 
-        // --- CITIES SEARCH ---
-        // --- CITIES SEARCH ---
-        async function fetchCities() {
-            try {
-                const response = await fetch('georgian_cities.json');
-                if (!response.ok) throw new Error("JSON fetch failed");
-                const data = await response.json();
-                State.cities = data.cities || data; // Handle {cities: [...]} or [...]
-            } catch (error) {
-                console.warn("Cities fetch failed, using fallback:", error);
-                // Fallback List
-                State.cities = [
-                    { name_ka: "თბილისი", name_en: "Tbilisi" },
-                    { name_ka: "ბათუმი", name_en: "Batumi" },
-                    { name_ka: "ქუთაისი", name_en: "Kutaisi" },
-                    { name_ka: "რუსთავი", name_en: "Rustavi" },
-                    { name_ka: "გორი", name_en: "Gori" },
-                    { name_ka: "ზუგდიდი", name_en: "Zugdidi" },
-                    { name_ka: "ფოთი", name_en: "Poti" },
-                    { name_ka: "ქობულეთი", name_en: "Kobuleti" },
-                    { name_ka: "ბორჯომი", name_en: "Borjomi" },
-                    { name_ka: "თელავი", name_en: "Telavi" }
-                ];
+        // --- LOCATION LOGIC ---
+        function handleRegionChange(region) {
+            // Filter dropdown immediately if open, or just set internal filter state
+            const dropdownOpen = !DOM.citiesDropdown.classList.contains('hidden');
+            if (dropdownOpen) {
+                const term = DOM.locationSearch.value;
+                filterAndRenderCities(term);
             }
-            setupCityListeners();
         }
 
         function setupCityListeners() {
-            const showAllCities = (e) => {
+            const showCities = (e) => {
                 e.stopPropagation();
                 DOM.citiesDropdown.classList.remove('hidden');
                 DOM.citiesDropdown.style.display = 'block';
-                DOM.locationContainer.style.zIndex = '100'; // Critical Fix: Bring container to front
-                renderCitiesDropdown(State.cities);
+                DOM.locationContainer.style.zIndex = '10000';
+                filterAndRenderCities(DOM.locationSearch.value);
             };
 
             // Open on Click AND Focus
-            DOM.locationSearch.addEventListener('click', showAllCities);
-            DOM.locationSearch.addEventListener('focus', showAllCities);
+            DOM.locationSearch.addEventListener('click', showCities);
+            DOM.locationSearch.addEventListener('focus', showCities);
 
             // Filter on Input
             DOM.locationSearch.addEventListener('input', (e) => {
-                const term = e.target.value.toLowerCase();
-                DOM.locationContainer.style.zIndex = '100'; // Ensure front on typing
-
-                if (!term) {
-                    renderCitiesDropdown(State.cities);
-                } else {
-                    const filtered = State.cities.filter(c =>
-                        c.name_ka.toLowerCase().includes(term) ||
-                        c.name_en.toLowerCase().includes(term)
-                    );
-                    renderCitiesDropdown(filtered);
-                }
-                DOM.citiesDropdown.classList.remove('hidden');
-                DOM.citiesDropdown.style.display = 'block';
+                filterAndRenderCities(e.target.value);
             });
 
             // Close on Click Outside
@@ -450,42 +604,63 @@
                 if (!DOM.locationContainer.contains(e.target)) {
                     DOM.citiesDropdown.classList.add('hidden');
                     DOM.citiesDropdown.style.display = 'none';
-                    DOM.locationContainer.style.zIndex = ''; // Reset z-index
+                    DOM.locationContainer.style.zIndex = '';
                 }
             });
         }
 
+        function filterAndRenderCities(term) {
+            let filtered = State.locations;
+
+            // 1. Filter by Region if selected
+            const selectedRegion = DOM.regionSelect.value;
+            if (selectedRegion) {
+                filtered = filtered.filter(l => l.region === selectedRegion);
+            }
+
+            // 2. Filter by Search Term
+            if (term) {
+                filtered = filtered.filter(l => l.city.toLowerCase().includes(term.toLowerCase()));
+            }
+
+            renderCitiesDropdown(filtered);
+        }
+
         function renderCitiesDropdown(cities) {
             DOM.citiesDropdown.innerHTML = '';
-            // Ensure no lingering hidden/display:none on the UL itself if previously set? 
-            // The listener sets it, but good to ensure logic here doesn't hide it.
 
             if (cities.length === 0) {
                 const li = document.createElement('li');
                 li.className = "px-4 py-3 text-sm text-gray-400 text-center";
-                li.textContent = "ქალაქი არ მოიძებნა";
+                li.textContent = "ლოკაცია არ მოიძებნა";
                 DOM.citiesDropdown.appendChild(li);
                 return;
             }
 
-            cities.forEach(city => {
+            cities.forEach(loc => {
                 const li = document.createElement('li');
-                li.className = "px-4 py-3 text-sm text-gray-700 hover:bg-amber-50 hover:text-amber-700 cursor-pointer transition-colors border-b border-gray-50 last:border-0";
-                li.textContent = city.name_ka; // Show Georgian Name
+                li.className = "px-4 py-3 text-sm text-gray-700 hover:bg-amber-50 hover:text-amber-700 cursor-pointer transition-colors border-b border-gray-50 last:border-0 flex justify-between";
+                li.innerHTML = `<span>${loc.city}</span> <span class="text-xs text-gray-400 self-center">${loc.region}</span>`;
                 li.onclick = (e) => {
-                    e.stopPropagation(); // Prevent document click from firing immediately
-                    selectCity(city);
+                    e.stopPropagation(); // Prevent document click
+                    selectCity(loc);
                 };
                 DOM.citiesDropdown.appendChild(li);
             });
         }
 
-        function selectCity(city) {
-            DOM.locationSearch.value = city.name_ka;
-            DOM.locationValue.value = city.name_ka;
+        function selectCity(loc) {
+            DOM.locationSearch.value = loc.city;
+            DOM.locationValue.value = loc.city;
+
+            // Auto-select region
+            if (loc.region) {
+                DOM.regionSelect.value = loc.region;
+            }
+
             DOM.citiesDropdown.classList.add('hidden');
             DOM.citiesDropdown.style.display = 'none';
-            DOM.locationContainer.style.zIndex = ''; // Reset z-index
+            DOM.locationContainer.style.zIndex = '';
         }
 
         // --- IMAGE PROCESSING & GRID ---
@@ -518,23 +693,21 @@
             const addButton = document.getElementById('uploadAddBtn');
             if (!grid || !addButton) return;
 
-            // Remove all existing previews but KEEP the add button
-            // Strategy: Convert button to string, clear innerHTML, restore button?
-            // Better: Select previews and remove them.
+            // Clean existing previews (keep button)
             Array.from(grid.children).forEach(child => {
                 if (child.id !== 'uploadAddBtn') {
                     child.remove();
                 }
             });
 
-            // Insert new previews BEFORE button
+            // Insert new based on State
             State.pendingUploads.forEach((item, index) => {
                 const div = document.createElement('div');
                 div.className = "relative aspect-square rounded-xl overflow-hidden shadow-sm border border-gray-200 group animate-fade-in bg-white";
 
                 const img = document.createElement('img');
                 img.src = URL.createObjectURL(item.blob);
-                img.className = "w-full h-full object-cover";
+                img.className = "w-full h-full object-cover transition-transform duration-500 group-hover:scale-110";
 
                 const delBtn = document.createElement('button');
                 delBtn.className = "absolute top-1 right-1 bg-red-500 text-white rounded-full p-1 shadow-md opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-600 focus:outline-none z-10";
@@ -542,7 +715,6 @@
                 delBtn.type = "button";
                 delBtn.onclick = (e) => { e.stopPropagation(); removeImage(index); };
 
-                // Size Badge
                 const sizeBadge = document.createElement('div');
                 sizeBadge.className = "absolute bottom-1 left-1 bg-black/50 backdrop-blur-sm text-white text-[10px] px-1.5 py-0.5 rounded opacity-0 group-hover:opacity-100 transition-opacity";
                 sizeBadge.textContent = `${(item.blob.size / 1024).toFixed(0)}KB`;
@@ -551,6 +723,7 @@
                 div.appendChild(delBtn);
                 div.appendChild(sizeBadge);
 
+                // Insert before Add Button
                 grid.insertBefore(div, addButton);
             });
 
@@ -594,8 +767,6 @@
 
                     canvas.toBlob((blob) => {
                         if (!blob) { reject(new Error("კონვერტაცია ვერ მოხერხდა")); return; }
-                        //  if (blob.size > MAX_SIZE_MB * 1024 * 1024) ... // Compress more?
-
                         const newFile = new File([blob], file.name.replace(/\.[^/.]+$/, "") + ".webp", { type: "image/webp", lastModified: Date.now() });
                         resolve({ blob: newFile, original: file });
                     }, 'image/webp', 0.8);
@@ -604,7 +775,7 @@
             });
         }
 
-        // --- SEASONAL ---
+        // --- SEASONAL & PRICE LOGIC ---
         window.addSeasonalRow = function () {
             const tbody = document.getElementById('seasonalPricesBody');
             if (!tbody) return;
@@ -650,7 +821,7 @@
             calculatePriceRange(); // Recalc
         };
 
-        // --- PRICE CALCULATION LOGIC ---
+        // --- AUTOMATED PRICE CALCULATION ---
         window.calculatePriceRange = function () {
             const currentMonth = new Date().getMonth(); // 0 = Jan
             let min = Infinity;
@@ -659,8 +830,7 @@
 
             rows.forEach(row => {
                 const inputs = row.querySelectorAll('input[type="number"]');
-                // Format: Jan, Feb, Mar...
-                // inputs[0] is Jan, inputs[11] is Dec
+                // inputs[0] is Jan, inputs[currentMonth] is for current month
                 if (inputs[currentMonth]) {
                     const val = parseInt(inputs[currentMonth].value) || 0;
                     if (val > 0) {
@@ -671,19 +841,21 @@
             });
 
             const priceInput = document.querySelector('input[name="price"]');
-            if (min !== Infinity) {
+            if (!priceInput) return;
+
+            if (min !== Infinity && max !== -Infinity) {
                 if (min === max) {
-                    priceInput.value = min;
+                    priceInput.value = `${min}`;
                 } else {
                     priceInput.value = `${min} - ${max}`;
                 }
             } else {
-                priceInput.value = '';
+                priceInput.value = "";
             }
         };
 
-        // Attach global listener for seasonal inputs for realtime updates
-        document.addEventListener('input', (e) => {
+        // Listen for ANY seasonal input change to recalc
+        document.addEventListener('input', function (e) {
             if (e.target.closest('#seasonalPricesBody') && e.target.type === 'number') {
                 calculatePriceRange();
             }
@@ -692,16 +864,29 @@
         // --- SUBMIT ---
         window.submitProperty = async function (e) {
             e.preventDefault();
-
-            // Re-validate Auth
-            if (!State.user) {
-                alert("გთხოვთ გაიაროთ ავტორიზაცია");
-                window.location.href = 'index.html';
-                return;
-            }
-
             if (State.pendingUploads.length === 0) { alert("გთხოვთ ატვირთოთ მინიმუმ 1 სურათი"); return; }
-            if (!DOM.locationValue.value) { alert("გთხოვთ აირჩიოთ ქალაქი სიიდან"); return; }
+
+            // Super VIP Limit Check
+            const tierValue = document.getElementById('addTier').value;
+            const locationVal = DOM.locationValue.value;
+            if (tierValue === 'super-vip') {
+                const { count, error: countError } = await State.supabase
+                    .from('guesthouse ge')
+                    .select('*', { count: 'exact', head: true })
+                    .eq('location', locationVal)
+                    .eq('tier', 'super-vip');
+
+                if (countError) {
+                    console.error(countError);
+                    alert("ვერ მოხერხდა Super VIP ლიმიტის შემოწმება");
+                    return;
+                }
+
+                if (count >= 1) {
+                    alert(`ქალაქში "${locationVal}" უკვე არის 1 Super VIP განცხადება. გთხოვთ აირჩიოთ სხვა პაკეტი.`);
+                    return;
+                }
+            }
 
             const btn = e.target.querySelector('button[type="submit"]');
             const origText = btn.innerHTML;
@@ -714,12 +899,10 @@
                 const uploadedUrls = [];
                 for (let i = 0; i < State.pendingUploads.length; i++) {
                     const item = State.pendingUploads[i];
-                    const uniqueId = Math.random().toString(36).substring(2, 9);
-                    const fileName = `${Date.now()}_${uniqueId}.webp`;
-
+                    const fileName = `${Date.now()}_${i}_${Math.random().toString(36).substr(2, 9)}.webp`;
                     const { data, error } = await State.supabase.storage
                         .from('guesthouse statement')
-                        .upload(fileName, item.blob, { contentType: 'image/webp' });
+                        .upload(fileName, item.blob);
 
                     if (error) throw error;
 
@@ -740,18 +923,29 @@
                     if (label) seasonal_prices.push({ label, prices });
                 });
 
-                const priceValue = formData.get('price');
-                let parsedPrice = 0;
-                if (priceValue) {
-                    const priceParts = priceValue.split(' - ');
-                    parsedPrice = parseInt(priceParts[0]) || 0; // Take the min value if it's a range
+                // Name concatenation
+                const firstName = document.getElementById('firstName').value.trim();
+                const lastName = document.getElementById('lastName').value.trim();
+                const fullName = `${firstName} ${lastName}`;
+
+                // Handle Price (Min vs Range)
+                let priceRaw = formData.get('price'); // e.g., "40 - 60" or "40"
+                let finalPrice = 0;
+                let priceDisplay = priceRaw;
+
+                if (priceRaw.includes('-')) {
+                    const parts = priceRaw.split('-').map(p => parseInt(p.trim()));
+                    finalPrice = Math.min(...parts); // Store min for sorting
+                } else {
+                    finalPrice = parseInt(priceRaw) || 0;
                 }
 
                 const newProp = {
                     user_id: userId,
-                    name: formData.get('name'),
-                    location: DOM.locationValue.value,
-                    price: parsedPrice,
+                    name: fullName, // Concatenated Name
+                    location: formData.get('location'), // Allow custom manual input if user typed one
+                    price: finalPrice,
+                    price_display: priceDisplay, // Optional col if exists, good for storing range string
                     type: formData.get('type'),
                     tier: formData.get('tier'),
                     description: formData.get('description'),
@@ -759,28 +953,29 @@
                     images: uploadedUrls,
                     phone: formData.get('phone'),
                     seasonal_prices: seasonal_prices,
-                    rating: 5.0,
-                    reviews: 0,
-                    created_at: new Date().toISOString()
+                    rating: 5.0
                 };
 
                 const { error: insertError } = await State.supabase.from('guesthouse ge').insert([newProp]);
                 if (insertError) throw insertError;
 
                 // Success
+                e.target.reset();
+                State.pendingUploads = [];
+                renderUploadGrid();
                 alert("განცხადება წარმატებით დაემატა!");
                 window.location.href = 'profile.html';
 
             } catch (err) {
                 console.error(err);
                 alert("შეცდომა: " + err.message);
+            } finally {
                 btn.innerHTML = origText;
                 btn.disabled = false;
             }
         };
 
         init();
-
     </script>
 </body>
 
