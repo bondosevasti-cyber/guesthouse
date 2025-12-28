@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="ka">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ტარიფები - GeorgiaTravel</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Georgian:wght@400;500;600;700&display=swap"
+        rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Noto Sans Georgian', sans-serif;
+        }
+
+        /* Custom Toggles */
+        .toggle-checkbox:checked {
+            right: 0;
+            border-color: #f59e0b;
+        }
+
+        .toggle-checkbox:checked+.toggle-label {
+            background-color: #f59e0b;
+        }
+
+        .price-card {
+            transition: all 0.3s ease;
+        }
+
+        .price-card:hover {
+            transform: translateY(-5px);
+        }
+    </style>
+</head>
+
+<body class="bg-gray-50 text-gray-800">
+
+    <!-- Navbar -->
+    <nav class="fixed top-0 left-0 w-full z-40 bg-white shadow-md py-3 transition-all duration-300">
+        <div class="max-w-7xl mx-auto px-4 flex justify-between items-center">
+            <a href="index.html">
+                <img src="images/gh_logo.webp" alt="GeorgiaTravel"
+                    class="h-10 max-h-[40px] w-auto drop-shadow-md object-contain">
+            </a>
+            <a href="index.html"
+                class="bg-gray-100 hover:bg-gray-200 text-gray-800 font-bold py-2 px-6 rounded-full transition-all shadow-sm">
+                უკან დაბრუნება
+            </a>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="max-w-7xl mx-auto px-4 py-24 sm:px-6 lg:px-8">
+        <div class="text-center max-w-3xl mx-auto mb-16">
+            <h1 class="text-4xl font-bold text-gray-900 mb-4 sm:text-5xl">აირჩიეთ თქვენთვის სასურველი გეგმა</h1>
+            <p class="text-xl text-gray-500 mb-8">გაზარდეთ თქვენი შემოსავალი ჩვენი პლატფორმის დახმარებით</p>
+
+            <!-- Billing Toggle -->
+            <div class="flex items-center justify-center space-x-4">
+                <span class="text-base font-semibold text-gray-900" id="monthlyLabel">თვიური</span>
+                <div class="relative inline-block w-14 mr-2 align-middle select-none transition duration-200 ease-in">
+                    <input type="checkbox" name="toggle" id="billingToggle"
+                        class="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 appearance-none cursor-pointer top-0 left-0 transition-all duration-300 ease-in-out border-gray-300 shadow-sm"
+                        style="top: 2px; left: 2px;">
+                    <label for="billingToggle"
+                        class="toggle-label block overflow-hidden h-7 rounded-full bg-gray-300 cursor-pointer transition-colors duration-300"></label>
+                </div>
+                <span class="text-base font-semibold text-gray-500" id="yearlyLabel">წლიური <span
+                        class="text-amber-500 text-xs font-bold tracking-wide uppercase">(12 თვე)</span></span>
+            </div>
+        </div>
+
+        <!-- Pricing Grid -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 items-start">
+
+            <!-- Free -->
+            <div
+                class="price-card bg-white rounded-3xl shadow-sm border border-gray-100 p-6 flex flex-col h-full relative">
+                <div class="mb-4">
+                    <span
+                        class="inline-block px-3 py-1 text-xs font-bold tracking-wider text-gray-500 bg-gray-100 rounded-full uppercase">Basic</span>
+                </div>
+                <h2 class="text-2xl font-bold text-gray-900 mb-2">უფასო</h2>
+                <div class="text-4xl font-bold text-gray-900 mb-6 price-display">
+                    0₾<span class="text-lg text-gray-400 font-medium">/თვე</span>
+                </div>
+                <ul class="space-y-4 mb-8 flex-1">
+                    <li class="flex items-start text-gray-600 text-sm">
+                        <svg class="w-5 h-5 mr-2 text-green-500 flex-shrink-0" fill="none" viewBox="0 0 24 24"
+                            stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                        </svg>
+                        სტანდარტული განცხადება
+                    </li>
+                    <li class="flex items-start text-gray-600 text-sm">
+                        <svg class="w-5 h-5 mr-2 text-green-500 flex-shrink-0" fill="none" viewBox="0 0 24 24"
+                            stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                        </svg>
+                        მართვის პანელი
+                    </li>
+                    <li class="flex items-start text-gray-600 text-sm">
+                        <svg class="w-5 h-5 mr-2 text-green-500 flex-shrink-0" fill="none" viewBox="0 0 24 24"
+                            stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                        </svg>
+                        კალენდარი
+                    </li>
+                </ul>
+                <button
+                    class="w-full block bg-gray-100 hover:bg-gray-200 text-gray-800 font-bold py-3 rounded-xl transition-colors">
+                    არჩევა
+                </button>
+            </div>
+
+            <!-- Regular -->
+            <div
+                class="price-card bg-white rounded-3xl shadow-sm border border-gray-100 p-6 flex flex-col h-full relative">
+                <div class="mb-4">
+                    <span
+                        class="inline-block px-3 py-1 text-xs font-bold tracking-wider text-amber-600 bg-amber-50 rounded-full uppercase">Standard</span>
+                </div>
+                <h2 class="text-2xl font-bold text-gray-900 mb-2">Regular</h2>
+                <div class="text-4xl font-bold text-gray-900 mb-6 price-display" data-monthly="20" data-yearly="200">
+                    20₾<span class="text-lg text-gray-400 font-medium">/თვე</span>
+                </div>
+                <ul class="space-y-4 mb-8 flex-1">
+                    <li class="flex items-start text-gray-600 text-sm">
+                        <svg class="w-5 h-5 mr-2 text-amber-500 flex-shrink-0" fill="none" viewBox="0 0 24 24"
+                            stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                        </svg>
+                        ყველაფერი რაც არის უფასოში
+                    </li>
+                    <li class="flex items-start text-gray-600 text-sm">
+                        <svg class="w-5 h-5 mr-2 text-amber-500 flex-shrink-0" fill="none" viewBox="0 0 24 24"
+                            stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                        </svg>
+                        სტანდარტული ჩამონათვალი
+                    </li>
+                </ul>
+                <button
+                    class="w-full block bg-amber-100 hover:bg-amber-200 text-amber-800 font-bold py-3 rounded-xl transition-colors">
+                    არჩევა
+                </button>
+            </div>
+
+            <!-- VIP -->
+            <div
+                class="price-card bg-white rounded-3xl shadow-lg border-2 border-amber-400 p-6 flex flex-col h-full relative transform scale-105 z-10">
+                <div class="absolute -top-4 left-1/2 transform -translate-x-1/2">
+                    <span
+                        class="bg-amber-500 text-white text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider shadow-md">Popular</span>
+                </div>
+                <div class="mb-4 mt-2">
+                    <span
+                        class="inline-block px-3 py-1 text-xs font-bold tracking-wider text-amber-700 bg-amber-100 rounded-full uppercase">VIP</span>
+                </div>
+                <h2 class="text-2xl font-bold text-gray-900 mb-2">VIP</h2>
+                <div class="text-4xl font-bold text-gray-900 mb-6 price-display" data-monthly="30" data-yearly="300">
+                    30₾<span class="text-lg text-gray-400 font-medium">/თვე</span>
+                </div>
+                <ul class="space-y-4 mb-8 flex-1">
+                    <li class="flex items-start text-gray-600 text-sm">
+                        <svg class="w-5 h-5 mr-2 text-amber-500 flex-shrink-0" fill="none" viewBox="0 0 24 24"
+                            stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                        </svg>
+                        პრიორიტეტული ჩვენება
+                    </li>
+                    <li class="flex items-start text-gray-600 text-sm">
+                        <svg class="w-5 h-5 mr-2 text-amber-500 flex-shrink-0" fill="none" viewBox="0 0 24 24"
+                            stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                        </svg>
+                        ჩვეულებრივზე მეტი ხილვადობა
+                    </li>
+                </ul>
+                <button
+                    class="w-full block bg-amber-500 hover:bg-amber-600 text-white font-bold py-3 rounded-xl transition-colors shadow-lg shadow-amber-200">
+                    არჩევა
+                </button>
+            </div>
+
+            <!-- VIP + -->
+            <div
+                class="price-card bg-gradient-to-br from-indigo-50 to-white rounded-3xl shadow-sm border border-indigo-100 p-6 flex flex-col h-full relative">
+                <div class="mb-4">
+                    <span
+                        class="inline-block px-3 py-1 text-xs font-bold tracking-wider text-indigo-600 bg-indigo-100 rounded-full uppercase">VIP
+                        +</span>
+                </div>
+                <h2 class="text-2xl font-bold text-gray-900 mb-2">VIP +</h2>
+                <div class="text-4xl font-bold text-gray-900 mb-6 price-display" data-monthly="33" data-yearly="330">
+                    33₾<span class="text-lg text-gray-400 font-medium">/თვე</span>
+                </div>
+                <ul class="space-y-4 mb-8 flex-1">
+                    <li class="flex items-start text-gray-600 text-sm">
+                        <svg class="w-5 h-5 mr-2 text-indigo-500 flex-shrink-0" fill="none" viewBox="0 0 24 24"
+                            stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                        </svg>
+                        მაღალი პრიორიტეტი
+                    </li>
+                    <li class="flex items-start text-gray-600 text-sm">
+                        <svg class="w-5 h-5 mr-2 text-indigo-500 flex-shrink-0" fill="none" viewBox="0 0 24 24"
+                            stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                        </svg>
+                        ვიზუალური თემები (ჩარჩოები)
+                    </li>
+                </ul>
+                <button
+                    class="w-full block bg-indigo-500 hover:bg-indigo-600 text-white font-bold py-3 rounded-xl transition-colors shadow-lg shadow-indigo-200">
+                    არჩევა
+                </button>
+            </div>
+
+            <!-- Super VIP -->
+            <div
+                class="price-card bg-gray-900 rounded-3xl shadow-xl border border-gray-800 p-6 flex flex-col h-full relative text-white">
+                <div class="mb-4">
+                    <span
+                        class="inline-block px-3 py-1 text-xs font-bold tracking-wider text-yellow-400 bg-gray-800 rounded-full uppercase border border-yellow-400/30">Exclusive</span>
+                </div>
+                <h2 class="text-2xl font-bold text-white mb-2">Super VIP</h2>
+                <div class="text-4xl font-bold text-white mb-6 price-display" data-monthly="60" data-yearly="550">
+                    60₾<span class="text-lg text-gray-400 font-medium">/თვე</span>
+                </div>
+                <ul class="space-y-4 mb-8 flex-1">
+                    <li class="flex items-start text-gray-300 text-sm">
+                        <svg class="w-5 h-5 mr-2 text-yellow-500 flex-shrink-0" fill="none" viewBox="0 0 24 24"
+                            stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                        </svg>
+                        უმაღლესი პრიორიტეტი (მუდმივად ზემოთ)
+                    </li>
+                    <li class="flex items-start text-gray-300 text-sm">
+                        <svg class="w-5 h-5 mr-2 text-yellow-500 flex-shrink-0" fill="none" viewBox="0 0 24 24"
+                            stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                        </svg>
+                        მხოლოდ 1 განცხადება ქალაქში
+                    </li>
+                </ul>
+                <button
+                    class="w-full block bg-gradient-to-r from-yellow-400 to-amber-500 hover:from-yellow-300 hover:to-amber-400 text-gray-900 font-bold py-3 rounded-xl transition-colors shadow-lg">
+                    არჩევა
+                </button>
+            </div>
+
+        </div>
+    </main>
+
+    <script>
+        const billingToggle = document.getElementById('billingToggle');
+        const priceDisplays = document.querySelectorAll('.price-display');
+
+        billingToggle.addEventListener('change', function () {
+            const isYearly = this.checked;
+
+            // Update labels
+            document.getElementById('monthlyLabel').classList.toggle('text-gray-900', !isYearly);
+            document.getElementById('monthlyLabel').classList.toggle('text-gray-500', isYearly);
+            document.getElementById('yearlyLabel').classList.toggle('text-gray-500', !isYearly);
+            document.getElementById('yearlyLabel').classList.toggle('text-gray-900', isYearly);
+
+            // Update prices
+            priceDisplays.forEach(display => {
+                const monthly = display.getAttribute('data-monthly');
+                const yearly = display.getAttribute('data-yearly');
+
+                if (monthly && yearly) {
+                    if (isYearly) {
+                        display.innerHTML = `${yearly}₾<span class="text-lg text-gray-400 font-medium">/წელი</span>`;
+                    } else {
+                        display.innerHTML = `${monthly}₾<span class="text-lg text-gray-400 font-medium">/თვე</span>`;
+                    }
+                }
+            });
+        });
+    </script>
+</body>
+
+</html>
