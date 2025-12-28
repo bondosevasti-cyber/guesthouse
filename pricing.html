@@ -15,12 +15,31 @@
 
         /* Custom Toggles */
         .toggle-checkbox:checked {
-            right: 0;
+            transform: translateX(100%);
+            border-color: #10b981;
+            /* Green for Yearly/Savings */
+        }
+
+        .toggle-checkbox:not(:checked) {
             border-color: #f59e0b;
+            /* Amber for Monthly */
         }
 
         .toggle-checkbox:checked+.toggle-label {
-            background-color: #f59e0b;
+            background-color: #d1fae5;
+            /* Light Green */
+        }
+
+        /* Smooth Fade for Numbers */
+        .fade-enter {
+            opacity: 0;
+            transform: translateY(5px);
+        }
+
+        .fade-enter-active {
+            opacity: 1;
+            transform: translateY(0);
+            transition: opacity 0.3s ease, transform 0.3s ease;
         }
 
         .price-card {
@@ -36,7 +55,7 @@
 <body class="bg-gray-50 text-gray-800">
 
     <!-- Navbar -->
-    <nav class="fixed top-0 left-0 w-full z-40 bg-white shadow-md py-3 transition-all duration-300">
+    <nav class="fixed top-0 left-0 w-full z-40 bg-white shadow-md py-3 transition-all duration-300" id="navbar">
         <div class="max-w-7xl mx-auto px-4 flex justify-between items-center">
             <a href="index.html">
                 <img src="images/gh_logo.webp" alt="GeorgiaTravel"
@@ -49,6 +68,27 @@
         </div>
     </nav>
 
+    <!-- Mobile Sticky Toggle Bar (Initially Hidden) -->
+    <div id="stickyToggleBar"
+        class="fixed top-[64px] left-0 w-full bg-white/95 backdrop-blur-md shadow-md z-30 transform -translate-y-full transition-transform duration-300 md:hidden flex justify-center py-3 border-b border-gray-100">
+        <div class="flex items-center space-x-4">
+            <span class="text-xs font-bold text-gray-900" id="stickyMonthlyLabel"
+                onclick="setBilling('monthly')">თვიური</span>
+            <div class="relative inline-block w-12 align-middle select-none transition duration-200 ease-in">
+                <input type="checkbox" id="stickyBillingToggle"
+                    class="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-2 appearance-none cursor-pointer inset-y-0 left-0 transition-transform duration-300 ease-in-out border-amber-500 shadow-sm transform translate-x-0 focus:outline-none">
+                <label for="stickyBillingToggle"
+                    class="toggle-label block overflow-hidden h-6 rounded-full bg-amber-100 cursor-pointer transition-colors duration-300"></label>
+            </div>
+            <span class="text-xs font-bold text-gray-500 flex items-center" id="stickyYearlyLabel"
+                onclick="setBilling('yearly')">
+                წლიური
+                <span
+                    class="ml-1 bg-green-100 text-green-700 text-[9px] font-extrabold px-1.5 py-0.5 rounded-full uppercase">-15%</span>
+            </span>
+        </div>
+    </div>
+
     <!-- Main Content -->
     <main class="max-w-7xl mx-auto px-4 py-24 sm:px-6 lg:px-8">
         <div class="text-center max-w-3xl mx-auto mb-16">
@@ -56,17 +96,26 @@
             <p class="text-xl text-gray-500 mb-8">გაზარდეთ თქვენი შემოსავალი ჩვენი პლატფორმის დახმარებით</p>
 
             <!-- Billing Toggle -->
-            <div class="flex items-center justify-center space-x-4">
-                <span class="text-base font-semibold text-gray-900" id="monthlyLabel">თვიური</span>
-                <div class="relative inline-block w-14 mr-2 align-middle select-none transition duration-200 ease-in">
+            <div
+                class="flex items-center justify-center space-x-6 bg-white p-2 rounded-full shadow-sm inline-flex border border-gray-100">
+                <span class="text-sm font-bold text-gray-900 transition-colors duration-300 cursor-pointer select-none"
+                    id="monthlyLabel" onclick="setBilling('monthly')">თვიური</span>
+
+                <div class="relative inline-block w-16 align-middle select-none transition duration-200 ease-in">
                     <input type="checkbox" name="toggle" id="billingToggle"
-                        class="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 appearance-none cursor-pointer top-0 left-0 transition-all duration-300 ease-in-out border-gray-300 shadow-sm"
-                        style="top: 2px; left: 2px;">
+                        class="toggle-checkbox absolute block w-8 h-8 rounded-full bg-white border-4 appearance-none cursor-pointer inset-y-0 left-0 transition-transform duration-300 ease-in-out border-amber-500 shadow-md transform translate-x-0 z-10 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-offset-2">
                     <label for="billingToggle"
-                        class="toggle-label block overflow-hidden h-7 rounded-full bg-gray-300 cursor-pointer transition-colors duration-300"></label>
+                        class="toggle-label block overflow-hidden h-8 rounded-full bg-amber-100 cursor-pointer transition-colors duration-300"></label>
                 </div>
-                <span class="text-base font-semibold text-gray-500" id="yearlyLabel">წლიური <span
-                        class="text-amber-500 text-xs font-bold tracking-wide uppercase">(12 თვე)</span></span>
+
+                <span
+                    class="text-sm font-bold text-gray-500 transition-colors duration-300 cursor-pointer select-none flex items-center"
+                    id="yearlyLabel" onclick="setBilling('yearly')">
+                    წლიური
+                    <span
+                        class="ml-2 bg-green-100 text-green-700 text-[10px] font-extrabold px-2 py-0.5 rounded-full tracking-wide uppercase whitespace-nowrap shadow-sm border border-green-200">დაზოგე
+                        15%+</span>
+                </span>
             </div>
         </div>
 
@@ -90,25 +139,18 @@
                             stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
                         </svg>
-                        სტანდარტული განცხადება
+                        ჯავშნის ცხრილის მართვა
                     </li>
                     <li class="flex items-start text-gray-600 text-sm">
                         <svg class="w-5 h-5 mr-2 text-green-500 flex-shrink-0" fill="none" viewBox="0 0 24 24"
                             stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
                         </svg>
-                        მართვის პანელი
-                    </li>
-                    <li class="flex items-start text-gray-600 text-sm">
-                        <svg class="w-5 h-5 mr-2 text-green-500 flex-shrink-0" fill="none" viewBox="0 0 24 24"
-                            stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-                        </svg>
-                        კალენდარი
+                        საიტის გამოყენება როგორც კლიენტი
                     </li>
                 </ul>
-                <button
-                    class="w-full block bg-gray-100 hover:bg-gray-200 text-gray-800 font-bold py-3 rounded-xl transition-colors">
+                <button onclick="selectPlan('Free')"
+                    class="w-full block bg-gray-100 hover:bg-gray-200 text-gray-800 font-bold py-3 rounded-xl transition-colors transform active:scale-95">
                     არჩევა
                 </button>
             </div>
@@ -137,11 +179,18 @@
                             stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
                         </svg>
-                        სტანდარტული ჩამონათვალი
+                        ერთი განცხადება უფასოდ
+                    </li>
+                    <li class="flex items-start text-gray-600 text-sm">
+                        <svg class="w-5 h-5 mr-2 text-amber-500 flex-shrink-0" fill="none" viewBox="0 0 24 24"
+                            stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                        </svg>
+                        ყველაფერი რაც უფასოშია
                     </li>
                 </ul>
-                <button
-                    class="w-full block bg-amber-100 hover:bg-amber-200 text-amber-800 font-bold py-3 rounded-xl transition-colors">
+                <button onclick="selectPlan('Regular')"
+                    class="w-full block bg-amber-100 hover:bg-amber-200 text-amber-800 font-bold py-3 rounded-xl transition-colors transform active:scale-95">
                     არჩევა
                 </button>
             </div>
@@ -174,49 +223,28 @@
                             stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
                         </svg>
-                        ჩვეულებრივზე მეტი ხილვადობა
+                        Regular პაკეტის განცხადებებზე უფრო მაღლა განთავსება
                     </li>
-                </ul>
-                <button
-                    class="w-full block bg-amber-500 hover:bg-amber-600 text-white font-bold py-3 rounded-xl transition-colors shadow-lg shadow-amber-200">
-                    არჩევა
-                </button>
-            </div>
-
-            <!-- VIP + -->
-            <div
-                class="price-card bg-gradient-to-br from-indigo-50 to-white rounded-3xl shadow-sm border border-indigo-100 p-6 flex flex-col h-full relative">
-                <div class="mb-4">
-                    <span
-                        class="inline-block px-3 py-1 text-xs font-bold tracking-wider text-indigo-600 bg-indigo-100 rounded-full uppercase">VIP
-                        +</span>
-                </div>
-                <h2 class="text-2xl font-bold text-gray-900 mb-2">VIP +</h2>
-                <div class="text-4xl font-bold text-gray-900 mb-6 price-display" data-monthly="33" data-yearly="330">
-                    33₾<span class="text-lg text-gray-400 font-medium">/თვე</span>
-                </div>
-                <ul class="space-y-4 mb-8 flex-1">
                     <li class="flex items-start text-gray-600 text-sm">
-                        <svg class="w-5 h-5 mr-2 text-indigo-500 flex-shrink-0" fill="none" viewBox="0 0 24 24"
+                        <svg class="w-5 h-5 mr-2 text-amber-500 flex-shrink-0" fill="none" viewBox="0 0 24 24"
                             stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
                         </svg>
-                        მაღალი პრიორიტეტი
+                        ერთი განცხადება უფასოდ
                     </li>
                     <li class="flex items-start text-gray-600 text-sm">
-                        <svg class="w-5 h-5 mr-2 text-indigo-500 flex-shrink-0" fill="none" viewBox="0 0 24 24"
+                        <svg class="w-5 h-5 mr-2 text-amber-500 flex-shrink-0" fill="none" viewBox="0 0 24 24"
                             stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
                         </svg>
-                        ვიზუალური თემები (ჩარჩოები)
+                        ყველაფერი რაც უფაასოშია
                     </li>
                 </ul>
-                <button
-                    class="w-full block bg-indigo-500 hover:bg-indigo-600 text-white font-bold py-3 rounded-xl transition-colors shadow-lg shadow-indigo-200">
+                <button onclick="selectPlan('VIP')"
+                    class="w-full block bg-amber-500 hover:bg-amber-600 text-white font-bold py-3 rounded-xl transition-colors shadow-lg shadow-amber-200 transform active:scale-95">
                     არჩევა
                 </button>
             </div>
-
             <!-- Super VIP -->
             <div
                 class="price-card bg-gray-900 rounded-3xl shadow-xl border border-gray-800 p-6 flex flex-col h-full relative text-white">
@@ -225,8 +253,8 @@
                         class="inline-block px-3 py-1 text-xs font-bold tracking-wider text-yellow-400 bg-gray-800 rounded-full uppercase border border-yellow-400/30">Exclusive</span>
                 </div>
                 <h2 class="text-2xl font-bold text-white mb-2">Super VIP</h2>
-                <div class="text-4xl font-bold text-white mb-6 price-display" data-monthly="60" data-yearly="550">
-                    60₾<span class="text-lg text-gray-400 font-medium">/თვე</span>
+                <div class="text-4xl font-bold text-white mb-6 price-display" data-monthly="60" data-yearly="400">
+                    40₾<span class="text-lg text-gray-400 font-medium">/თვე</span>
                 </div>
                 <ul class="space-y-4 mb-8 flex-1">
                     <li class="flex items-start text-gray-300 text-sm">
@@ -234,18 +262,32 @@
                             stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
                         </svg>
-                        უმაღლესი პრიორიტეტი (მუდმივად ზემოთ)
+                        ყველაფერი რაც Regular & VIP პაკეტების განცხადებაშია
                     </li>
                     <li class="flex items-start text-gray-300 text-sm">
                         <svg class="w-5 h-5 mr-2 text-yellow-500 flex-shrink-0" fill="none" viewBox="0 0 24 24"
                             stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
                         </svg>
-                        მხოლოდ 1 განცხადება ქალაქში
+                        უმაღლესი უპირატესობა, ნომერ პირველი განცხადება ჩამონათვალში
+                    </li>
+                    <li class="flex items-start text-gray-300 text-sm">
+                        <svg class="w-5 h-5 mr-2 text-yellow-500 flex-shrink-0" fill="none" viewBox="0 0 24 24"
+                            stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                        </svg>
+                        მხოლოდ ერთ მასპინძელი მოიპოვებს ერთი ქალაქიდან
+                    </li>
+                    <li class="flex items-start text-gray-300 text-sm">
+                        <svg class="w-5 h-5 mr-2 text-yellow-500 flex-shrink-0" fill="none" viewBox="0 0 24 24"
+                            stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                        </svg>
+                        განცხადების ვიზუალური გაფორმება
                     </li>
                 </ul>
-                <button
-                    class="w-full block bg-gradient-to-r from-yellow-400 to-amber-500 hover:from-yellow-300 hover:to-amber-400 text-gray-900 font-bold py-3 rounded-xl transition-colors shadow-lg">
+                <button onclick="selectPlan('SuperVIP')"
+                    class="w-full block bg-gradient-to-r from-yellow-400 to-amber-500 hover:from-yellow-300 hover:to-amber-400 text-gray-900 font-bold py-3 rounded-xl transition-colors shadow-lg transform active:scale-95">
                     არჩევა
                 </button>
             </div>
@@ -255,31 +297,115 @@
 
     <script>
         const billingToggle = document.getElementById('billingToggle');
+        const stickyBillingToggle = document.getElementById('stickyBillingToggle'); // New
+        const stickyToggleBar = document.getElementById('stickyToggleBar'); // New
         const priceDisplays = document.querySelectorAll('.price-display');
 
-        billingToggle.addEventListener('change', function () {
-            const isYearly = this.checked;
+        // Labels
+        const monthlyLabel = document.getElementById('monthlyLabel');
+        const yearlyLabel = document.getElementById('yearlyLabel');
+        const stickyMonthlyLabel = document.getElementById('stickyMonthlyLabel');
+        const stickyYearlyLabel = document.getElementById('stickyYearlyLabel');
 
-            // Update labels
-            document.getElementById('monthlyLabel').classList.toggle('text-gray-900', !isYearly);
-            document.getElementById('monthlyLabel').classList.toggle('text-gray-500', isYearly);
-            document.getElementById('yearlyLabel').classList.toggle('text-gray-500', !isYearly);
-            document.getElementById('yearlyLabel').classList.toggle('text-gray-900', isYearly);
+        // Helper to forcefully set billing
+        window.setBilling = function (cycle) {
+            if (cycle === 'yearly') {
+                billingToggle.checked = true;
+            } else {
+                billingToggle.checked = false;
+            }
+            toggleBilling();
+        }
 
-            // Update prices
+        function toggleBilling() {
+            // Determine source of truth (sync both toggles)
+            // If explicit arg wasn't passed, we assume billingToggle is source. 
+            // Better: 'change' event syncs them.
+
+            const isYearly = billingToggle.checked;
+
+            // Sync Sticky
+            if (stickyBillingToggle) stickyBillingToggle.checked = isYearly;
+
+            // Update labels styling with transitions
+            if (isYearly) {
+                monthlyLabel.classList.replace('text-gray-900', 'text-gray-400');
+                yearlyLabel.classList.replace('text-gray-500', 'text-gray-900');
+                // Sticky labels
+                stickyMonthlyLabel.classList.replace('text-gray-900', 'text-gray-400');
+                stickyYearlyLabel.classList.replace('text-gray-500', 'text-gray-900');
+            } else {
+                monthlyLabel.classList.replace('text-gray-400', 'text-gray-900');
+                yearlyLabel.classList.replace('text-gray-900', 'text-gray-500');
+                // Sticky labels
+                stickyMonthlyLabel.classList.replace('text-gray-400', 'text-gray-900');
+                stickyYearlyLabel.classList.replace('text-gray-900', 'text-gray-500');
+            }
+
+            // Update prices with fade effect
             priceDisplays.forEach(display => {
                 const monthly = display.getAttribute('data-monthly');
                 const yearly = display.getAttribute('data-yearly');
 
                 if (monthly && yearly) {
-                    if (isYearly) {
-                        display.innerHTML = `${yearly}₾<span class="text-lg text-gray-400 font-medium">/წელი</span>`;
-                    } else {
-                        display.innerHTML = `${monthly}₾<span class="text-lg text-gray-400 font-medium">/თვე</span>`;
-                    }
+                    // Start fade out
+                    display.style.opacity = '0.5';
+                    display.style.transform = 'translateY(-2px)';
+
+                    setTimeout(() => {
+                        if (isYearly) {
+                            display.innerHTML = `${yearly}₾<span class="text-lg text-gray-400 font-medium ml-1">/წელი</span>`;
+                        } else {
+                            display.innerHTML = `${monthly}₾<span class="text-lg text-gray-400 font-medium ml-1">/თვე</span>`;
+                        }
+                        // Fade in
+                        display.style.opacity = '1';
+                        display.style.transform = 'translateY(0)';
+                    }, 150);
                 }
             });
+        }
+
+        function selectPlan(planName) {
+            const isYearly = billingToggle.checked;
+            const cycle = isYearly ? 'yearly' : 'monthly';
+            const priceEl = document.querySelector(`.price-card h2:contains('${planName}')`)?.nextElementSibling; // Just logic idea, better to pass explicit data if possible or capture robustly.
+
+            // Simpler: Map plan names to raw values or correct storage
+            console.log(`Selected Plan: ${planName}, Cycle: ${cycle}`);
+
+            // Store in LocalStorage for index.html to read
+            localStorage.setItem('selectedPlan', JSON.stringify({
+                name: planName,
+                cycle: cycle,
+                timestamp: Date.now()
+            }));
+
+            // Redirect to Home/Auth
+            window.location.href = 'index.html?action=register&plan=' + encodeURIComponent(planName);
+        }
+
+        billingToggle.addEventListener('change', toggleBilling);
+        if (stickyBillingToggle) {
+            stickyBillingToggle.addEventListener('change', function () {
+                billingToggle.checked = this.checked;
+                toggleBilling();
+            });
+        }
+
+        // Scroll Logic for Sticky Bar
+        window.addEventListener('scroll', () => {
+            const scrollY = window.scrollY;
+            // Show sticky bar when scrolled down
+            if (scrollY > 250) {
+                stickyToggleBar.classList.remove('-translate-y-full');
+            } else {
+                stickyToggleBar.classList.add('-translate-y-full');
+            }
         });
+
+        // Initialize 
+        toggleBilling();
     </script>
 </body>
 
