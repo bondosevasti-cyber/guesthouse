@@ -38,38 +38,30 @@
 <body class="bg-gray-50 min-h-screen">
 
     <!-- Navbar -->
-    <nav class="bg-white shadow-sm sticky top-0 z-50">
-        <div class="max-w-7xl mx-auto px-4 h-16 flex justify-between items-center">
-            <a href="index.html" class="flex items-center space-x-2">
+    <!-- Navbar (Copied from index.html) -->
+    <nav class="fixed top-0 left-0 w-full z-40 bg-white shadow-md py-3 transition-all duration-300" id="navbar">
+        <div class="max-w-7xl mx-auto px-4 flex justify-between items-center">
+            <a href="index.html">
                 <img src="images/gh_logo.webp" alt="GeorgiaTravel"
-                    class="h-10 max-h-[40px] w-auto drop-shadow-md object-contain">
-                <span class="text-xs bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded-full">Admin</span>
+                    class="h-10 max-h-[40px] w-auto drop-shadow-md object-contain cursor-pointer transition-transform hover:scale-105 active:scale-95">
             </a>
-
-            <div class="flex items-center space-x-4">
-                <button onclick="handleLogout()"
-                    class="text-sm font-medium text-gray-500 hover:text-red-500 transition-colors">
-                    გასვლა
+            <div class="flex items-center space-x-3">
+                <!-- Auth Button / Dropdown Container -->
+                <button id="navAuthBtn" onclick="window.location.href='index.html'"
+                    class="bg-[#2d78b1] hover:bg-[#236a9e] text-white font-bold py-2 px-6 rounded-full transition-all shadow-sm">
+                    მთავარი
                 </button>
-                <div id="userAvatar" class="w-8 h-8 rounded-full bg-gray-200 overflow-hidden"></div>
             </div>
         </div>
     </nav>
+    <div class="h-20"></div> <!-- Spacer for fixed navbar -->
 
     <!-- Navigation Tabs -->
     <div class="max-w-7xl mx-auto px-4 mb-8">
         <div class="flex space-x-6 border-b border-gray-200">
-            <button onclick="switchTab('properties')" id="tabProp"
-                class="pb-3 text-lg font-bold text-amber-600 border-b-2 border-amber-500 transition-colors">
+            <button id="tabProp"
+                class="pb-3 text-lg font-bold text-amber-600 border-b-2 border-amber-500 transition-colors cursor-default">
                 ჩემი განცხადებები
-            </button>
-            <button onclick="switchTab('bookings')" id="tabBook"
-                class="pb-3 text-lg font-bold text-gray-400 hover:text-gray-600 border-b-2 border-transparent transition-colors">
-                ჯავშნები / კალენდარი
-            </button>
-            <button onclick="switchTab('guestBookings')" id="tabGuestBookings"
-                class="hidden pb-3 text-lg font-bold text-gray-400 hover:text-gray-600 border-b-2 border-transparent transition-colors">
-                ჩემი ჯავშნები
             </button>
         </div>
     </div>
@@ -100,544 +92,243 @@
                 ჯერ განცხადება არ არის...
             </div>
 
-            <div id="emptyState"
-                class="hidden flex-col items-center justify-center py-20 bg-white rounded-3xl border-2 border-dashed border-gray-200">
-                <div class="w-20 h-20 bg-gray-50 rounded-full flex items-center justify-center mb-4">
-                    <svg class="w-10 h-10 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
-                    </svg>
-                </div>
-                <h3 class="text-xl font-bold text-gray-900 mb-2">განცხადებები არ არის</h3>
-                <p class="text-gray-500 mb-6 max-w-sm text-center">თქვენ ჯერ არ გაქვთ დამატებული განცხადება. დაამატეთ
-                    ახალი
-                    განცხადება მთავარი გვერდიდან.</p>
-            </div>
-
-            <div id="propertiesGrid" class="hidden grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <div id="listings-container" class="hidden grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                 <!-- Cards will be injected here -->
             </div>
         </div>
 
-        <!-- BOOKINGS TAB -->
-        <div id="bookingsView" class="hidden">
-            <div class="bg-white rounded-3xl shadow-sm border border-gray-100 p-6 md:p-8">
-                <div class="flex justify-between items-center mb-6">
-                    <h2 class="text-2xl font-bold text-gray-900">გარე ჯავშნები</h2>
-                    <button onclick="openBookingModal()"
-                        class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded-xl shadow-md transition-colors flex items-center">
-                        <svg class="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-                        </svg>
-                        ჯავშნის დამატება
-                    </button>
-                </div>
+        <!-- BOOKINGS TAB REMOVED -->
 
-                <div class="overflow-x-auto">
-                    <table class="w-full text-left border-collapse">
-                        <thead>
-                            <tr class="text-gray-500 border-b border-gray-100 text-sm uppercase tracking-wider">
-                                <th class="pb-3 font-semibold">სტუმარი</th>
-                                <th class="pb-3 font-semibold">ობიექტი</th>
-                                <th class="pb-3 font-semibold">თარიღები</th>
-                                <th class="pb-3 font-semibold text-center">სტატუსი</th>
-                                <th class="pb-3 font-semibold text-right">მოქმედება</th>
-                            </tr>
-                        </thead>
-                        <tbody id="bookingsTableBody" class="text-gray-700 font-medium">
-                            <!-- Rows Injected JS -->
-                        </tbody>
-                    </table>
-                    <div id="noBookings" class="text-center py-10 text-gray-400 hidden">
-                        <div class="bg-white rounded-3xl shadow-sm border border-gray-100 p-6 md:p-8">
-                            <div class="flex justify-between items-center mb-6">
-                                <h2 class="text-2xl font-bold text-gray-900">ჯავშნების კალენდარი</h2>
-                                <div class="flex space-x-2">
-                                    <div class="flex items-center text-xs text-gray-500">
-                                        <span class="w-3 h-3 rounded-full bg-blue-500 mr-1"></span> ჯავშანი
+
+
+        <!-- Booking Modal Removed -->
+
+        <script>
+            const CONFIG = {
+                SUPABASE_URL: 'https://akmbyvovhubccznrzotv.supabase.co',
+                SUPABASE_KEY: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFrbWJ5dm92aHViY2N6bnJ6b3R2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjY3NTgwMTAsImV4cCI6MjA4MjMzNDAxMH0.oHLvbx5_4hYATF-hQkJvp0oxZ6ljUfGKYP-Mf7_CVtM'
+            };
+
+            const State = {
+                supabase: supabase.createClient(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_KEY),
+                user: null
+            };
+
+            let myProperties = [];
+
+            async function init() {
+                // Auth Listener
+                State.supabase.auth.onAuthStateChange((event, session) => {
+                    State.user = session ? session.user : null;
+                    updateAuthUI();
+                    if (event === 'SIGNED_OUT' || !session) window.location.href = 'index.html';
+                });
+
+                // Init Session Check
+                const { data: { session } } = await State.supabase.auth.getSession();
+                if (!session) {
+                    window.location.href = 'index.html';
+                    return;
+                }
+                State.user = session.user;
+                updateAuthUI();
+                loadUserListings();
+            }
+
+            async function loadUserListings() {
+                try {
+                    const { data, error } = await State.supabase
+                        .from('guesthouse ge')
+                        .select('*')
+                        .eq('user_id', State.user.id)
+                        .order('created_at', { ascending: false });
+
+                    if (error) throw error;
+                    myProperties = data || [];
+
+                    const container = document.getElementById('listings-container');
+                    const status = document.getElementById('statusMessage');
+
+                    if (status) status.classList.add('hidden');
+                    if (container) {
+                        container.classList.remove('hidden');
+                        if (myProperties.length === 0) {
+                            container.innerHTML = `
+                                <div class="col-span-full flex flex-col items-center justify-center py-20 bg-white rounded-3xl border-2 border-dashed border-gray-200">
+                                    <h3 class="text-xl font-bold text-gray-900 mb-2">თქვენ ჯერ არ გაქვთ განცხადებები</h3>
+                                    <p class="text-gray-500 mb-6 max-w-sm text-center">დაამატეთ ახალი განცხადება მთავარი გვერდიდან.</p>
+                                    <a href="add-property.html" class="px-6 py-2 bg-amber-500 text-white rounded-xl font-bold">დამატება</a>
+                                </div>`;
+                        } else {
+                            container.innerHTML = myProperties.map(createCardHTML).join('');
+                        }
+                    }
+                } catch (err) {
+                    console.error("Error loading listings:", err);
+                }
+            }
+
+            // Helper to parsing prices
+            function calculateCurrentPrice(p) {
+                // Logic adapted from index.html normalizeProperty
+                const currentMonthIndex = new Date().getMonth();
+                let display = "შეთანხმებით";
+
+                let seasonal = [];
+                if (p.seasonal_prices) {
+                    if (Array.isArray(p.seasonal_prices)) seasonal = p.seasonal_prices;
+                    else if (typeof p.seasonal_prices === 'string') {
+                        try { seasonal = JSON.parse(p.seasonal_prices); } catch (e) { }
+                    }
+                }
+
+                if (seasonal.length > 0) {
+                    const monthPrices = seasonal.map(s => s.prices[currentMonthIndex]).filter(price => price > 0);
+                    if (monthPrices.length > 0) {
+                        const minP = Math.min(...monthPrices);
+                        const maxP = Math.max(...monthPrices);
+                        display = minP === maxP ? `₾${minP}` : `₾${minP} - ₾${maxP}`;
+                    }
+                } else if (p.price) {
+                    display = `₾${p.price}`;
+                }
+                return display;
+            }
+
+            function createCardHTML(p) {
+                // 1. Image
+                let image = "https://images.unsplash.com/photo-1566073771259-6a8506099945?w=500&q=80";
+                if (p.images) {
+                    let imgs = [];
+                    if (Array.isArray(p.images)) imgs = p.images;
+                    else if (typeof p.images === 'string') {
+                        if (p.images.startsWith('{')) imgs = p.images.slice(1, -1).split(',');
+                        else try { imgs = JSON.parse(p.images); } catch (e) { }
+                    }
+                    if (imgs.length > 0) image = imgs[0];
+                }
+
+                // 2. Price
+                const priceDisplay = calculateCurrentPrice(p);
+
+                // 3. Badges & Glow
+                let badge = '';
+                let glowClass = '';
+
+                if (p.tier === 'super-vip') {
+                    badge = '<span class="bg-gradient-to-r from-yellow-400 to-amber-500 text-white text-[10px] font-bold px-2 py-1 rounded shadow-sm uppercase tracking-wider ml-2 border border-white/20">SUPER VIP</span>';
+                    glowClass = 'border-4 border-yellow-400 shadow-xl';
+                } else if (p.tier === 'vip-plus') {
+                    badge = '<span class="bg-indigo-600 text-white text-[10px] font-bold px-2 py-1 rounded shadow-sm uppercase tracking-wider ml-2">VIP +</span>';
+                    glowClass = 'ring-4 ring-indigo-100 border-2 border-indigo-200 shadow-lg';
+                } else if (p.tier === 'vip') {
+                    badge = '<span class="bg-amber-500 text-white text-[10px] font-bold px-2 py-1 rounded shadow-sm uppercase tracking-wider ml-2">VIP</span>';
+                    glowClass = 'border border-amber-200 shadow-md';
+                }
+
+                return `
+                <div class="bg-white rounded-xl shadow-md hover:shadow-xl transition-all duration-300 overflow-hidden group ${glowClass} flex flex-col h-full">
+                    <div class="relative h-48 overflow-hidden">
+                        <img src="${image}" class="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-500">
+                        <div class="absolute top-3 left-3 flex items-center">
+                            <span class="bg-white/90 backdrop-blur-sm px-2 py-1 rounded-md text-xs font-bold text-gray-800 shadow-sm uppercase tracking-wide">${p.type}</span>
+                            ${badge}
+                        </div>
+                        <div class="absolute bottom-3 right-3 bg-gray-900/80 backdrop-blur-sm text-white px-2 py-1 rounded-md text-sm font-bold flex items-center shadow-sm">
+                             <span class="text-yellow-400 mr-1">★</span> ${p.rating || 5.0}
+                        </div>
+                    </div>
+                    <div class="p-5 flex-1 flex flex-col">
+                        <h3 class="font-bold text-lg text-gray-900 leading-tight mb-1 truncate group-hover:text-amber-600 transition-colors">${p.name}</h3>
+                        <p class="text-sm text-gray-500 flex items-center mb-3">
+                            <svg class="w-4 h-4 mr-1 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                            ${p.location}
+                        </p>
+                        <div class="flex justify-between items-center pt-3 border-t border-gray-100 mt-auto">
+                           <div class="text-amber-600 font-bold text-xl">${priceDisplay}</div>
+                        </div>
+                        
+                        <!-- Actions -->
+                        <div class="grid grid-cols-2 gap-3 mt-4">
+                            <a href="add-property.html?id=${p.id}" class="flex items-center justify-center px-4 py-2 border border-gray-200 rounded-lg text-sm font-bold text-gray-600 hover:bg-amber-50 hover:text-amber-600 hover:border-amber-200 transition-colors">
+                                <svg class="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+                                რედაქტირება
+                            </a>
+                            <button onclick="deleteProperty('${p.id}')" class="flex items-center justify-center px-4 py-2 border border-red-100 bg-red-50 rounded-lg text-sm font-bold text-red-600 hover:bg-red-100 hover:border-red-200 transition-colors">
+                                <svg class="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                                წაშლა
+                            </button>
+                        </div>
+                    </div>
+                </div>`;
+            }
+
+            // Sync Navbar UI
+            function updateAuthUI() {
+                const navBtn = document.getElementById('navAuthBtn');
+                if (State.user) {
+                    const avatarUrl = State.user.user_metadata.avatar_url || 'https://www.gravatar.com/avatar/?d=mp';
+                    const name = State.user.user_metadata.full_name || 'მომხმარებელი';
+
+                    const dropdownHTML = `
+                        <div class="relative group" id="authDropdownContainer">
+                            <button class="flex items-center space-x-2 focus:outline-none" id="userMenuBtn">
+                                <img src="${avatarUrl}" class="w-10 h-10 rounded-full border-2 border-white shadow-md object-cover">
+                                <span class="hidden md:block font-bold text-gray-700 text-sm">${name}</span>
+                                <svg class="w-4 h-4 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                                </svg>
+                            </button>
+                            <div class="absolute right-0 mt-2 w-56 pt-2">
+                                <div class="bg-white rounded-xl shadow-xl border border-gray-100 overflow-hidden transform opacity-0 scale-95 pointer-events-none transition-all duration-200 z-50 origin-top-right group-hover:opacity-100 group-hover:scale-100 group-hover:pointer-events-auto">
+                                    <div class="px-4 py-3 bg-gray-50 border-b border-gray-100">
+                                        <p class="text-sm font-bold text-gray-900 truncate">${State.user.email}</p>
+                                        <p class="text-xs text-green-600 font-medium">აქტიური</p>
+                                    </div>
+                                    <div class="py-1">
+                                        <a href="profile.html" class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-amber-50 hover:text-amber-600 transition-colors">
+                                            <svg class="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
+                                            ჩემი განცხადებები
+                                        </a>
+                                        <a href="bookings.html" class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-indigo-50 hover:text-indigo-600 transition-colors">
+                                            <svg class="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                                            ჯავშნები / კალენდარი
+                                        </a>
+                                    </div>
+                                    <div class="border-t border-gray-100 py-1">
+                                        <button onclick="handleLogout()" class="flex w-full items-center px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors">
+                                            <svg class="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"/></svg>
+                                            გასვლა
+                                        </button>
                                     </div>
                                 </div>
                             </div>
+                        </div>`;
 
-                            <!-- FullCalendar Container -->
-                            <div id='calendar' class="min-h-[600px]"></div>
-
-                            <!-- Legacy Table (Optional, maybe hidden or below) -->
-                            <div class="mt-12 hidden">
-                                <h3 class="text-lg font-bold mb-4">ცხრილის სახით</h3>
-                                <!-- ... table ... -->
-                            </div>
-                        </div>
-                    </div>
-
-    </main>
-
-
-
-    <!-- BOOKING MODAL -->
-    <div id="bookingModal" class="fixed inset-0 z-50 hidden flex items-center justify-center p-4">
-        <div class="absolute inset-0 bg-black/50 backdrop-blur-sm" onclick="closeBookingModal()"></div>
-        <div class="bg-white w-full max-w-md rounded-2xl shadow-2xl relative z-10 p-6">
-            <h3 class="text-xl font-bold text-gray-900 mb-4">ჯავშნის დამატება</h3>
-            <form id="bookingForm" onsubmit="handleBookingSubmit(event)">
-                <div class="space-y-4">
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">სტუმრის სახელი</label>
-                        <input type="text" id="guestName" required
-                            class="w-full px-4 py-2 border rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none">
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">ობიექტი</label>
-                        <select id="bookingProperty" required
-                            class="w-full px-4 py-2 border rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none bg-white">
-                            <!-- Populated -->
-                        </select>
-                    </div>
-                    <!-- Calendar Container -->
-                    <div class="mb-4">
-                        <label class="block text-sm font-medium text-gray-700 mb-2">თარიღები</label>
-                        <div id="profileBookingCalendar"
-                            class="w-full justify-center flex bg-gray-50 rounded-xl p-2 border border-gray-100">
-                        </div>
-                        <div class="flex justify-between items-center mt-2 px-2">
-                            <p class="text-xs font-bold text-gray-400 uppercase tracking-wider">არჩეული დღეები</p>
-                            <p id="profileSelectedDaysText" class="text-indigo-600 font-bold">0 ღამე</p>
-                        </div>
-                    </div>
-                </div>
-                <div class="flex justify-end space-x-3 mt-6">
-                    <button type="button" onclick="closeBookingModal()"
-                        class="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg">გაუქმება</button>
-                    <button type="submit"
-                        class="px-4 py-2 bg-indigo-600 text-white font-bold rounded-lg hover:bg-indigo-700 shadow-md">შენახვა</button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <script>
-        const CONFIG = {
-            SUPABASE_URL: 'https://akmbyvovhubccznrzotv.supabase.co',
-            SUPABASE_KEY: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFrbWJ5dm92aHViY2N6bnJ6b3R2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjY3NTgwMTAsImV4cCI6MjA4MjMzNDAxMH0.oHLvbx5_4hYATF-hQkJvp0oxZ6ljUfGKYP-Mf7_CVtM'
-        };
-
-        const supabase = supabase.createClient(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_KEY);
-        let currentUser = null;
-        let myProperties = [];
-        let myBookings = [];
-        let calendar = null;
-        let isHost = false;
-
-        async function init() {
-            const { data: { session } } = await supabase.auth.getSession();
-
-            if (!session) {
-                window.location.href = 'index.html';
-                return;
-            }
-
-            currentUser = session.user;
-
-            // Update Avatar
-            const avatarUrl = currentUser.user_metadata.avatar_url || 'https://www.gravatar.com/avatar/?d=mp';
-            document.getElementById('userAvatar').innerHTML = `<img src="${avatarUrl}" class="w-full h-full object-cover">`;
-
-            // Load Data
-            await loadProperties();
-
-            // Determine Role and UI
-            if (myProperties.length > 0) {
-                isHost = true;
-                // Default Host View
-                switchTab('properties');
-            } else {
-                isHost = false;
-                // Guest View
-                document.getElementById('tabProp').classList.add('hidden');
-                document.getElementById('tabBook').classList.add('hidden');
-                document.getElementById('tabGuestBookings').classList.remove('hidden');
-                switchTab('guestBookings');
-            }
-        }
-
-        async function loadProperties() {
-            try {
-                const { data, error } = await supabase
-                    .from('guesthouse ge')
-                    .select('*')
-                    .eq('user_id', currentUser.id)
-                    .order('created_at', { ascending: false });
-
-                if (error) throw error;
-                myProperties = data || [];
-
-                // Render Host Properties List
-                const status = document.getElementById('statusMessage');
-                const empty = document.getElementById('emptyState');
-                const grid = document.getElementById('propertiesGrid');
-
-                if (status) status.classList.add('hidden');
-
-                if (myProperties.length === 0) {
-                    if (empty) {
-                        empty.classList.remove('hidden');
-                        empty.classList.add('flex');
-                    }
-                } else {
-                    if (grid) {
-                        grid.classList.remove('hidden');
-                        grid.innerHTML = myProperties.map(createCardHTML).join('');
+                    if (navBtn && navBtn.parentNode) {
+                        navBtn.outerHTML = dropdownHTML;
                     }
                 }
+            }
 
-                // Populate Booking Select (for manual add)
-                const select = document.getElementById('bookingProperty');
-                if (select) {
-                    select.innerHTML = myProperties.map(p => `<option value="${p.id}">${p.name}</option>`).join('');
+            window.handleLogout = async function () {
+                await State.supabase.auth.signOut();
+            }
+
+            window.deleteProperty = async function (id) {
+                if (!confirm("ნამდვილად გსურთ წაშლა?")) return;
+                try {
+                    const { error } = await State.supabase.from('guesthouse ge').delete().eq('id', id);
+                    if (error) throw error;
+                    loadUserListings();
+                } catch (e) {
+                    alert('შეცდომა: ' + e.message);
                 }
-
-            } catch (err) {
-                console.error("Layout Error:", err);
-            }
-        }
-
-        async function loadBookings() {
-            try {
-                let query = supabase.from('bookings').select('*, property:property_id(name, image_url, images)');
-
-                if (isHost) {
-                    // Fetch bookings for MY properties
-                    const propIds = myProperties.map(p => p.id);
-                    if (propIds.length === 0) return; // No properties, no bookings to show
-                    query = query.in('property_id', propIds);
-                } else {
-                    // Fetch bookings made BY me
-                    query = query.eq('user_id', currentUser.id);
-                }
-
-                const { data, error } = await query;
-                if (error) throw error;
-
-                myBookings = data || [];
-
-                if (isHost) {
-                    initCalendar();
-                } else {
-                    renderGuestBookings();
-                }
-            } catch (err) {
-                console.error("Booking Load Error:", err);
-            }
-        }
-
-        // --- HOST: FULL CALENDAR ---
-        function initCalendar() {
-            const calendarEl = document.getElementById('calendar');
-            if (!calendarEl) return;
-
-            // Transform bookings to events
-            const events = myBookings.map(b => ({
-                title: b.guest_name || 'Guest',
-                start: b.check_in,
-                end: new Date(new Date(b.check_out).getTime() + 86400000).toISOString().split('T')[0], // Add 1 day for FC inclusive end
-                backgroundColor: getRandomColor(),
-                borderColor: 'transparent',
-                extendedProps: {
-                    guestName: b.guest_name,
-                    phone: b.guest_phone,
-                    bookingCode: b.booking_code || '#BK-????',
-                    propName: b.property?.name
-                }
-            }));
-
-            if (calendar) {
-                calendar.removeAllEvents();
-                calendar.addEventSource(events);
-                return;
             }
 
-            calendar = new FullCalendar.Calendar(calendarEl, {
-                initialView: 'dayGridMonth',
-                headerToolbar: {
-                    left: 'prev,next today',
-                    center: 'title',
-                    right: 'dayGridMonth,listWeek'
-                },
-                events: events,
-                eventDidMount: function (info) {
-                    tippy(info.el, {
-                        content: `
-                            <div class="text-sm p-1">
-                                <p class="font-bold">${info.event.extendedProps.guestName}</p>
-                                <p class="text-xs opacity-75">${info.event.extendedProps.phone}</p>
-                                <p class="text-xs text-amber-300 mt-1 font-mono">${info.event.extendedProps.bookingCode}</p>
-                            </div>
-                        `,
-                        allowHTML: true,
-                        theme: 'light',
-                        placement: 'top'
-                    });
-                }
-            });
-            calendar.render();
-        }
-
-        function getRandomColor() {
-            const colors = ['#f59e0b', '#10b981', '#3b82f6', '#8b5cf6', '#ec4899', '#ef4444', '#6366f1'];
-            return colors[Math.floor(Math.random() * colors.length)];
-        }
-
-        // --- GUEST: BOOKINGS LIST ---
-        function renderGuestBookings() {
-            const grid = document.getElementById('guestBookingsGrid');
-            const empty = document.getElementById('guestEmptyState');
-
-            if (myBookings.length === 0) {
-                grid.innerHTML = '';
-                if (empty) empty.classList.remove('hidden');
-                return;
-            }
-
-            if (empty) empty.classList.add('hidden');
-            grid.innerHTML = myBookings.map(b => {
-                // Image processing
-                let image = CONFIG.DEFAULT_IMAGE || "https://images.unsplash.com/photo-1566073771259-6a8506099945?w=500&q=80";
-                const p = b.property;
-                if (p && p.images) {
-                    // reuse image logic
-                    if (Array.isArray(p.images) && p.images.length > 0) image = p.images[0];
-                    else if (typeof p.images === 'string') {
-                        try {
-                            let parsed = [];
-                            if (p.images.startsWith('{')) parsed = p.images.slice(1, -1).split(',');
-                            else parsed = JSON.parse(p.images);
-                            if (parsed.length > 0) image = parsed[0];
-                        } catch (e) { }
-                    }
-                } else if (p && p.image_url) {
-                    image = p.image_url;
-                }
-
-                // Status format
-                const statusColor = b.status === 'confirmed' ? 'bg-green-100 text-green-700' :
-                    b.status === 'pending' ? 'bg-amber-100 text-amber-700' : 'bg-gray-100 text-gray-700';
-                const statusText = b.status === 'confirmed' ? 'დადასტურებული' :
-                    b.status === 'pending' ? 'მუშავდება' : 'უცნობი';
-
-                return `
-                <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden flex flex-col md:flex-row h-auto md:h-48 group hover:shadow-md transition-shadow">
-                    <div class="w-full md:w-1/3 h-48 md:h-full relative">
-                        <img src="${image}" class="w-full h-full object-cover">
-                        <div class="absolute top-2 left-2 bg-black/60 backdrop-blur-sm text-white text-xs font-mono px-2 py-1 rounded">
-                            ${b.booking_code || 'BK-???'}
-                        </div>
-                    </div>
-                    <div class="p-5 flex flex-col justify-between w-full md:w-2/3">
-                        <div>
-                            <div class="flex justify-between items-start">
-                                <h3 class="font-bold text-gray-900 text-lg mb-1">${b.property?.name || 'ობიექტი წაშლილია'}</h3>
-                                <span class="px-2 py-1 rounded text-xs font-bold ${statusColor}">${statusText}</span>
-                            </div>
-                            <p class="text-gray-500 text-sm mb-3">
-                                <span class="font-semibold">${b.check_in}</span> - <span class="font-semibold">${b.check_out}</span>
-                            </p>
-                        </div>
-                        <div class="flex items-center justify-between border-t pt-3">
-                             <div>
-                                <p class="text-xs text-gray-400 uppercase">ჯამური ფასი</p>
-                                <p class="text-amber-600 font-bold text-xl">₾${b.total_price}</p>
-                             </div>
-                             <button class="text-gray-400 hover:text-gray-600 text-sm font-medium">დეტალები &rarr;</button>
-                        </div>
-                    </div>
-                </div>
-                `;
-            }).join('');
-        }
-
-        // --- TABS & UI HELPERS ---
-        function switchTab(tab) {
-            const propView = document.getElementById('propertiesView');
-            const bookView = document.getElementById('bookingsView');
-            const guestView = document.getElementById('guestBookingsView');
-
-            const tProp = document.getElementById('tabProp');
-            const tBook = document.getElementById('tabBook');
-            const tGuest = document.getElementById('tabGuestBookings');
-
-            // Reset all
-            propView.classList.add('hidden');
-            bookView.classList.add('hidden');
-            guestView.classList.add('hidden');
-
-            tProp.className = "pb-3 text-lg font-bold text-gray-400 hover:text-gray-600 border-b-2 border-transparent transition-colors";
-            tBook.className = "pb-3 text-lg font-bold text-gray-400 hover:text-gray-600 border-b-2 border-transparent transition-colors";
-            tGuest.className = "pb-3 text-lg font-bold text-gray-400 hover:text-gray-600 border-b-2 border-transparent transition-colors";
-
-            if (tab === 'properties') {
-                propView.classList.remove('hidden');
-                tProp.className = "pb-3 text-lg font-bold text-amber-600 border-b-2 border-amber-500 transition-colors";
-            } else if (tab === 'bookings') {
-                bookView.classList.remove('hidden');
-                tBook.className = "pb-3 text-lg font-bold text-indigo-600 border-b-2 border-indigo-500 transition-colors";
-                loadBookings();
-                // Resize calendar after visible
-                setTimeout(() => { if (calendar) calendar.render(); }, 200);
-            } else if (tab === 'guestBookings') {
-                guestView.classList.remove('hidden');
-                tGuest.className = "pb-3 text-lg font-bold text-emerald-600 border-b-2 border-emerald-500 transition-colors";
-                loadBookings();
-            }
-        }
-
-        // Helper Reuse
-        function createCardHTML(p) {
-            // Reuse existing card generation logic (simplified)
-            let image = "https://images.unsplash.com/photo-1566073771259-6a8506099945?w=500&q=80";
-            if (p.images) {
-                if (Array.isArray(p.images) && p.images.length > 0) image = p.images[0];
-                else if (typeof p.images === 'string') {
-                    try {
-                        let parsed = [];
-                        if (p.images.startsWith('{')) parsed = p.images.slice(1, -1).split(',');
-                        else parsed = JSON.parse(p.images);
-                        if (parsed.length > 0) image = parsed[0];
-                    } catch (e) { }
-                }
-            } else if (p.image_url) image = p.image_url;
-
-            // Simplified Price logic
-            let price = p.price ? `₾${p.price}` : "შეთანხმებით";
-
-            return `
-                <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-xl transition-shadow duration-300 group relative">
-                     <div class="relative h-48 overflow-hidden">
-                        <img src="${image}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
-                     </div>
-                     <div class="p-5">
-                          <h3 class="font-bold text-lg text-gray-900 truncate">${p.name}</h3>
-                          <div class="text-amber-600 font-bold mt-2">${price}</div>
-                          <div class="flex items-center justify-between pt-4 mt-4 border-t border-gray-100">
-                            <button onclick="deleteProperty('${p.id}')" class="text-red-500 text-sm font-bold hover:underline">წაშლა</button>
-                          </div>
-                     </div>
-                </div>
-            `;
-        }
-
-        window.handleLogout = async function () {
-            await supabase.auth.signOut();
-            window.location.href = 'index.html';
-        };
-
-        window.deleteProperty = async function (id) {
-            if (!confirm('ნამდვილად გსურთ ამ განცხადების წაშლა?')) return;
-            try {
-                const { error } = await supabase.from('guesthouse ge').delete().eq('id', id);
-                if (error) throw error;
-                loadProperties();
-            } catch (e) {
-                alert("შეცდომა წაშლისას: " + e.message);
-            }
-        };
-
-        // BOOKING MODAL LOGIC (Host Manual Entry)
-        let profileCalendar;
-
-        function initProfileCalendar() {
-            if (profileCalendar) return;
-            profileCalendar = flatpickr("#profileBookingCalendar", {
-                mode: "range",
-                inline: true,
-                dateFormat: "Y-m-d",
-                minDate: "today",
-                locale: { firstDayOfWeek: 1 },
-                onChange: function (selectedDates) {
-                    const countEl = document.getElementById('profileSelectedDaysText');
-                    if (countEl) {
-                        if (selectedDates.length === 2) {
-                            const diff = Math.abs(selectedDates[1] - selectedDates[0]);
-                            const days = Math.ceil(diff / (1000 * 60 * 60 * 24));
-                            countEl.textContent = days + " ღამე";
-                        } else {
-                            countEl.textContent = "0 ღამე";
-                        }
-                    }
-                }
-            });
-        }
-
-        window.openBookingModal = () => {
-            document.getElementById('bookingModal').classList.remove('hidden');
-            setTimeout(initProfileCalendar, 50);
-        }
-
-        window.closeBookingModal = () => {
-            document.getElementById('bookingModal').classList.add('hidden');
-            if (profileCalendar) {
-                profileCalendar.clear();
-            }
-        }
-
-        window.handleBookingSubmit = async (e) => {
-            e.preventDefault();
-            const guestName = document.getElementById('guestName').value;
-            const propertyId = document.getElementById('bookingProperty').value;
-
-            // Validate Dates
-            const selectedDates = profileCalendar ? profileCalendar.selectedDates : [];
-            if (!selectedDates || selectedDates.length !== 2) {
-                alert("გთხოვთ მონიშნოთ შესვლის და გასვლის თარიღები");
-                return;
-            }
-
-            const checkIn = flatpickr.formatDate(selectedDates[0], "Y-m-d");
-            const checkOut = flatpickr.formatDate(selectedDates[1], "Y-m-d");
-
-            // Calculate Price
-            const prop = myProperties.find(p => p.id == propertyId);
-            let totalPrice = 0;
-            if (prop) {
-                // Try to strip currency symbol if present
-                const priceText = calculateCurrentPrice(prop).replace(/[^0-9.]/g, '');
-                const pricePerNight = parseFloat(priceText) || 0;
-                const diffDays = Math.ceil(Math.abs(selectedDates[1] - selectedDates[0]) / (1000 * 60 * 60 * 24));
-                totalPrice = pricePerNight * diffDays;
-            }
-
-            try {
-                // Manual Booking by Host
-                const bookingCode = '#' + 'BK-' + Math.floor(10000 + Math.random() * 90000);
-
-                const { error } = await supabase.from('bookings').insert([{
-                    property_id: propertyId,
-                    check_in: checkIn,
-                    check_out: checkOut,
-                    guest_name: guestName,
-                    guest_phone: 'Manual Entry',
-                    total_price: totalPrice,
-                    status: 'confirmed',
-                    user_id: currentUser.id,
-                    booking_code: bookingCode
-                }]);
-
-                if (error) throw error;
-
-                alert("ჯავშანი დამატებულია");
-                closeBookingModal();
-                e.target.reset();
-                if (profileCalendar) profileCalendar.clear();
-                loadBookings();
-
-            } catch (err) {
-                console.error(err);
-                alert("შეცდომა: " + err.message);
-            }
-        };
-
-        // Initialize
-        init();
-    </script>
+            // Start
+            init();
+        </script>
 </body>
 
 </html>

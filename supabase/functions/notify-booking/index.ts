@@ -16,7 +16,7 @@ serve(async (req) => {
 
         // Get the n8n webhook URL from environment variables
         // Use the one provided by user as default if env var is missing (for testing purposes, though env var is preferred)
-        const N8N_WEBHOOK_URL = Deno.env.get('N8N_WEBHOOK_URL') || 'http://localhost:5678/webhook-test/5a76a417-f8d2-482c-b6d4-a23839b4f080'
+        const N8N_WEBHOOK_URL = Deno.env.get('N8N_WEBHOOK_URL') || 'https://unstaunch-heedlessly-erich.ngrok-free.dev/webhook-test/5a76a417-f8d2-482c-b6d4-a23839b4f080'
 
         console.log(`Forwarding booking to n8n: ${N8N_WEBHOOK_URL}`)
 

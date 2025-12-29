@@ -393,11 +393,16 @@
         const supabaseClient = supabase.createClient(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_KEY);
 
         // Define State
+        // Define State
         const State = {
             supabase: supabaseClient,
             pendingUploads: [],
             user: null,
-            locations: []
+            locations: [],
+            // Edit Mode State
+            editMode: false,
+            editId: null,
+            existingImages: []
         };
 
         // DOM Elements
@@ -567,9 +572,137 @@
 
             // Setup Listeners
             setupCityListeners();
-            calculatePriceRange(); // Initial check
+            calculatePriceRange();
+
+            // Check for Edit Mode
+            const urlParams = new URLSearchParams(window.location.search);
+            const editId = urlParams.get('id');
+            if (editId) {
+                State.editMode = true;
+                State.editId = editId;
+                document.title = "განცხადების რედაქტირება - GeorgiaTravel";
+                document.querySelector('h1').innerHTML = `
+                    <span class="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center mr-3 text-blue-600 shadow-sm">
+                        <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
+                    </span>
+                    განცხადების რედაქტირება
+                `;
+                document.querySelector('button[type="submit"]').textContent = "ცვლილებების შენახვა";
+                await loadPropertyForEdit(editId);
+            }
         }
 
+        async function loadPropertyForEdit(id) {
+            try {
+                const { data, error } = await State.supabase
+                    .from('guesthouse ge')
+                    .select('*')
+                    .eq('id', id)
+                    .single();
+
+                if (error) throw error;
+                if (data.user_id !== State.user.id) {
+                    alert("თქვენ არ გაქვთ ამ განცხადების რედაქტირების უფლება!");
+                    window.location.href = "profile.html";
+                    return;
+                }
+
+                // Populate Fields
+                const names = data.name.split(' ');
+                document.getElementById('firstName').value = names[0] || '';
+                document.getElementById('lastName').value = names.slice(1).join(' ') || '';
+
+                document.querySelector('input[name="phone"]').value = data.phone || '';
+                document.querySelector('textarea[name="description"]').value = data.description || '';
+
+                // Selects
+                if (data.type) document.querySelector('select[name="type"]').value = data.type;
+                if (data.tier) document.querySelector('select[name="tier"]').value = data.tier;
+                if (data.location) {
+                    document.getElementById('locationSearch').value = data.location;
+                    document.getElementById('locationValue').value = data.location;
+                }
+
+                // Amenities
+                const checkboxes = document.querySelectorAll('input[name="amenities"]');
+                if (data.amenities) {
+                    checkboxes.forEach(cb => {
+                        if (data.amenities.includes(cb.value)) cb.checked = true;
+                    });
+                }
+
+                // Images
+                let imgs = [];
+                if (data.images) {
+                    if (Array.isArray(data.images)) imgs = data.images;
+                    else if (typeof data.images === 'string') {
+                        try {
+                            if (data.images.startsWith('{')) imgs = data.images.slice(1, -1).split(',');
+                            else imgs = JSON.parse(data.images);
+                        } catch (e) { }
+                    }
+                }
+                State.existingImages = imgs;
+                renderExistingImages();
+
+                // Seasonal Prices
+                let sPrices = [];
+                if (data.seasonal_prices) {
+                    if (Array.isArray(data.seasonal_prices)) sPrices = data.seasonal_prices;
+                    else if (typeof data.seasonal_prices === 'string') {
+                        try { sPrices = JSON.parse(data.seasonal_prices); } catch (e) { }
+                    }
+                }
+
+                // Clear existing empty row if any
+                document.getElementById('seasonalPricesBody').innerHTML = '';
+                sPrices.forEach(sp => {
+                    addSeasonalRow(sp); // We need to update addSeasonalRow to accept data
+                });
+                if (sPrices.length === 0) addSeasonalRow(); // Default one if empty
+
+                // Region - try to guess or leave empty (logic is simple here)
+                // If location is known city, we could set region, but it's fine.
+
+            } catch (err) {
+                console.error(err);
+                alert("ვერ მოხერხდა მონაცემების ჩატვირთვა.");
+            }
+        }
+
+        function renderExistingImages() {
+            // Simplified rendering of existing images
+            const grid = document.getElementById('uploadGrid');
+            // Clear previous existing ones? No, just keep the Add button and append
+            // Actually, let's remove everything except the Add button first
+            const addBtn = document.getElementById('uploadAddBtn');
+            grid.innerHTML = '';
+            grid.appendChild(addBtn);
+
+            State.existingImages.forEach((url, index) => {
+                const div = document.createElement('div');
+                div.className = "relative aspect-square rounded-xl overflow-hidden group shadow-sm animate-fade-in";
+                div.innerHTML = `
+                    <img src="${url}" class="w-full h-full object-cover">
+                    <button type="button" onclick="removeExistingImage(${index})" 
+                        class="absolute top-2 right-2 p-1 bg-white rounded-full shadow-md text-red-500 hover:text-red-600 hover:bg-red-50 transition-all opacity-0 group-hover:opacity-100 transform scale-90 group-hover:scale-100">
+                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+                    </button>
+                    <div class="absolute bottom-2 left-2 bg-black/50 text-white text-[10px] px-2 py-0.5 rounded backdrop-blur-sm">
+                        არსებული
+                    </div>
+                `;
+                grid.appendChild(div);
+            });
+
+            // Then render new pending uploads
+            renderUploadGrid(false); // Pass false to not clear grid
+        }
+
+        function removeExistingImage(index) {
+            State.existingImages.splice(index, 1);
+            renderExistingImages();
+        }
         // --- LOCATION LOGIC ---
         function handleRegionChange(region) {
             // Filter dropdown immediately if open, or just set internal filter state
@@ -687,18 +820,47 @@
             renderUploadGrid();
         };
 
-        function renderUploadGrid() {
+        function renderUploadGrid(clearExisting = true) {
             const grid = document.getElementById('uploadGrid');
             const addButton = document.getElementById('uploadAddBtn');
             if (!grid || !addButton) return;
 
-            // Clean existing previews (keep button)
+            // If we are appending to existing, do NOT remove children that are "existing"
+            // Actually, simplified approach:
+            // remove all children except addBtn AND logical "existing" nodes? 
+            // Better: Just loop and remove nodes that don't have "existing" data attribute if logic gets complex.
+            // But let's stick to: renderExisting calls simple clear, then renders. renderUploadGrid calls and appends.
+
+            // Clean ONLY pending uploads from view?
+            // Easier: Clear all non-AddBtn, then re-render State.existingImages THEN State.pendingUploads
+
+            // Clear all except AddBtn
             Array.from(grid.children).forEach(child => {
                 if (child.id !== 'uploadAddBtn') {
                     child.remove();
                 }
             });
 
+            // 1. Render Existing
+            if (State.existingImages && State.existingImages.length > 0) {
+                State.existingImages.forEach((url, index) => {
+                    const div = document.createElement('div');
+                    div.className = "relative aspect-square rounded-xl overflow-hidden group shadow-sm animate-fade-in";
+                    div.innerHTML = `
+                        <img src="${url}" class="w-full h-full object-cover">
+                        <button type="button" onclick="removeExistingImage(${index})" 
+                            class="absolute top-2 right-2 p-1 bg-white rounded-full shadow-md text-red-500 hover:text-red-600 hover:bg-red-50 transition-all opacity-0 group-hover:opacity-100 transform scale-90 group-hover:scale-100">
+                            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+                        </button>
+                        <div class="absolute bottom-2 left-2 bg-black/50 text-white text-[10px] px-2 py-0.5 rounded backdrop-blur-sm">
+                            არსებული
+                        </div>
+                    `;
+                    grid.insertBefore(div, addButton);
+                });
+            }
+
+            // 2. Render Pending
             // Insert new based on State
             State.pendingUploads.forEach((item, index) => {
                 const div = document.createElement('div');
@@ -722,7 +884,6 @@
                 div.appendChild(delBtn);
                 div.appendChild(sizeBadge);
 
-                // Insert before Add Button
                 grid.insertBefore(div, addButton);
             });
 
@@ -775,25 +936,34 @@
         }
 
         // --- SEASONAL & PRICE LOGIC ---
-        window.addSeasonalRow = function () {
+        window.addSeasonalRow = function (data = null) {
             const tbody = document.getElementById('seasonalPricesBody');
             if (!tbody) return;
-            const rowId = 'sp-row-' + Date.now();
+            const rowId = 'sp-row-' + Date.now() + Math.random().toString(36).substr(2, 5);;
             const tr = document.createElement('tr');
             tr.className = "hover:bg-gray-50 transition-colors group";
             tr.id = rowId;
 
+            const labelValue = data ? data.label : '';
+            const prices = data ? data.prices : Array(12).fill('');
+
+            // Helper to safe access
+            const getP = (i) => {
+                if (data && data.prices && data.prices[i] !== undefined) return data.prices[i];
+                return '';
+            }
+
             tr.innerHTML = `
                 <td class="p-2 sticky left-0 bg-white group-hover:bg-gray-50 border-r border-gray-100 z-10">
-                    <input type="text" placeholder="მაგ: 2 ადგილიანი" class="w-full px-2 py-1.5 text-xs border border-gray-200 rounded focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 outline-none">
+                    <input type="text" value="${labelValue}" placeholder="მაგ: 2 ადგილიანი" class="w-full px-2 py-1.5 text-xs border border-gray-200 rounded focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 outline-none">
                 </td>
                 <td class="p-1 text-center bg-white group-hover:bg-gray-50 border-r border-gray-100 z-10">
                     <button type="button" onclick="fillSeasonalRow(this)" class="p-1 text-emerald-500 hover:bg-emerald-50 rounded transition-colors" title="იანვრის ფასის ყველგან გავრცელება">
                         <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 5l7 7-7 7M5 5l7 7-7 7" /></svg>
                     </button>
                 </td>
-                ${Array(12).fill(0).map(() => `
-                    <td class="p-1"><input type="number" min="0" class="w-full px-1 py-1.5 text-xs text-center border border-gray-200 rounded focus:border-emerald-500 outline-none" placeholder="-"></td>
+                ${Array(12).fill(0).map((_, i) => `
+                    <td class="p-1"><input type="number" min="0" value="${getP(i)}" class="w-full px-1 py-1.5 text-xs text-center border border-gray-200 rounded focus:border-emerald-500 outline-none" placeholder="-"></td>
                 `).join('')}
                 <td class="p-2 text-center">
                     <button type="button" onclick="document.getElementById('${rowId}').remove(); calculatePriceRange();" class="text-gray-300 hover:text-red-500 transition-colors">
@@ -942,21 +1112,34 @@
                 const newProp = {
                     user_id: userId,
                     name: fullName, // Concatenated Name
-                    location: formData.get('location'), // Allow custom manual input if user typed one
+                    location: formData.get('location'),
                     price: finalPrice,
-                    price_display: priceDisplay, // Optional col if exists, good for storing range string
+                    price_display: priceDisplay,
                     type: formData.get('type'),
                     tier: formData.get('tier'),
                     description: formData.get('description'),
                     amenities: amenities,
-                    images: uploadedUrls,
+                    images: [...State.existingImages, ...uploadedUrls], // Merge
                     phone: formData.get('phone'),
                     seasonal_prices: seasonal_prices,
                     rating: 5.0
                 };
 
-                const { error: insertError } = await State.supabase.from('guesthouse ge').insert([newProp]);
-                if (insertError) throw insertError;
+                let error = null;
+                if (State.editMode) {
+                    // Security Check handled by RLS, but double check ID
+                    const { error: updateError } = await State.supabase
+                        .from('guesthouse ge')
+                        .update(newProp)
+                        .eq('id', State.editId)
+                        .eq('user_id', State.user.id); // Extra safety
+                    error = updateError;
+                } else {
+                    const { error: insertError } = await State.supabase.from('guesthouse ge').insert([newProp]);
+                    error = insertError;
+                }
+
+                if (error) throw error;
 
                 // Success
                 e.target.reset();

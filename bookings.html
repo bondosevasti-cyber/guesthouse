@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html lang="ka">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ჯავშნები - GeorgiaTravel</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Georgian:wght@400;500;600;700&display=swap"
+        rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <!-- FullCalendar -->
+    <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js'></script>
+    <!-- Tippy.js -->
+    <script src="https://unpkg.com/@popperjs/core@2"></script>
+    <script src="https://unpkg.com/tippy.js@6"></script>
+    <link rel="stylesheet" href="https://unpkg.com/tippy.js@6/themes/light.css" />
+    <!-- Flatpickr -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <style>
+        body {
+            font-family: 'Noto Sans Georgian', sans-serif;
+        }
+
+        .fc-toolbar-title {
+            font-size: 1.25rem !important;
+            font-weight: 700 !important;
+        }
+
+        .fc-event {
+            cursor: pointer;
+        }
+    </style>
+</head>
+
+<body class="bg-gray-50 min-h-screen">
+
+    <!-- Navbar -->
+    <nav class="fixed top-0 left-0 w-full z-40 bg-white shadow-md py-3 transition-all duration-300" id="navbar">
+        <div class="max-w-7xl mx-auto px-4 flex justify-between items-center">
+            <a href="index.html">
+                <img src="images/gh_logo.webp" alt="GeorgiaTravel"
+                    class="h-10 max-h-[40px] w-auto drop-shadow-md object-contain cursor-pointer transition-transform hover:scale-105 active:scale-95">
+            </a>
+            <div class="flex items-center space-x-3">
+                <!-- Auth Button / Dropdown Container -->
+                <button id="navAuthBtn" onclick="window.location.href='index.html'"
+                    class="bg-[#2d78b1] hover:bg-[#236a9e] text-white font-bold py-2 px-6 rounded-full transition-all shadow-sm">
+                    მთავარი
+                </button>
+            </div>
+        </div>
+    </nav>
+    <div class="h-20"></div>
+
+    <!-- Main Content -->
+    <main class="max-w-7xl mx-auto px-4 pb-20 mt-8">
+
+        <div class="flex justify-between items-center mb-8">
+            <h1 class="text-3xl font-bold text-gray-900">ჯავშნები და კალენდარი</h1>
+            <button onclick="openBookingModal()" id="addBookingBtn"
+                class="hidden bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded-xl shadow-md transition-colors flex items-center">
+                <svg class="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                </svg>
+                ჯავშნის დამატება
+            </button>
+        </div>
+
+        <!-- HOST VIEW (Calendar) -->
+        <div id="hostView" class="hidden">
+            <div class="bg-white rounded-3xl shadow-sm border border-gray-100 p-6 md:p-8">
+                <div id='calendar' class="min-h-[600px]"></div>
+            </div>
+        </div>
+
+        <!-- GUEST VIEW (List) -->
+        <div id="guestView" class="hidden">
+            <div id="guestBookingsGrid" class="grid grid-cols-1 gap-6">
+                <!-- Bookings injected here -->
+            </div>
+            <div id="guestEmptyState"
+                class="hidden flex-col items-center justify-center py-20 bg-white rounded-3xl border-2 border-dashed border-gray-200">
+                <h3 class="text-xl font-bold text-gray-900 mb-2">ჯავშნები არ არის</h3>
+                <p class="text-gray-500 mb-6 max-w-sm text-center">თქვენ ჯერ არ გაქვთ აქტიური ჯავშნები.</p>
+                <a href="index.html" class="text-amber-600 font-bold hover:underline">განცხადებების ნახვა</a>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- BOOKING MODAL (Host Only) -->
+    <div id="bookingModal" class="fixed inset-0 z-50 hidden flex items-center justify-center p-4">
+        <div class="absolute inset-0 bg-black/50 backdrop-blur-sm" onclick="closeBookingModal()"></div>
+        <div class="bg-white w-full max-w-md rounded-2xl shadow-2xl relative z-10 p-6">
+            <h3 class="text-xl font-bold text-gray-900 mb-4">ჯავშნის დამატება (მექანიკური)</h3>
+            <form id="bookingForm" onsubmit="handleBookingSubmit(event)">
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">სტუმრის სახელი</label>
+                        <input type="text" id="guestName" required
+                            class="w-full px-4 py-2 border rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">ობიექტი</label>
+                        <select id="bookingProperty" required
+                            class="w-full px-4 py-2 border rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none bg-white">
+                            <!-- Populated via JS -->
+                        </select>
+                    </div>
+                    <!-- Calendar Container -->
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">თარიღები</label>
+                        <div id="profileBookingCalendar"
+                            class="w-full justify-center flex bg-gray-50 rounded-xl p-2 border border-gray-100">
+                        </div>
+                        <div class="flex justify-between items-center mt-2 px-2">
+                            <p class="text-xs font-bold text-gray-400 uppercase tracking-wider">არჩეული დღეები</p>
+                            <p id="profileSelectedDaysText" class="text-indigo-600 font-bold">0 ღამე</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="flex justify-end space-x-3 mt-6">
+                    <button type="button" onclick="closeBookingModal()"
+                        class="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg">გაუქმება</button>
+                    <button type="submit"
+                        class="px-4 py-2 bg-indigo-600 text-white font-bold rounded-lg hover:bg-indigo-700 shadow-md">შენახვა</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+
+    <script>
+        const CONFIG = {
+            SUPABASE_URL: 'https://akmbyvovhubccznrzotv.supabase.co',
+            SUPABASE_KEY: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFrbWJ5dm92aHViY2N6bnJ6b3R2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjY3NTgwMTAsImV4cCI6MjA4MjMzNDAxMH0.oHLvbx5_4hYATF-hQkJvp0oxZ6ljUfGKYP-Mf7_CVtM',
+            DEFAULT_IMAGE: "https://images.unsplash.com/photo-1566073771259-6a8506099945?w=500&q=80"
+        };
+
+        const State = {
+            supabase: supabase.createClient(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_KEY),
+            user: null
+        };
+
+        let myProperties = [];
+        let myBookings = [];
+        let calendar = null;
+        let isHost = false;
+
+        async function init() {
+            const { data: { session } } = await State.supabase.auth.getSession();
+            if (!session) {
+                window.location.href = 'index.html';
+                return;
+            }
+            State.user = session.user;
+            updateAuthUI();
+
+            // Check if Host
+            const { data: props } = await State.supabase.from('guesthouse ge').select('id, name').eq('user_id', State.user.id);
+            myProperties = props || [];
+            isHost = myProperties.length > 0;
+
+            if (isHost) {
+                document.getElementById('hostView').classList.remove('hidden');
+                document.getElementById('addBookingBtn').classList.remove('hidden');
+
+                // Populate Select
+                const select = document.getElementById('bookingProperty');
+                if (select) select.innerHTML = myProperties.map(p => `<option value="${p.id}">${p.name}</option>`).join('');
+
+                await loadBookings();
+            } else {
+                document.getElementById('guestView').classList.remove('hidden');
+                await loadBookings();
+            }
+        }
+
+        async function loadBookings() {
+            try {
+                let query = State.supabase.from('bookings').select('*, property:property_id(name, image_url, images)');
+
+                if (isHost) {
+                    // Host: Get bookings for my properties
+                    const propIds = myProperties.map(p => p.id);
+                    if (propIds.length === 0) return;
+                    query = query.in('property_id', propIds);
+                } else {
+                    // Guest: Get bookings I made
+                    query = query.eq('user_id', State.user.id);
+                }
+
+                const { data, error } = await query;
+                if (error) throw error;
+                myBookings = data || [];
+
+                if (isHost) {
+                    initCalendar();
+                } else {
+                    renderGuestBookings();
+                }
+
+            } catch (e) {
+                console.error("Booking Load Error", e);
+            }
+        }
+
+        function initCalendar() {
+            const calendarEl = document.getElementById('calendar');
+            if (!calendarEl) return;
+
+            const events = myBookings.map(b => ({
+                title: b.guest_name || 'Guest',
+                start: b.check_in,
+                end: new Date(new Date(b.check_out).getTime() + 86400000).toISOString().split('T')[0],
+                backgroundColor: getRandomColor(),
+                borderColor: 'transparent',
+                extendedProps: {
+                    guestName: b.guest_name,
+                    phone: b.guest_phone,
+                    bookingCode: b.booking_code,
+                    propName: b.property?.name
+                }
+            }));
+
+            calendar = new FullCalendar.Calendar(calendarEl, {
+                initialView: 'dayGridMonth',
+                headerToolbar: {
+                    left: 'prev,next today',
+                    center: 'title',
+                    right: 'dayGridMonth,listWeek'
+                },
+                events: events,
+                eventDidMount: function (info) {
+                    tippy(info.el, {
+                        content: `
+                            <div class="text-sm p-1">
+                                <p class="font-bold">${info.event.extendedProps.guestName}</p>
+                                <p class="text-xs opacity-75">${info.event.extendedProps.phone}</p>
+                                <p class="text-xs text-amber-300 mt-1 font-mono">${info.event.extendedProps.bookingCode}</p>
+                             </div>
+                        `,
+                        allowHTML: true,
+                        theme: 'light'
+                    });
+                }
+            });
+            calendar.render();
+        }
+
+        function renderGuestBookings() {
+            const grid = document.getElementById('guestBookingsGrid');
+            const empty = document.getElementById('guestEmptyState');
+            if (!grid) return;
+
+            if (myBookings.length === 0) {
+                grid.innerHTML = '';
+                if (empty) empty.classList.remove('hidden');
+                empty.classList.add('flex');
+                return;
+            }
+
+            if (empty) empty.classList.add('hidden');
+
+            grid.innerHTML = myBookings.map(b => {
+                let image = CONFIG.DEFAULT_IMAGE;
+                const p = b.property;
+                if (p) {
+                    if (p.images && Array.isArray(p.images) && p.images.length > 0) image = p.images[0];
+                    else if (p.image_url) image = p.image_url;
+                }
+
+                const statusColor = b.status === 'confirmed' ? 'bg-green-100 text-green-700' :
+                    b.status === 'pending' ? 'bg-amber-100 text-amber-700' : 'bg-gray-100 text-gray-700';
+
+                return `
+                    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden flex flex-col md:flex-row h-auto md:h-48">
+                        <div class="w-full md:w-1/3 h-48 md:h-full relative">
+                            <img src="${image}" class="w-full h-full object-cover">
+                            <div class="absolute top-2 left-2 bg-black/60 backdrop-blur-sm text-white text-xs font-mono px-2 py-1 rounded">
+                                ${b.booking_code || '#BK'}
+                            </div>
+                        </div>
+                        <div class="p-5 flex flex-col justify-between w-full md:w-2/3">
+                            <div>
+                                <div class="flex justify-between items-start">
+                                    <h3 class="font-bold text-gray-900 text-lg mb-1">${p?.name || 'Deleted Property'}</h3>
+                                    <span class="px-2 py-1 rounded text-xs font-bold ${statusColor}">${b.status}</span>
+                                </div>
+                                <p class="text-gray-500 text-sm mb-3">
+                                    <span class="font-semibold">${b.check_in}</span> - <span class="font-semibold">${b.check_out}</span>
+                                </p>
+                            </div>
+                            <div class="flex items-center justify-between border-t pt-3">
+                                 <div>
+                                    <p class="text-xs text-gray-400 uppercase">Total Price</p>
+                                    <p class="text-amber-600 font-bold text-xl">₾${b.total_price}</p>
+                                 </div>
+                            </div>
+                        </div>
+                    </div>
+                 `;
+            }).join('');
+        }
+
+        function getRandomColor() {
+            const colors = ['#f59e0b', '#10b981', '#3b82f6', '#8b5cf6', '#ec4899', '#ef4444', '#6366f1'];
+            return colors[Math.floor(Math.random() * colors.length)];
+        }
+
+        // --- AUTH UI ---
+        function updateAuthUI() {
+            const navBtn = document.getElementById('navAuthBtn');
+            if (State.user) {
+                const avatarUrl = State.user.user_metadata.avatar_url || 'https://www.gravatar.com/avatar/?d=mp';
+                const dropdownHTML = `
+                <div class="relative group" id="authDropdownContainer">
+                    <button class="flex items-center space-x-2 focus:outline-none" id="userMenuBtn">
+                        <img src="${avatarUrl}" class="w-10 h-10 rounded-full border-2 border-white shadow-md object-cover">
+                        <span class="hidden md:block font-bold text-gray-700 text-sm">${State.user.user_metadata.full_name || 'მომხმარებელი'}</span>
+                        <svg class="w-4 h-4 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                        </svg>
+                    </button>
+                    <div class="absolute right-0 mt-2 w-56 bg-white rounded-xl shadow-xl border border-gray-100 overflow-hidden transform opacity-0 scale-95 pointer-events-none transition-all duration-200 z-50 origin-top-right" id="userDropdown">
+                        <div class="px-4 py-3 bg-gray-50 border-b border-gray-100">
+                             <p class="text-sm font-bold text-gray-900 truncate">${State.user.email}</p>
+                             <p class="text-xs text-green-600 font-medium">აქტიური</p>
+                        </div>
+                        <div class="py-1">
+                            <a href="profile.html" class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-amber-50 hover:text-amber-600 transition-colors">
+                                <svg class="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
+                                ჩემი განცხადებები
+                            </a>
+                            <a href="bookings.html" class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-indigo-50 hover:text-indigo-600 transition-colors">
+                                <svg class="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                                ჯავშნები / კალენდარი
+                            </a>
+                        </div>
+                        <div class="border-t border-gray-100 py-1">
+                            <button onclick="handleLogout()" class="flex w-full items-center px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors">
+                                <svg class="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"/></svg>
+                                გასვლა
+                            </button>
+                        </div>
+                    </div>
+                </div>`;
+
+                if (navBtn && navBtn.parentNode) {
+                    navBtn.outerHTML = dropdownHTML;
+                    setTimeout(() => {
+                        const trigger = document.getElementById('userMenuBtn');
+                        const dropdown = document.getElementById('userDropdown');
+                        if (trigger && dropdown) {
+                            trigger.addEventListener('click', (e) => {
+                                e.stopPropagation();
+                                const isHidden = dropdown.classList.contains('opacity-0');
+                                if (isHidden) {
+                                    dropdown.classList.remove('opacity-0', 'scale-95', 'pointer-events-none');
+                                } else {
+                                    dropdown.classList.add('opacity-0', 'scale-95', 'pointer-events-none');
+                                }
+                            });
+                            document.addEventListener('click', (e) => {
+                                if (!dropdown.contains(e.target) && !trigger.contains(e.target)) {
+                                    dropdown.classList.add('opacity-0', 'scale-95', 'pointer-events-none');
+                                }
+                            });
+                        }
+                    }, 0);
+                }
+            }
+        }
+
+        window.handleLogout = async function () {
+            await State.supabase.auth.signOut();
+            window.location.href = 'index.html';
+        };
+
+        // --- BOOKING MODAL LOGIC (Host) ---
+        let profileCalendar;
+
+        function initProfileCalendar() {
+            if (profileCalendar) return;
+            profileCalendar = flatpickr("#profileBookingCalendar", {
+                mode: "range",
+                inline: true,
+                dateFormat: "Y-m-d",
+                minDate: "today",
+                locale: { firstDayOfWeek: 1 },
+                onChange: function (selectedDates) {
+                    const countEl = document.getElementById('profileSelectedDaysText');
+                    if (countEl) {
+                        if (selectedDates.length === 2) {
+                            const diff = Math.abs(selectedDates[1] - selectedDates[0]);
+                            const days = Math.ceil(diff / (1000 * 60 * 60 * 24));
+                            countEl.textContent = days + " ღამე";
+                        } else {
+                            countEl.textContent = "0 ღამე";
+                        }
+                    }
+                }
+            });
+        }
+
+        window.openBookingModal = () => {
+            document.getElementById('bookingModal').classList.remove('hidden');
+            setTimeout(initProfileCalendar, 50);
+        }
+
+        window.closeBookingModal = () => {
+            document.getElementById('bookingModal').classList.add('hidden');
+            if (profileCalendar) {
+                profileCalendar.clear();
+            }
+        }
+
+        window.handleBookingSubmit = async (e) => {
+            e.preventDefault();
+            const guestName = document.getElementById('guestName').value;
+            const propertyId = document.getElementById('bookingProperty').value;
+
+            // Validate Dates
+            const selectedDates = profileCalendar ? profileCalendar.selectedDates : [];
+            if (!selectedDates || selectedDates.length !== 2) {
+                alert("გთხოვთ მონიშნოთ შესვლის და გასვლის თარიღები");
+                return;
+            }
+
+            const checkIn = flatpickr.formatDate(selectedDates[0], "Y-m-d");
+            const checkOut = flatpickr.formatDate(selectedDates[1], "Y-m-d");
+
+            // Calculate Price
+            const prop = myProperties.find(p => p.id == propertyId);
+            let totalPrice = 0;
+            if (prop) {
+                // Approximate calc if price string is simple
+                // In real app, might want better parsing
+                const priceText = prop.price || (prop.seasonal_prices ? prop.seasonal_prices[0] : '0');
+                // Assuming standard price property or something similar exists or using helper
+                // Reuse calculateCurrentPrice logic if available, but for now simple:
+                const pVal = parseFloat(priceText) || 0;
+                const diffDays = Math.ceil(Math.abs(selectedDates[1] - selectedDates[0]) / (1000 * 60 * 60 * 24));
+                totalPrice = pVal * diffDays;
+            }
+
+            try {
+                // Manual Booking by Host
+                const bookingCode = '#' + 'BK-' + Math.floor(10000 + Math.random() * 90000);
+
+                const { error } = await State.supabase.from('bookings').insert([{
+                    property_id: propertyId,
+                    check_in: checkIn,
+                    check_out: checkOut,
+                    guest_name: guestName,
+                    guest_phone: 'Manual Entry',
+                    total_price: totalPrice,
+                    status: 'confirmed',
+                    user_id: State.user.id,
+                    booking_code: bookingCode
+                }]);
+
+                if (error) throw error;
+
+                alert("ჯავშანი დამატებულია");
+                closeBookingModal();
+                e.target.reset();
+                if (profileCalendar) profileCalendar.clear();
+                loadBookings();
+
+            } catch (err) {
+                console.error(err);
+                alert("შეცდომა: " + err.message);
+            }
+        };
+
+        // Initialize on load
+        document.addEventListener('DOMContentLoaded', init);
+
+    </script>
+</body>
+
+</html>
