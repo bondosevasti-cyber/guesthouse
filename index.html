@@ -8,6 +8,9 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Georgian:wght@400;500;600;700&display=swap"
         rel="stylesheet">
+    <!-- Flatpickr -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
     <style>
         body {
             font-family: 'Noto Sans Georgian', sans-serif;
@@ -536,10 +539,23 @@
                                         </svg>
                                         <span id="modalPhone">+995 555 00 11 22</span>
                                     </button>
-                                    <button
-                                        class="w-full bg-gray-900 hover:bg-black text-white font-bold py-3.5 px-6 rounded-xl transition shadow-lg flex items-center justify-center">
+                                    <!-- Calendar Container -->
+                                    <div class="mb-4">
+                                        <div id="bookingCalendar"
+                                            class="w-full justify-center flex bg-gray-50 rounded-xl p-2 border border-gray-100">
+                                        </div>
+                                        <div class="flex justify-between items-center mt-2 px-2">
+                                            <p class="text-xs font-bold text-gray-400 uppercase tracking-wider">არჩეული
+                                                დღეები</p>
+                                            <p id="selectedDaysText" class="text-amber-600 font-bold">0 ღამე</p>
+                                        </div>
+                                    </div>
+
+                                    <button id="bookingSubmitBtn" onclick="handleBooking()"
+                                        class="w-full bg-gray-900 hover:bg-black text-white font-bold py-3.5 px-6 rounded-xl transition shadow-lg flex items-center justify-center transform active:scale-95">
                                         დაჯავშნა
                                     </button>
+                                    <p id="bookingStatus" class="mx-auto text-center text-sm font-bold mt-3 hidden"></p>
                                 </div>
                                 <p class="text-xs text-center text-gray-400 mt-4">გადახდა ხდება ადგილზე.</p>
                             </div>
@@ -1145,6 +1161,7 @@
             const prop = State.properties.find(p => p.id === id);
             if (!prop) return;
 
+            State.currentProperty = prop; // Save for booking
             configureModalContent(prop);
             DOM.propertyModal.classList.remove('hidden');
             setTimeout(() => {
@@ -1157,6 +1174,9 @@
 
 
 
+        // Global Calendar Instance
+        let bookingCalendar;
+
         window.closeModal = function () {
             DOM.modalBackdrop.classList.add('opacity-0');
             DOM.modalContent.classList.remove('modal-enter');
@@ -1164,7 +1184,127 @@
             setTimeout(() => {
                 DOM.propertyModal.classList.add('hidden');
                 document.body.classList.remove('no-scroll');
+                if (bookingCalendar) bookingCalendar.clear();
             }, 300);
+        };
+
+        // Initialize Calendar when modal opens
+        function initBookingCalendar() {
+            if (bookingCalendar) return;
+            bookingCalendar = flatpickr("#bookingCalendar", {
+                mode: "range",
+                inline: true,
+                dateFormat: "Y-m-d",
+                minDate: "today",
+                locale: {
+                    firstDayOfWeek: 1
+                },
+                onChange: function (selectedDates) {
+                    const countEl = document.getElementById('selectedDaysText');
+                    if (selectedDates.length === 2) {
+                        const diff = Math.abs(selectedDates[1] - selectedDates[0]);
+                        const days = Math.ceil(diff / (1000 * 60 * 60 * 24));
+                        countEl.textContent = days + " ღამე";
+                    } else {
+                        countEl.textContent = "0 ღამე";
+                    }
+                }
+            });
+        }
+
+        // Hook into openModal to init calendar
+        const originalOpenModal = window.openModal;
+        window.openModal = function (id) {
+            originalOpenModal(id);
+            setTimeout(initBookingCalendar, 50);
+        }
+
+        // --- BOOKING LOGIC ---
+        window.handleBooking = async function () {
+            const btn = document.getElementById('bookingSubmitBtn');
+            const statusEl = document.getElementById('bookingStatus');
+
+            // 1. Auth Check
+            if (!State.user) {
+                openAuthModal('login');
+                return;
+            }
+
+            // 2. Validation
+            const selectedDates = bookingCalendar.selectedDates;
+            if (selectedDates.length !== 2) {
+                alert("გთხოვთ მონიშნოთ შესვლის და გასვლის თარიღები");
+                return;
+            }
+
+            // Format Dates
+            const checkIn = flatpickr.formatDate(selectedDates[0], "Y-m-d");
+            const checkOut = flatpickr.formatDate(selectedDates[1], "Y-m-d");
+
+            // 3. Prepare Data
+            const prop = State.currentProperty;
+            // Parse price from display (e.g. "150₾" -> 150)
+            const priceText = document.getElementById('modalPrice').textContent.replace(/[^0-9.]/g, '');
+            const pricePerNight = parseFloat(priceText) || 0;
+
+            const oneDay = 24 * 60 * 60 * 1000;
+            const diffDays = Math.round(Math.abs((new Date(checkOut) - new Date(checkIn)) / oneDay));
+            const totalPrice = pricePerNight * diffDays;
+
+            if (totalPrice <= 0) {
+                alert("ფასის გამოთვლა ვერ მოხერხდა");
+                return;
+            }
+
+            // 4. UI Loading
+            const originalText = btn.innerHTML;
+            btn.innerHTML = `<svg class="animate-spin h-5 w-5 mr-2" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> მუშავდება...`;
+            btn.disabled = true;
+            statusEl.className = "text-center text-sm font-bold mt-3 hidden";
+
+            try {
+                // 5. Insert to Supabase (Webhook will handle notification)
+                const bookingCode = '#' + 'BK-' + Math.floor(10000 + Math.random() * 90000);
+
+                const bookingData = {
+                    property_id: prop.id,
+                    check_in: checkIn,
+                    check_out: checkOut,
+                    guest_name: State.user.user_metadata.full_name || State.user.user_metadata.first_name || 'Guest',
+                    guest_phone: State.user.user_metadata.phone || prop.phone,
+                    total_price: totalPrice,
+                    status: 'pending',
+                    user_id: State.user.id,
+                    booking_code: bookingCode
+                };
+
+                const { error } = await State.supabase
+                    .from('bookings')
+                    .insert([bookingData]);
+
+                if (error) throw error;
+
+                // 6. Success UI
+                statusEl.textContent = "ჯავშანი მიღებულია! მფლობელი დაგიკავშირდებათ";
+                statusEl.className = "text-center text-sm font-bold mt-3 text-emerald-600 block";
+                btn.innerHTML = `<svg class="w-5 h-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg> დაჯავშნილია`;
+
+                // Reset after delay
+                setTimeout(() => {
+                    closeModal();
+                    btn.innerHTML = originalText;
+                    btn.disabled = false;
+                    statusEl.classList.add('hidden');
+                    if (bookingCalendar) bookingCalendar.clear();
+                }, 3000);
+
+            } catch (err) {
+                console.error("Booking Error:", err);
+                statusEl.textContent = "შეცდომა: " + err.message;
+                statusEl.className = "text-center text-sm font-bold mt-3 text-red-500 block";
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+            }
         };
 
         // --- FULLSCREEN MODAL ---
