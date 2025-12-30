@@ -297,13 +297,35 @@
         </div>`;
         }
 
-        function updateAuthUI() {
+        async function updateAuthUI() {
             let navBtn = document.getElementById('navAuthBtn');
             if (!navBtn) return;
 
             if (State.user) {
                 const name = State.user.user_metadata.full_name || State.user.email;
                 const avatar = State.user.user_metadata.avatar_url || 'https://www.gravatar.com/avatar/?d=mp';
+
+                // Fetch Profile Tier
+                let tier = 'Free';
+                try {
+                    const { data, error } = await State.supabase
+                        .from('profiles')
+                        .select('subscription_tier')
+                        .eq('id', State.user.id)
+                        .single();
+
+                    if (data && data.subscription_tier) {
+                        tier = data.subscription_tier;
+                    }
+                } catch (e) {
+                    console.error("Error fetching profile tier:", e);
+                }
+
+                // Tier UI Logic
+                let tierDisplay = `<span class="font-bold text-gray-700 ml-1">${tier}</span>`;
+                if (tier === 'Free') {
+                    tierDisplay += `<a href="pricing.html" class="ml-2 text-[10px] bg-amber-500 text-white px-2 py-0.5 rounded-full hover:bg-amber-600 transition-colors uppercase font-bold tracking-wide shadow-sm">Upgrade</a>`;
+                }
 
                 const newHTML = `
                     <div id="navAuthBtn" class="relative ml-2">
@@ -316,8 +338,10 @@
                              <div class="px-5 py-3 border-b border-gray-100 mb-1">
                                 <p class="text-xs text-gray-400 font-medium uppercase tracking-wider">ანგარიში</p>
                                 <p class="text-sm font-bold text-gray-900 truncate mt-0.5">${name}</p>
-                             <p class="text-xs text-green-600 font-medium">აქტიური</p>
-                        </div>
+                                <div class="text-xs text-gray-500 mt-1 flex items-center">
+                                    პაკეტი: ${tierDisplay}
+                                </div>
+                            </div>
                         <div class="py-1">
                             <a href="profile.html" class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-amber-50 hover:text-amber-600 transition-colors">
                                 <svg class="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>

@@ -1925,7 +1925,7 @@
             }
         };
 
-        function updateAuthUI() {
+        async function updateAuthUI() {
             let navBtn = document.getElementById('navAuthBtn');
             if (!navBtn) return;
 
@@ -1934,9 +1934,27 @@
                 const name = State.user.user_metadata.full_name || State.user.email;
                 const avatar = State.user.user_metadata.avatar_url || 'https://www.gravatar.com/avatar/?d=mp';
 
-                // Use outerHTML to replace button with a dropdown container if needed, 
-                // but simpler to just change content if we can manage styles.
-                // Since we need a dropdown, let's replace the element type if it's a button.
+                // Fetch Profile Tier
+                let tier = 'Free';
+                try {
+                    const { data, error } = await State.supabase
+                        .from('profiles')
+                        .select('subscription_tier')
+                        .eq('id', State.user.id)
+                        .single();
+
+                    if (data && data.subscription_tier) {
+                        tier = data.subscription_tier;
+                    }
+                } catch (e) {
+                    console.error("Error fetching profile tier:", e);
+                }
+
+                // Tier UI Logic
+                let tierDisplay = `<span class="font-bold text-gray-700 ml-1">${tier}</span>`;
+                if (tier === 'Free') {
+                    tierDisplay += `<a href="pricing.html" class="ml-2 text-[10px] bg-amber-500 text-white px-2 py-0.5 rounded-full hover:bg-amber-600 transition-colors uppercase font-bold tracking-wide shadow-sm">Upgrade</a>`;
+                }
 
                 const newHTML = `
                     <div id="navAuthBtn" class="relative ml-2">
@@ -1950,7 +1968,9 @@
                              <div class="px-5 py-3 border-b border-gray-100 mb-1">
                                 <p class="text-xs text-gray-400 font-medium uppercase tracking-wider">ანგარიში</p>
                                 <p class="text-sm font-bold text-gray-900 truncate mt-0.5">${name}</p>
-                             <p class="text-xs text-green-600 font-medium">აქტიური</p>
+                                <div class="text-xs text-gray-500 mt-1 flex items-center">
+                                    პაკეტი: ${tierDisplay}
+                                </div>
                         </div>
                         <div class="py-1">
                             <a href="profile.html" class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-amber-50 hover:text-amber-600 transition-colors">
