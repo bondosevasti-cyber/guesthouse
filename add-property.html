@@ -139,17 +139,25 @@
                     <div class="border-t border-gray-100 my-6"></div>
 
                     <!-- Basic Info -->
-                    <!-- Row 1: Name -->
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Row 1: Property Name -->
+                    <div class="group">
+                        <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">
+                            ობიექტის სახელი (სასტუმროს სახელი)</label>
+                        <input type="text" id="propertyName" required placeholder="მაგ: Green Cottage"
+                            class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:border-amber-500 focus:ring-4 focus:ring-amber-500/10 outline-none transition-all placeholder-gray-400 font-medium text-gray-800">
+                    </div>
+
+                    <!-- Row 2: Owner Name -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
                         <div class="group">
                             <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">
-                                სახელი</label>
+                                მფლობელის სახელი</label>
                             <input type="text" id="firstName" required placeholder="თქვენი სახელი"
                                 class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:border-amber-500 focus:ring-4 focus:ring-amber-500/10 outline-none transition-all placeholder-gray-400 font-medium text-gray-800">
                         </div>
                         <div class="group">
                             <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">
-                                გვარი</label>
+                                მფლობელის გვარი</label>
                             <input type="text" id="lastName" required placeholder="თქვენი გვარი"
                                 class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:border-amber-500 focus:ring-4 focus:ring-amber-500/10 outline-none transition-all placeholder-gray-400 font-medium text-gray-800">
                         </div>
@@ -410,6 +418,7 @@
             fileInput: document.getElementById('fileInput'),
 
             // Name Inputs
+            propertyName: document.getElementById('propertyName'),
             firstName: document.getElementById('firstName'),
             lastName: document.getElementById('lastName'),
 
@@ -608,7 +617,10 @@
                 }
 
                 // Populate Fields
-                const names = data.name.split(' ');
+                document.getElementById('propertyName').value = data.name || '';
+
+                const hostNameVal = data.host_name || '';
+                const names = hostNameVal ? hostNameVal.split(' ') : [];
                 document.getElementById('firstName').value = names[0] || '';
                 document.getElementById('lastName').value = names.slice(1).join(' ') || '';
 
@@ -1033,7 +1045,11 @@
         // --- SUBMIT ---
         window.submitProperty = async function (e) {
             e.preventDefault();
-            if (State.pendingUploads.length === 0) { alert("გთხოვთ ატვირთოთ მინიმუმ 1 სურათი"); return; }
+            // Validation: Check if there are ANY images (pending OR existing)
+            if (State.pendingUploads.length === 0 && State.existingImages.length === 0) {
+                alert("გთხოვთ ატვირთოთ მინიმუმ 1 სურათი");
+                return;
+            }
 
             // Super VIP Limit Check
             const tierValue = document.getElementById('addTier').value;
@@ -1093,9 +1109,10 @@
                 });
 
                 // Name concatenation
+                const propertyName = document.getElementById('propertyName').value.trim();
                 const firstName = document.getElementById('firstName').value.trim();
                 const lastName = document.getElementById('lastName').value.trim();
-                const fullName = `${firstName} ${lastName}`;
+                const hostName = `${firstName} ${lastName}`;
 
                 // Handle Price (Min vs Range)
                 let priceRaw = formData.get('price'); // e.g., "40 - 60" or "40"
@@ -1109,9 +1126,14 @@
                     finalPrice = parseInt(priceRaw) || 0;
                 }
 
+                // Combine Existing + New Integers
+                const finalImages = [...(State.existingImages || []), ...uploadedUrls];
+
                 const newProp = {
                     user_id: userId,
-                    name: fullName, // Concatenated Name
+                    name: propertyName, // Property Name
+                    // host_name: hostName, // Owner Name REMOVED as per request
+
                     location: formData.get('location'),
                     price: finalPrice,
                     price_display: priceDisplay,
@@ -1119,7 +1141,7 @@
                     tier: formData.get('tier'),
                     description: formData.get('description'),
                     amenities: amenities,
-                    images: [...State.existingImages, ...uploadedUrls], // Merge
+                    images: finalImages, // Correct Array
                     phone: formData.get('phone'),
                     seasonal_prices: seasonal_prices,
                     rating: 5.0

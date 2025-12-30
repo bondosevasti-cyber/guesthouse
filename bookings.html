@@ -69,9 +69,14 @@
         </div>
 
         <!-- HOST VIEW (Calendar) -->
-        <div id="hostView" class="hidden">
-            <div class="bg-white rounded-3xl shadow-sm border border-gray-100 p-6 md:p-8">
-                <div id='calendar' class="min-h-[600px]"></div>
+        <div id="hostView" class="hidden flex flex-col h-full">
+            <!-- Property Tabs -->
+            <div id="propertyTabs" class="flex flex-nowrap overflow-x-auto gap-2 mb-6 pb-2 scrollbar-none snap-x">
+                <!-- Tabs injected here -->
+            </div>
+
+            <div class="bg-white rounded-3xl shadow-sm border border-gray-100 p-4 md:p-6 flex-grow flex flex-col">
+                <div id='calendar' class="w-full flex-grow"></div>
             </div>
         </div>
 
@@ -148,6 +153,7 @@
         let myBookings = [];
         let calendar = null;
         let isHost = false;
+        let selectedPropertyId = 'all';
 
         async function init() {
             const { data: { session } } = await State.supabase.auth.getSession();
@@ -171,11 +177,42 @@
                 const select = document.getElementById('bookingProperty');
                 if (select) select.innerHTML = myProperties.map(p => `<option value="${p.id}">${p.name}</option>`).join('');
 
+                renderTabs();
                 await loadBookings();
+                subscribeToBookings();
             } else {
                 document.getElementById('guestView').classList.remove('hidden');
                 await loadBookings();
             }
+        }
+
+        function renderTabs() {
+            const container = document.getElementById('propertyTabs');
+            if (!container) return;
+
+            const makeTab = (id, name, active) => {
+                const btn = document.createElement('button');
+                btn.className = `px-5 py-2.5 rounded-xl font-bold text-sm whitespace-nowrap transition-all shadow-sm snap-start ${active
+                    ? 'bg-indigo-600 text-white shadow-indigo-200'
+                    : 'bg-white text-gray-600 border border-gray-200 hover:bg-gray-50'}`;
+                btn.textContent = name;
+                btn.onclick = () => {
+                    selectedPropertyId = id;
+                    renderTabs();
+                    updateCalendarEvents();
+                };
+                return btn;
+            };
+
+            container.innerHTML = '';
+
+            // All Tab
+            container.appendChild(makeTab('all', 'ყველა', selectedPropertyId === 'all'));
+
+            // Property Tabs
+            myProperties.forEach(p => {
+                container.appendChild(makeTab(p.id, p.name, selectedPropertyId === p.id));
+            });
         }
 
         async function loadBookings() {
@@ -207,14 +244,23 @@
             }
         }
 
-        function initCalendar() {
-            const calendarEl = document.getElementById('calendar');
-            if (!calendarEl) return;
+        function getFilteredBookings() {
+            if (selectedPropertyId === 'all') return myBookings;
+            return myBookings.filter(b => b.property_id == selectedPropertyId);
+        }
 
-            const events = myBookings.map(b => ({
+        function updateCalendarEvents() {
+            if (!calendar) return;
+            const events = mapBookingsToEvents(getFilteredBookings());
+            calendar.removeAllEvents();
+            calendar.addEventSource(events);
+        }
+
+        function mapBookingsToEvents(bookings) {
+            return bookings.map(b => ({
                 title: b.guest_name || 'Guest',
                 start: b.check_in,
-                end: new Date(new Date(b.check_out).getTime() + 86400000).toISOString().split('T')[0],
+                end: new Date(new Date(b.check_out).getTime() + 86400000).toISOString().split('T')[0], // Add 1 day for inclusive end
                 backgroundColor: getRandomColor(),
                 borderColor: 'transparent',
                 extendedProps: {
@@ -224,30 +270,75 @@
                     propName: b.property?.name
                 }
             }));
+        }
+
+        function initCalendar() {
+            // If calendar already exists, just update events
+            if (calendar) {
+                updateCalendarEvents();
+                return;
+            }
+
+            const calendarEl = document.getElementById('calendar');
+            if (!calendarEl) return;
+
+            const isMobile = window.innerWidth < 768;
+            const events = mapBookingsToEvents(getFilteredBookings());
 
             calendar = new FullCalendar.Calendar(calendarEl, {
-                initialView: 'dayGridMonth',
+                initialView: isMobile ? 'listWeek' : 'dayGridMonth',
+                height: 'auto', // Expands to fit content
+                contentHeight: 'auto',
+                aspectRatio: isMobile ? 0.8 : 1.35,
                 headerToolbar: {
                     left: 'prev,next today',
                     center: 'title',
                     right: 'dayGridMonth,listWeek'
                 },
+                views: {
+                    dayGridMonth: {
+                        dayMaxEvents: 2
+                    },
+                    listWeek: {
+                        buttonText: 'სია'
+                    }
+                },
                 events: events,
+                windowResize: function (view) {
+                    // Adjust view on resize
+                    if (window.innerWidth < 768) {
+                        calendar.changeView('listWeek');
+                    } else {
+                        calendar.changeView('dayGridMonth');
+                    }
+                },
                 eventDidMount: function (info) {
                     tippy(info.el, {
                         content: `
                             <div class="text-sm p-1">
                                 <p class="font-bold">${info.event.extendedProps.guestName}</p>
+                                <p class="text-xs text-gray-200">${info.event.extendedProps.propName}</p>
                                 <p class="text-xs opacity-75">${info.event.extendedProps.phone}</p>
                                 <p class="text-xs text-amber-300 mt-1 font-mono">${info.event.extendedProps.bookingCode}</p>
                              </div>
                         `,
                         allowHTML: true,
-                        theme: 'light'
+                        theme: 'material'
                     });
                 }
             });
             calendar.render();
+        }
+
+        function subscribeToBookings() {
+            State.supabase
+                .channel('public:bookings')
+                .on('postgres_changes', { event: '*', schema: 'public', table: 'bookings' }, (payload) => {
+                    console.log('Real-time update:', payload);
+                    // Refresh data
+                    loadBookings();
+                })
+                .subscribe();
         }
 
         function renderGuestBookings() {

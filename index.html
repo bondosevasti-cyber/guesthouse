@@ -1425,7 +1425,10 @@
             DOM.mBadge.textContent = prop.type;
 
             // Host Info
-            if (DOM.mHostName) DOM.mHostName.textContent = prop.name.split(' ')[0] + " Host";
+            if (DOM.mHostName) {
+                // Use host_name if available, otherwise User/Host string
+                DOM.mHostName.textContent = prop.host_name || (prop.name ? prop.name.split(' ')[0] + " Host" : "Host");
+            }
             if (DOM.mHostImage) DOM.mHostImage.src = `https://api.dicebear.com/7.x/avataaars/svg?seed=${prop.id}`;
 
             // Gallery Population

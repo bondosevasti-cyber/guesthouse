@@ -38,7 +38,6 @@
 <body class="bg-gray-50 min-h-screen">
 
     <!-- Navbar -->
-    <!-- Navbar (Copied from index.html) -->
     <nav class="fixed top-0 left-0 w-full z-40 bg-white shadow-md py-3 transition-all duration-300" id="navbar">
         <div class="max-w-7xl mx-auto px-4 flex justify-between items-center">
             <a href="index.html">
@@ -46,11 +45,28 @@
                     class="h-10 max-h-[40px] w-auto drop-shadow-md object-contain cursor-pointer transition-transform hover:scale-105 active:scale-95">
             </a>
             <div class="flex items-center space-x-3">
+                <a href="pricing.html"
+                    class="hidden md:flex items-center bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-lg shadow-md transition-all animate-flag">
+                    <svg class="w-5 h-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    ფასების ნახვა
+                </a>
+                <a href="add-property.html"
+                    class="bg-amber-500 hover:bg-amber-600 text-white font-bold p-2.5 rounded-full transition-all shadow-md hover:shadow-lg flex items-center justify-center transform hover:-translate-y-0.5"
+                    title="დამატება">
+                    <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                    </svg>
+                </a>
                 <!-- Auth Button / Dropdown Container -->
-                <button id="navAuthBtn" onclick="window.location.href='index.html'"
-                    class="bg-[#2d78b1] hover:bg-[#236a9e] text-white font-bold py-2 px-6 rounded-full transition-all shadow-sm">
-                    მთავარი
-                </button>
+                <div id="navAuthBtnContainer">
+                    <button id="navAuthBtn"
+                        class="bg-[#2d78b1] hover:bg-[#236a9e] text-white font-bold py-2 px-6 rounded-full transition-all shadow-sm">
+                        შესვლა
+                    </button>
+                </div>
             </div>
         </div>
     </nav>
@@ -73,9 +89,7 @@
         <div id="propertiesView">
             <!-- Header -->
             <div class="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">
-                <div>
-                    <!-- Title removed as it's in tabs now -->
-                </div>
+                <div></div>
                 <div class="flex-shrink-0">
                     <a href="add-property.html"
                         class="inline-flex items-center justify-center bg-amber-500 hover:bg-amber-600 text-white font-bold py-3 px-6 rounded-xl shadow-lg shadow-amber-200 transition-all transform hover:-translate-y-0.5">
@@ -89,246 +103,300 @@
 
             <!-- Status & Grid -->
             <div id="statusMessage" class="text-center py-20 text-gray-400 animate-pulse">
-                ჯერ განცხადება არ არის...
+                იტვირთება...
             </div>
 
             <div id="listings-container" class="hidden grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                 <!-- Cards will be injected here -->
             </div>
         </div>
+    </main>
 
-        <!-- BOOKINGS TAB REMOVED -->
+    <script>
+        const CONFIG = {
+            SUPABASE_URL: 'https://akmbyvovhubccznrzotv.supabase.co',
+            SUPABASE_KEY: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFrbWJ5dm92aHViY2N6bnJ6b3R2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjY3NTgwMTAsImV4cCI6MjA4MjMzNDAxMH0.oHLvbx5_4hYATF-hQkJvp0oxZ6ljUfGKYP-Mf7_CVtM',
+            DEFAULT_IMAGE: "https://images.unsplash.com/photo-1566073771259-6a8506099945?w=500&q=80"
+        };
 
+        const State = {
+            supabase: supabase.createClient(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_KEY),
+            user: null
+        };
 
+        let myProperties = [];
 
-        <!-- Booking Modal Removed -->
-
-        <script>
-            const CONFIG = {
-                SUPABASE_URL: 'https://akmbyvovhubccznrzotv.supabase.co',
-                SUPABASE_KEY: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFrbWJ5dm92aHViY2N6bnJ6b3R2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjY3NTgwMTAsImV4cCI6MjA4MjMzNDAxMH0.oHLvbx5_4hYATF-hQkJvp0oxZ6ljUfGKYP-Mf7_CVtM'
-            };
-
-            const State = {
-                supabase: supabase.createClient(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_KEY),
-                user: null
-            };
-
-            let myProperties = [];
-
-            async function init() {
-                // Auth Listener
-                State.supabase.auth.onAuthStateChange((event, session) => {
-                    State.user = session ? session.user : null;
-                    updateAuthUI();
-                    if (event === 'SIGNED_OUT' || !session) window.location.href = 'index.html';
-                });
-
-                // Init Session Check
-                const { data: { session } } = await State.supabase.auth.getSession();
-                if (!session) {
-                    window.location.href = 'index.html';
-                    return;
-                }
-                State.user = session.user;
+        async function init() {
+            // Auth Listener
+            State.supabase.auth.onAuthStateChange((event, session) => {
+                State.user = session ? session.user : null;
                 updateAuthUI();
-                loadUserListings();
+                if (event === 'SIGNED_OUT' || !session) window.location.href = 'index.html';
+            });
+
+            // Init Session Check
+            const { data: { session } } = await State.supabase.auth.getSession();
+            if (!session) {
+                window.location.href = 'index.html';
+                return;
+            }
+            State.user = session.user;
+            updateAuthUI();
+            loadUserListings();
+        }
+
+        async function loadUserListings() {
+            try {
+                const { data, error } = await State.supabase
+                    .from('guesthouse ge')
+                    .select('*')
+                    .eq('user_id', State.user.id)
+                    .order('created_at', { ascending: false });
+
+                if (error) throw error;
+                myProperties = data || [];
+
+                const container = document.getElementById('listings-container');
+                const status = document.getElementById('statusMessage');
+
+                if (status) status.classList.add('hidden');
+                if (container) {
+                    container.classList.remove('hidden');
+                    if (myProperties.length === 0) {
+                        container.innerHTML = `
+                            <div class="col-span-full flex flex-col items-center justify-center py-20 bg-white rounded-3xl border-2 border-dashed border-gray-200">
+                                <h3 class="text-xl font-bold text-gray-900 mb-2">თქვენ ჯერ არ გაქვთ განცხადებები</h3>
+                                <p class="text-gray-500 mb-6 max-w-sm text-center">დაამატეთ ახალი განცხადება მთავარი გვერდიდან.</p>
+                                <a href="add-property.html" class="px-6 py-2 bg-amber-500 text-white rounded-xl font-bold">დამატება</a>
+                            </div>`;
+                    } else {
+                        container.innerHTML = myProperties.map(createCardHTML).join('');
+                    }
+                }
+            } catch (err) {
+                console.error("Error loading listings:", err);
+                const status = document.getElementById('statusMessage');
+                if (status) status.textContent = "შეცდომა განცხადებების ჩატვირთვისას.";
+            }
+        }
+
+        function calculateCurrentPrice(p) {
+            const currentMonthIndex = new Date().getMonth();
+            let display = "შეთანხმებით";
+
+            let seasonal = [];
+            if (p.seasonal_prices) {
+                if (Array.isArray(p.seasonal_prices)) seasonal = p.seasonal_prices;
+                else if (typeof p.seasonal_prices === 'string') {
+                    try { seasonal = JSON.parse(p.seasonal_prices); } catch (e) { }
+                }
             }
 
-            async function loadUserListings() {
-                try {
-                    const { data, error } = await State.supabase
-                        .from('guesthouse ge')
-                        .select('*')
-                        .eq('user_id', State.user.id)
-                        .order('created_at', { ascending: false });
+            if (seasonal.length > 0) {
+                const monthPrices = seasonal.map(s => s.prices[currentMonthIndex]).filter(price => price > 0);
+                if (monthPrices.length > 0) {
+                    const minP = Math.min(...monthPrices);
+                    const maxP = Math.max(...monthPrices);
+                    display = minP === maxP ? `₾${minP}` : `₾${minP} - ₾${maxP}`;
+                }
+            } else if (p.price) {
+                display = `₾${p.price}`;
+            }
+            return display;
+        }
 
-                    if (error) throw error;
-                    myProperties = data || [];
-
-                    const container = document.getElementById('listings-container');
-                    const status = document.getElementById('statusMessage');
-
-                    if (status) status.classList.add('hidden');
-                    if (container) {
-                        container.classList.remove('hidden');
-                        if (myProperties.length === 0) {
-                            container.innerHTML = `
-                                <div class="col-span-full flex flex-col items-center justify-center py-20 bg-white rounded-3xl border-2 border-dashed border-gray-200">
-                                    <h3 class="text-xl font-bold text-gray-900 mb-2">თქვენ ჯერ არ გაქვთ განცხადებები</h3>
-                                    <p class="text-gray-500 mb-6 max-w-sm text-center">დაამატეთ ახალი განცხადება მთავარი გვერდიდან.</p>
-                                    <a href="add-property.html" class="px-6 py-2 bg-amber-500 text-white rounded-xl font-bold">დამატება</a>
-                                </div>`;
-                        } else {
-                            container.innerHTML = myProperties.map(createCardHTML).join('');
-                        }
-                    }
-                } catch (err) {
-                    console.error("Error loading listings:", err);
+        function createCardHTML(prop) {
+            // 0. Image Logic
+            let displayImage = CONFIG.DEFAULT_IMAGE;
+            if (prop.images) {
+                if (Array.isArray(prop.images) && prop.images.length > 0) displayImage = prop.images[0];
+                else if (typeof prop.images === 'string') {
+                    try {
+                        const parsed = JSON.parse(prop.images);
+                        if (Array.isArray(parsed) && parsed.length > 0) displayImage = parsed[0];
+                    } catch (e) { }
                 }
             }
 
-            // Helper to parsing prices
-            function calculateCurrentPrice(p) {
-                // Logic adapted from index.html normalizeProperty
-                const currentMonthIndex = new Date().getMonth();
-                let display = "შეთანხმებით";
+            // Price Calculation
+            const currentPriceDisplay = calculateCurrentPrice(prop);
 
-                let seasonal = [];
-                if (p.seasonal_prices) {
-                    if (Array.isArray(p.seasonal_prices)) seasonal = p.seasonal_prices;
-                    else if (typeof p.seasonal_prices === 'string') {
-                        try { seasonal = JSON.parse(p.seasonal_prices); } catch (e) { }
-                    }
-                }
+            // Badge & Glow Logic
+            let badge = '';
+            if (prop.tier === 'super-vip') badge = '<span class="bg-gradient-to-r from-yellow-400 to-amber-500 text-white text-[10px] font-bold px-2 py-1 rounded shadow-sm uppercase tracking-wider ml-2 border border-white/20">SUPER VIP</span>';
+            else if (prop.tier === 'vip-plus') badge = '<span class="bg-indigo-600 text-white text-[10px] font-bold px-2 py-1 rounded shadow-sm uppercase tracking-wider ml-2">VIP +</span>';
+            else if (prop.tier === 'vip') badge = '<span class="bg-amber-500 text-white text-[10px] font-bold px-2 py-1 rounded shadow-sm uppercase tracking-wider ml-2">VIP</span>';
 
-                if (seasonal.length > 0) {
-                    const monthPrices = seasonal.map(s => s.prices[currentMonthIndex]).filter(price => price > 0);
-                    if (monthPrices.length > 0) {
-                        const minP = Math.min(...monthPrices);
-                        const maxP = Math.max(...monthPrices);
-                        display = minP === maxP ? `₾${minP}` : `₾${minP} - ₾${maxP}`;
-                    }
-                } else if (p.price) {
-                    display = `₾${p.price}`;
-                }
-                return display;
-            }
+            let glowClass = '';
+            if (prop.tier === 'vip-plus') glowClass = 'ring-4 ring-indigo-100 border-2 border-indigo-200 shadow-lg';
+            else if (prop.tier === 'vip') glowClass = 'border border-amber-200 shadow-md';
 
-            function createCardHTML(p) {
-                // 1. Image
-                let image = "https://images.unsplash.com/photo-1566073771259-6a8506099945?w=500&q=80";
-                if (p.images) {
-                    let imgs = [];
-                    if (Array.isArray(p.images)) imgs = p.images;
-                    else if (typeof p.images === 'string') {
-                        if (p.images.startsWith('{')) imgs = p.images.slice(1, -1).split(',');
-                        else try { imgs = JSON.parse(p.images); } catch (e) { }
-                    }
-                    if (imgs.length > 0) image = imgs[0];
-                }
+            // Actions HTML (Edit / Delete)
+            const actionsHTML = `
+                <div class="grid grid-cols-2 gap-3 mt-4 z-20 relative">
+                    <a href="add-property.html?id=${prop.id}" class="flex items-center justify-center px-4 py-2 border border-gray-200 rounded-lg text-sm font-bold text-gray-600 hover:bg-amber-50 hover:text-amber-600 hover:border-amber-200 transition-colors bg-white/50 backdrop-blur-sm" onclick="event.stopPropagation();">
+                        <svg class="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+                        რედაქტირება
+                    </a>
+                    <button onclick="event.stopPropagation(); deleteProperty('${prop.id}')" class="flex items-center justify-center px-4 py-2 border border-red-100 bg-red-50/50 backdrop-blur-sm rounded-lg text-sm font-bold text-red-600 hover:bg-red-100 hover:border-red-200 transition-colors">
+                        <svg class="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                        წაშლა
+                    </button>
+                </div>`;
 
-                // 2. Price
-                const priceDisplay = calculateCurrentPrice(p);
-
-                // 3. Badges & Glow
-                let badge = '';
-                let glowClass = '';
-
-                if (p.tier === 'super-vip') {
-                    badge = '<span class="bg-gradient-to-r from-yellow-400 to-amber-500 text-white text-[10px] font-bold px-2 py-1 rounded shadow-sm uppercase tracking-wider ml-2 border border-white/20">SUPER VIP</span>';
-                    glowClass = 'border-4 border-yellow-400 shadow-xl';
-                } else if (p.tier === 'vip-plus') {
-                    badge = '<span class="bg-indigo-600 text-white text-[10px] font-bold px-2 py-1 rounded shadow-sm uppercase tracking-wider ml-2">VIP +</span>';
-                    glowClass = 'ring-4 ring-indigo-100 border-2 border-indigo-200 shadow-lg';
-                } else if (p.tier === 'vip') {
-                    badge = '<span class="bg-amber-500 text-white text-[10px] font-bold px-2 py-1 rounded shadow-sm uppercase tracking-wider ml-2">VIP</span>';
-                    glowClass = 'border border-amber-200 shadow-md';
-                }
-
+            // Super VIP Layout
+            if (prop.tier === 'super-vip') {
                 return `
-                <div class="bg-white rounded-xl shadow-md hover:shadow-xl transition-all duration-300 overflow-hidden group ${glowClass} flex flex-col h-full">
-                    <div class="relative h-48 overflow-hidden">
-                        <img src="${image}" class="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-500">
-                        <div class="absolute top-3 left-3 flex items-center">
-                            <span class="bg-white/90 backdrop-blur-sm px-2 py-1 rounded-md text-xs font-bold text-gray-800 shadow-sm uppercase tracking-wide">${p.type}</span>
+            <div class="col-span-1 sm:col-span-2 lg:col-span-3 bg-white rounded-2xl shadow-xl overflow-hidden cursor-default fade-in group border-4 border-yellow-400 transform hover:scale-[1.01] transition-all duration-300 relative">
+                <div class="absolute inset-0 bg-yellow-400/5 z-0 pointer-events-none"></div>
+                <div class="flex flex-col md:flex-row h-full md:h-80 relative z-10">
+                    <div class="md:w-2/3 h-64 md:h-full relative overflow-hidden">
+                        <img src="${displayImage}" class="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-700">
+                        <div class="absolute top-4 left-4 flex items-center">
+                            <span class="bg-white/90 backdrop-blur-md px-3 py-1 rounded-lg text-sm font-bold text-gray-800 shadow-sm uppercase">${prop.type}</span>
                             ${badge}
                         </div>
-                        <div class="absolute bottom-3 right-3 bg-gray-900/80 backdrop-blur-sm text-white px-2 py-1 rounded-md text-sm font-bold flex items-center shadow-sm">
-                             <span class="text-yellow-400 mr-1">★</span> ${p.rating || 5.0}
-                        </div>
                     </div>
-                    <div class="p-5 flex-1 flex flex-col">
-                        <h3 class="font-bold text-lg text-gray-900 leading-tight mb-1 truncate group-hover:text-amber-600 transition-colors">${p.name}</h3>
-                        <p class="text-sm text-gray-500 flex items-center mb-3">
-                            <svg class="w-4 h-4 mr-1 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
-                            ${p.location}
+                    <div class="md:w-1/3 p-8 flex flex-col justify-center bg-gradient-to-br from-white to-amber-50">
+                        <h3 class="font-extrabold text-3xl mb-2 text-gray-900 group-hover:text-amber-600 transition-colors truncate" title="${prop.name}">${prop.name}</h3>
+                        <p class="text-gray-500 mb-6 flex items-center">
+                            <svg class="w-5 h-5 mr-1 text-gray-400 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                            <span class="truncate">${prop.location}</span>
                         </p>
-                        <div class="flex justify-between items-center pt-3 border-t border-gray-100 mt-auto">
-                           <div class="text-amber-600 font-bold text-xl">${priceDisplay}</div>
-                        </div>
-                        
-                        <!-- Actions -->
-                        <div class="grid grid-cols-2 gap-3 mt-4">
-                            <a href="add-property.html?id=${p.id}" class="flex items-center justify-center px-4 py-2 border border-gray-200 rounded-lg text-sm font-bold text-gray-600 hover:bg-amber-50 hover:text-amber-600 hover:border-amber-200 transition-colors">
-                                <svg class="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
-                                რედაქტირება
-                            </a>
-                            <button onclick="deleteProperty('${p.id}')" class="flex items-center justify-center px-4 py-2 border border-red-100 bg-red-50 rounded-lg text-sm font-bold text-red-600 hover:bg-red-100 hover:border-red-200 transition-colors">
-                                <svg class="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
-                                წაშლა
-                            </button>
-                        </div>
+                        <div class="text-amber-600 font-bold text-3xl mt-auto mb-4">${currentPriceDisplay}</div>
+                        ${actionsHTML}
                     </div>
-                </div>`;
+                </div>
+            </div>`;
             }
 
-            // Sync Navbar UI
-            function updateAuthUI() {
-                const navBtn = document.getElementById('navAuthBtn');
-                if (State.user) {
-                    const avatarUrl = State.user.user_metadata.avatar_url || 'https://www.gravatar.com/avatar/?d=mp';
-                    const name = State.user.user_metadata.full_name || 'მომხმარებელი';
+            // Standard Layout
+            return `
+        <div class="bg-white rounded-xl shadow-md hover:shadow-xl transition-all duration-300 overflow-hidden cursor-default fade-in group ${glowClass} flex flex-col h-full">
+            <div class="relative h-56 overflow-hidden">
+                <img src="${displayImage}" class="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-500">
+                <div class="absolute top-3 left-3 flex items-center">
+                    <span class="bg-white/90 backdrop-blur-sm px-2 py-1 rounded-md text-xs font-bold text-gray-800 shadow-sm uppercase tracking-wide">${prop.type}</span>
+                    ${badge}
+                </div>
+                <div class="absolute bottom-3 right-3 bg-gray-900/80 backdrop-blur-sm text-white px-2 py-1 rounded-md text-sm font-bold flex items-center shadow-sm">
+                    <span class="text-yellow-400 mr-1">★</span> ${prop.rating || 5.0}
+                </div>
+            </div>
+            <div class="p-5 flex-1 flex flex-col">
+                <h3 class="font-bold text-lg text-gray-900 leading-tight mb-1 truncate group-hover:text-amber-600 transition-colors">${prop.name}</h3>
+                <p class="text-sm text-gray-500 flex items-center mb-3">
+                    <svg class="w-4 h-4 mr-1 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                    ${prop.location}
+                </p>
+                <div class="flex justify-between items-center pt-3 border-t border-gray-100 mt-auto">
+                   <div class="text-amber-600 font-bold text-xl">${currentPriceDisplay}</div>
+                </div>
+                ${actionsHTML}
+            </div>
+        </div>`;
+        }
 
-                    const dropdownHTML = `
-                        <div class="relative group" id="authDropdownContainer">
-                            <button class="flex items-center space-x-2 focus:outline-none" id="userMenuBtn">
-                                <img src="${avatarUrl}" class="w-10 h-10 rounded-full border-2 border-white shadow-md object-cover">
-                                <span class="hidden md:block font-bold text-gray-700 text-sm">${name}</span>
-                                <svg class="w-4 h-4 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-                                </svg>
+        function updateAuthUI() {
+            let navBtn = document.getElementById('navAuthBtn');
+            if (!navBtn) return;
+
+            if (State.user) {
+                const name = State.user.user_metadata.full_name || State.user.email;
+                const avatar = State.user.user_metadata.avatar_url || 'https://www.gravatar.com/avatar/?d=mp';
+
+                const newHTML = `
+                    <div id="navAuthBtn" class="relative ml-2">
+                         <button id="profileTrigger" class="flex items-center space-x-2 focus:outline-none bg-white/10 hover:bg-white/20 rounded-full pl-1 pr-3 py-1 transition-colors border border-white/20 backdrop-blur-md">
+                            <img src="${avatar}" class="w-8 h-8 rounded-full border border-emerald-400 object-cover">
+                            <span class="hidden sm:inline text-sm font-bold text-white max-w-[100px] truncate">${name.split(' ')[0]}</span>
+                            <svg class="w-4 h-4 text-white opacity-80" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>
+                        </button>
+                        <div id="profileDropdown" class="absolute right-0 mt-3 w-60 bg-white rounded-2xl shadow-2xl border border-gray-100 py-2 hidden opacity-0 transform scale-95 origin-top-right transition-all duration-200 z-[100]">
+                             <div class="px-5 py-3 border-b border-gray-100 mb-1">
+                                <p class="text-xs text-gray-400 font-medium uppercase tracking-wider">ანგარიში</p>
+                                <p class="text-sm font-bold text-gray-900 truncate mt-0.5">${name}</p>
+                             <p class="text-xs text-green-600 font-medium">აქტიური</p>
+                        </div>
+                        <div class="py-1">
+                            <a href="profile.html" class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-amber-50 hover:text-amber-600 transition-colors">
+                                <svg class="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
+                                ჩემი განცხადებები
+                            </a>
+                            <a href="bookings.html" class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-indigo-50 hover:text-indigo-600 transition-colors">
+                                <svg class="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                                ჯავშნები / კალენდარი
+                            </a>
+                        </div>
+                        <div class="border-t border-gray-100 py-1">
+                            <button onclick="handleLogout()" class="flex w-full items-center px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors">
+                                <svg class="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"/></svg>
+                                გასვლა
                             </button>
-                            <div class="absolute right-0 mt-2 w-56 pt-2">
-                                <div class="bg-white rounded-xl shadow-xl border border-gray-100 overflow-hidden transform opacity-0 scale-95 pointer-events-none transition-all duration-200 z-50 origin-top-right group-hover:opacity-100 group-hover:scale-100 group-hover:pointer-events-auto">
-                                    <div class="px-4 py-3 bg-gray-50 border-b border-gray-100">
-                                        <p class="text-sm font-bold text-gray-900 truncate">${State.user.email}</p>
-                                        <p class="text-xs text-green-600 font-medium">აქტიური</p>
-                                    </div>
-                                    <div class="py-1">
-                                        <a href="profile.html" class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-amber-50 hover:text-amber-600 transition-colors">
-                                            <svg class="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
-                                            ჩემი განცხადებები
-                                        </a>
-                                        <a href="bookings.html" class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-indigo-50 hover:text-indigo-600 transition-colors">
-                                            <svg class="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
-                                            ჯავშნები / კალენდარი
-                                        </a>
-                                    </div>
-                                    <div class="border-t border-gray-100 py-1">
-                                        <button onclick="handleLogout()" class="flex w-full items-center px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors">
-                                            <svg class="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"/></svg>
-                                            გასვლა
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>`;
+                        </div>
+                    </div></div>`;
 
-                    if (navBtn && navBtn.parentNode) {
-                        navBtn.outerHTML = dropdownHTML;
-                    }
+                if (navBtn.outerHTML !== newHTML) {
+                    navBtn.outerHTML = newHTML;
+                    setTimeout(() => {
+                        const trigger = document.getElementById('profileTrigger');
+                        const dropdown = document.getElementById('profileDropdown');
+                        if (trigger && dropdown) {
+                            trigger.onclick = (e) => {
+                                e.stopPropagation();
+                                if (dropdown.classList.contains('hidden')) {
+                                    dropdown.classList.remove('hidden');
+                                    setTimeout(() => dropdown.classList.remove('opacity-0', 'scale-95'), 10);
+                                } else {
+                                    dropdown.classList.add('opacity-0', 'scale-95');
+                                    setTimeout(() => dropdown.classList.add('hidden'), 200);
+                                }
+                            };
+                            document.addEventListener('click', (e) => {
+                                if (!dropdown.contains(e.target) && !trigger.contains(e.target)) {
+                                    dropdown.classList.add('opacity-0', 'scale-95');
+                                    setTimeout(() => dropdown.classList.add('hidden'), 200);
+                                }
+                            });
+                        }
+                    }, 0);
+                }
+            } else {
+                const loginBtnHTML = `
+                <button id="navAuthBtn" onclick="openAuthModal('register')"
+                    class="bg-[#2d78b1] hover:bg-[#236a9e] text-white font-bold py-2 px-6 rounded-full transition-all shadow-sm">
+                    შესვლა
+                </button>`;
+                if (navBtn.outerHTML !== loginBtnHTML) {
+                    navBtn.outerHTML = loginBtnHTML;
                 }
             }
+        }
 
-            window.handleLogout = async function () {
-                await State.supabase.auth.signOut();
+        window.handleLogout = async function () {
+            try {
+                const { error } = await State.supabase.auth.signOut();
+                if (error) throw error;
+                // UI will update via onAuthStateChange
+            } catch (err) {
+                console.error("Logout Error:", err.message);
             }
+        };
 
-            window.deleteProperty = async function (id) {
-                if (!confirm("ნამდვილად გსურთ წაშლა?")) return;
-                try {
-                    const { error } = await State.supabase.from('guesthouse ge').delete().eq('id', id);
-                    if (error) throw error;
-                    loadUserListings();
-                } catch (e) {
-                    alert('შეცდომა: ' + e.message);
-                }
+        window.deleteProperty = async function (id) {
+            if (!confirm("ნამდვილად გსურთ წაშლა?")) return;
+            try {
+                const { error } = await State.supabase.from('guesthouse ge').delete().eq('id', id);
+                if (error) throw error;
+                loadUserListings();
+            } catch (e) {
+                alert('შეცდომა: ' + e.message);
             }
+        }
 
-            // Start
-            init();
-        </script>
+        // Start
+        init();
+    </script>
 </body>
 
 </html>
