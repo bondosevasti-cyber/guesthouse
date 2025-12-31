@@ -44,11 +44,27 @@
                     class="h-10 max-h-[40px] w-auto drop-shadow-md object-contain cursor-pointer transition-transform hover:scale-105 active:scale-95">
             </a>
             <div class="flex items-center space-x-3">
-                <!-- Auth Button / Dropdown Container -->
-                <button id="navAuthBtn" onclick="window.location.href='index.html'"
-                    class="bg-[#2d78b1] hover:bg-[#236a9e] text-white font-bold py-2 px-6 rounded-full transition-all shadow-sm">
-                    მთავარი
+                <a href="pricing.html"
+                    class="hidden md:flex items-center bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-lg shadow-md transition-all animate-flag">
+                    <svg class="w-5 h-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0-2.08-.402-2.599-1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    ფასების ნახვა
+                </a>
+                <button onclick="window.location.href='add-property.html'"
+                    class="bg-amber-500 hover:bg-amber-600 text-white font-bold p-2.5 rounded-full transition-all shadow-md hover:shadow-lg flex items-center justify-center transform hover:-translate-y-0.5"
+                    title="დამატება">
+                    <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                    </svg>
                 </button>
+                <div id="navAuthBtnContainer">
+                    <button id="navAuthBtn" onclick="window.location.href='index.html'"
+                        class="bg-[#2d78b1] hover:bg-[#236a9e] text-white font-bold py-2 px-6 rounded-full transition-all shadow-sm">
+                        შესვლა
+                    </button>
+                </div>
             </div>
         </div>
     </nav>
@@ -217,7 +233,7 @@
 
         async function loadBookings() {
             try {
-                let query = State.supabase.from('bookings').select('*, property:property_id(name, image_url, images)');
+                let query = State.supabase.from('bookings').select('*, property:property_id(name, image_url, images), room:room_id(name)');
 
                 if (isHost) {
                     // Host: Get bookings for my properties
@@ -267,7 +283,8 @@
                     guestName: b.guest_name,
                     phone: b.guest_phone,
                     bookingCode: b.booking_code,
-                    propName: b.property?.name
+                    propName: b.property?.name,
+                    roomName: b.room?.name
                 }
             }));
         }
@@ -318,7 +335,8 @@
                             <div class="text-sm p-1">
                                 <p class="font-bold">${info.event.extendedProps.guestName}</p>
                                 <p class="text-xs text-gray-200">${info.event.extendedProps.propName}</p>
-                                <p class="text-xs opacity-75">${info.event.extendedProps.phone}</p>
+                                ${info.event.extendedProps.roomName ? `<p class="text-xs text-amber-200 flex items-center mt-1"><svg class="w-3 h-3 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>${info.event.extendedProps.roomName}</p>` : ''}
+                                <p class="text-xs opacity-75 mt-1">${info.event.extendedProps.phone}</p>
                                 <p class="text-xs text-amber-300 mt-1 font-mono">${info.event.extendedProps.bookingCode}</p>
                              </div>
                         `,
@@ -402,23 +420,58 @@
         }
 
         // --- AUTH UI ---
-        function updateAuthUI() {
-            const navBtn = document.getElementById('navAuthBtn');
+        async function updateAuthUI() {
+            let navBtn = document.getElementById('navAuthBtn');
+            if (!navBtn) {
+                const container = document.getElementById('navAuthBtnContainer');
+                if (container) navBtn = container.firstElementChild;
+            }
+            if (!navBtn && document.getElementById('navAuthBtnContainer')) {
+                navBtn = document.createElement('button');
+                navBtn.id = 'navAuthBtn';
+                document.getElementById('navAuthBtnContainer').appendChild(navBtn);
+            }
+            if (!navBtn) return;
+
             if (State.user) {
-                const avatarUrl = State.user.user_metadata.avatar_url || 'https://www.gravatar.com/avatar/?d=mp';
-                const dropdownHTML = `
-                <div class="relative group" id="authDropdownContainer">
-                    <button class="flex items-center space-x-2 focus:outline-none" id="userMenuBtn">
-                        <img src="${avatarUrl}" class="w-10 h-10 rounded-full border-2 border-white shadow-md object-cover">
-                        <span class="hidden md:block font-bold text-gray-700 text-sm">${State.user.user_metadata.full_name || 'მომხმარებელი'}</span>
-                        <svg class="w-4 h-4 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-                        </svg>
-                    </button>
-                    <div class="absolute right-0 mt-2 w-56 bg-white rounded-xl shadow-xl border border-gray-100 overflow-hidden transform opacity-0 scale-95 pointer-events-none transition-all duration-200 z-50 origin-top-right" id="userDropdown">
-                        <div class="px-4 py-3 bg-gray-50 border-b border-gray-100">
-                             <p class="text-sm font-bold text-gray-900 truncate">${State.user.email}</p>
-                             <p class="text-xs text-green-600 font-medium">აქტიური</p>
+                const name = State.user.user_metadata.full_name || State.user.email;
+                const avatar = State.user.user_metadata.avatar_url || 'https://www.gravatar.com/avatar/?d=mp';
+
+                // Fetch Profile Tier
+                let tier = 'Free';
+                try {
+                    const { data, error } = await State.supabase
+                        .from('profiles')
+                        .select('subscription_tier')
+                        .eq('id', State.user.id)
+                        .single();
+
+                    if (data && data.subscription_tier) {
+                        tier = data.subscription_tier;
+                    }
+                } catch (e) {
+                    console.error("Error fetching profile tier:", e);
+                }
+
+                let tierDisplay = `<span class="font-bold text-gray-700 ml-1">${tier}</span>`;
+                if (tier === 'Free') {
+                    tierDisplay += `<a href="pricing.html" class="ml-2 text-[10px] bg-amber-500 text-white px-2 py-0.5 rounded-full hover:bg-amber-600 transition-colors uppercase font-bold tracking-wide shadow-sm">Upgrade</a>`;
+                }
+
+                const newHTML = `
+                    <div id="navAuthBtnContainer" class="relative ml-2">
+                         <button id="profileTrigger" class="flex items-center space-x-2 focus:outline-none bg-white hover:bg-gray-50 rounded-full pl-1 pr-3 py-1 transition-colors border border-gray-200 shadow-sm">
+                            <img src="${avatar}" class="w-8 h-8 rounded-full border border-emerald-400 object-cover">
+                            <span class="hidden sm:inline text-sm font-bold text-gray-700 max-w-[100px] truncate">${name.split(' ')[0]}</span>
+                            <svg class="w-4 h-4 text-gray-500 opacity-80" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>
+                        </button>
+                        <div id="profileDropdown" class="absolute right-0 mt-3 w-64 bg-white rounded-2xl shadow-2xl border border-gray-100 py-2 hidden opacity-0 transform scale-95 origin-top-right transition-all duration-200 z-[100]">
+                             <div class="px-5 py-3 border-b border-gray-100 mb-1">
+                                <p class="text-xs text-gray-400 font-medium uppercase tracking-wider">ანგარიში</p>
+                                <p class="text-sm font-bold text-gray-900 truncate mt-0.5">${name}</p>
+                                <div class="text-xs text-gray-500 mt-1 flex items-center">
+                                    პაკეტი: ${tierDisplay}
+                                </div>
                         </div>
                         <div class="py-1">
                             <a href="profile.html" class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-amber-50 hover:text-amber-600 transition-colors">
@@ -439,28 +492,49 @@
                     </div>
                 </div>`;
 
-                if (navBtn && navBtn.parentNode) {
-                    navBtn.outerHTML = dropdownHTML;
-                    setTimeout(() => {
-                        const trigger = document.getElementById('userMenuBtn');
-                        const dropdown = document.getElementById('userDropdown');
-                        if (trigger && dropdown) {
-                            trigger.addEventListener('click', (e) => {
-                                e.stopPropagation();
-                                const isHidden = dropdown.classList.contains('opacity-0');
-                                if (isHidden) {
-                                    dropdown.classList.remove('opacity-0', 'scale-95', 'pointer-events-none');
-                                } else {
-                                    dropdown.classList.add('opacity-0', 'scale-95', 'pointer-events-none');
-                                }
-                            });
-                            document.addEventListener('click', (e) => {
-                                if (!dropdown.contains(e.target) && !trigger.contains(e.target)) {
-                                    dropdown.classList.add('opacity-0', 'scale-95', 'pointer-events-none');
-                                }
-                            });
-                        }
-                    }, 0);
+                if (document.getElementById('navAuthBtnContainer')) {
+                    document.getElementById('navAuthBtnContainer').outerHTML = newHTML;
+                } else {
+                    navBtn.outerHTML = newHTML;
+                }
+
+                setTimeout(() => {
+                    const trigger = document.getElementById('profileTrigger');
+                    const dropdown = document.getElementById('profileDropdown');
+                    if (trigger && dropdown) {
+                        trigger.onclick = (e) => {
+                            e.stopPropagation();
+                            if (dropdown.classList.contains('hidden')) {
+                                dropdown.classList.remove('hidden');
+                                setTimeout(() => dropdown.classList.remove('opacity-0', 'scale-95'), 10);
+                            } else {
+                                dropdown.classList.add('opacity-0', 'scale-95');
+                                setTimeout(() => dropdown.classList.add('hidden'), 200);
+                            }
+                        };
+                        document.addEventListener('click', (e) => {
+                            if (!dropdown.contains(e.target) && !trigger.contains(e.target)) {
+                                dropdown.classList.add('opacity-0', 'scale-95');
+                                setTimeout(() => dropdown.classList.add('hidden'), 200);
+                            }
+                        });
+                    }
+                }, 0);
+
+            } else {
+                const loginBtnHTML = `
+                <div id="navAuthBtnContainer">
+                    <button id="navAuthBtn" onclick="window.location.href='index.html'"
+                        class="bg-[#2d78b1] hover:bg-[#236a9e] text-white font-bold py-2 px-6 rounded-full transition-all shadow-sm">
+                        მთავარი
+                    </button>
+                </div>`;
+
+                const container = document.getElementById('navAuthBtnContainer');
+                if (container) {
+                    container.outerHTML = loginBtnHTML;
+                } else {
+                    navBtn.outerHTML = loginBtnHTML;
                 }
             }
         }

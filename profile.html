@@ -53,16 +53,15 @@
                     </svg>
                     ფასების ნახვა
                 </a>
-                <a href="add-property.html"
+                <button onclick="window.location.href='add-property.html'"
                     class="bg-amber-500 hover:bg-amber-600 text-white font-bold p-2.5 rounded-full transition-all shadow-md hover:shadow-lg flex items-center justify-center transform hover:-translate-y-0.5"
                     title="დამატება">
                     <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
                     </svg>
-                </a>
-                <!-- Auth Button / Dropdown Container -->
+                </button>
                 <div id="navAuthBtnContainer">
-                    <button id="navAuthBtn"
+                    <button id="navAuthBtn" onclick="window.location.href='index.html'"
                         class="bg-[#2d78b1] hover:bg-[#236a9e] text-white font-bold py-2 px-6 rounded-full transition-all shadow-sm">
                         შესვლა
                     </button>
@@ -299,6 +298,15 @@
 
         async function updateAuthUI() {
             let navBtn = document.getElementById('navAuthBtn');
+            if (!navBtn) {
+                const container = document.getElementById('navAuthBtnContainer');
+                if (container) navBtn = container.firstElementChild;
+            }
+            if (!navBtn && document.getElementById('navAuthBtnContainer')) {
+                navBtn = document.createElement('button');
+                navBtn.id = 'navAuthBtn';
+                document.getElementById('navAuthBtnContainer').appendChild(navBtn);
+            }
             if (!navBtn) return;
 
             if (State.user) {
@@ -321,27 +329,26 @@
                     console.error("Error fetching profile tier:", e);
                 }
 
-                // Tier UI Logic
                 let tierDisplay = `<span class="font-bold text-gray-700 ml-1">${tier}</span>`;
                 if (tier === 'Free') {
                     tierDisplay += `<a href="pricing.html" class="ml-2 text-[10px] bg-amber-500 text-white px-2 py-0.5 rounded-full hover:bg-amber-600 transition-colors uppercase font-bold tracking-wide shadow-sm">Upgrade</a>`;
                 }
 
                 const newHTML = `
-                    <div id="navAuthBtn" class="relative ml-2">
-                         <button id="profileTrigger" class="flex items-center space-x-2 focus:outline-none bg-white/10 hover:bg-white/20 rounded-full pl-1 pr-3 py-1 transition-colors border border-white/20 backdrop-blur-md">
+                    <div id="navAuthBtnContainer" class="relative ml-2">
+                         <button id="profileTrigger" class="flex items-center space-x-2 focus:outline-none bg-white hover:bg-gray-50 rounded-full pl-1 pr-3 py-1 transition-colors border border-gray-200 shadow-sm">
                             <img src="${avatar}" class="w-8 h-8 rounded-full border border-emerald-400 object-cover">
-                            <span class="hidden sm:inline text-sm font-bold text-white max-w-[100px] truncate">${name.split(' ')[0]}</span>
-                            <svg class="w-4 h-4 text-white opacity-80" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>
+                            <span class="hidden sm:inline text-sm font-bold text-gray-700 max-w-[100px] truncate">${name.split(' ')[0]}</span>
+                            <svg class="w-4 h-4 text-gray-500 opacity-80" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>
                         </button>
-                        <div id="profileDropdown" class="absolute right-0 mt-3 w-60 bg-white rounded-2xl shadow-2xl border border-gray-100 py-2 hidden opacity-0 transform scale-95 origin-top-right transition-all duration-200 z-[100]">
+                        <div id="profileDropdown" class="absolute right-0 mt-3 w-64 bg-white rounded-2xl shadow-2xl border border-gray-100 py-2 hidden opacity-0 transform scale-95 origin-top-right transition-all duration-200 z-[100]">
                              <div class="px-5 py-3 border-b border-gray-100 mb-1">
                                 <p class="text-xs text-gray-400 font-medium uppercase tracking-wider">ანგარიში</p>
                                 <p class="text-sm font-bold text-gray-900 truncate mt-0.5">${name}</p>
                                 <div class="text-xs text-gray-500 mt-1 flex items-center">
                                     პაკეტი: ${tierDisplay}
                                 </div>
-                            </div>
+                        </div>
                         <div class="py-1">
                             <a href="profile.html" class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-amber-50 hover:text-amber-600 transition-colors">
                                 <svg class="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
@@ -358,53 +365,59 @@
                                 გასვლა
                             </button>
                         </div>
-                    </div></div>`;
+                    </div>
+                </div>`;
 
-                if (navBtn.outerHTML !== newHTML) {
+                if (document.getElementById('navAuthBtnContainer')) {
+                    document.getElementById('navAuthBtnContainer').outerHTML = newHTML;
+                } else {
                     navBtn.outerHTML = newHTML;
-                    setTimeout(() => {
-                        const trigger = document.getElementById('profileTrigger');
-                        const dropdown = document.getElementById('profileDropdown');
-                        if (trigger && dropdown) {
-                            trigger.onclick = (e) => {
-                                e.stopPropagation();
-                                if (dropdown.classList.contains('hidden')) {
-                                    dropdown.classList.remove('hidden');
-                                    setTimeout(() => dropdown.classList.remove('opacity-0', 'scale-95'), 10);
-                                } else {
-                                    dropdown.classList.add('opacity-0', 'scale-95');
-                                    setTimeout(() => dropdown.classList.add('hidden'), 200);
-                                }
-                            };
-                            document.addEventListener('click', (e) => {
-                                if (!dropdown.contains(e.target) && !trigger.contains(e.target)) {
-                                    dropdown.classList.add('opacity-0', 'scale-95');
-                                    setTimeout(() => dropdown.classList.add('hidden'), 200);
-                                }
-                            });
-                        }
-                    }, 0);
                 }
+
+                setTimeout(() => {
+                    const trigger = document.getElementById('profileTrigger');
+                    const dropdown = document.getElementById('profileDropdown');
+                    if (trigger && dropdown) {
+                        trigger.onclick = (e) => {
+                            e.stopPropagation();
+                            if (dropdown.classList.contains('hidden')) {
+                                dropdown.classList.remove('hidden');
+                                setTimeout(() => dropdown.classList.remove('opacity-0', 'scale-95'), 10);
+                            } else {
+                                dropdown.classList.add('opacity-0', 'scale-95');
+                                setTimeout(() => dropdown.classList.add('hidden'), 200);
+                            }
+                        };
+                        document.addEventListener('click', (e) => {
+                            if (!dropdown.contains(e.target) && !trigger.contains(e.target)) {
+                                dropdown.classList.add('opacity-0', 'scale-95');
+                                setTimeout(() => dropdown.classList.add('hidden'), 200);
+                            }
+                        });
+                    }
+                }, 0);
+
             } else {
                 const loginBtnHTML = `
-                <button id="navAuthBtn" onclick="openAuthModal('register')"
-                    class="bg-[#2d78b1] hover:bg-[#236a9e] text-white font-bold py-2 px-6 rounded-full transition-all shadow-sm">
-                    შესვლა
-                </button>`;
-                if (navBtn.outerHTML !== loginBtnHTML) {
+                <div id="navAuthBtnContainer">
+                    <button id="navAuthBtn" onclick="window.location.href='index.html'"
+                        class="bg-[#2d78b1] hover:bg-[#236a9e] text-white font-bold py-2 px-6 rounded-full transition-all shadow-sm">
+                        შესვლა
+                    </button>
+                </div>`;
+
+                const container = document.getElementById('navAuthBtnContainer');
+                if (container) {
+                    container.outerHTML = loginBtnHTML;
+                } else {
                     navBtn.outerHTML = loginBtnHTML;
                 }
             }
         }
 
         window.handleLogout = async function () {
-            try {
-                const { error } = await State.supabase.auth.signOut();
-                if (error) throw error;
-                // UI will update via onAuthStateChange
-            } catch (err) {
-                console.error("Logout Error:", err.message);
-            }
+            await State.supabase.auth.signOut();
+            window.location.href = 'index.html';
         };
 
         window.deleteProperty = async function (id) {
