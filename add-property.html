@@ -9,6 +9,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Georgian:wght@400;500;600;700&display=swap"
         rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <style>
         body {
             font-family: 'Noto Sans Georgian', sans-serif;
@@ -136,274 +137,288 @@
                         </div>
                     </div>
 
-                    <!-- Dynamic Rooms Section (Relocated) -->
-                    <div class="space-y-4 pt-6 border-t border-gray-100">
-                        <div class="flex justify-between items-center">
-                            <label class="block text-sm font-bold text-gray-900">ოთახები დეტალურად <span
-                                    class="text-gray-400 font-normal ml-1">(სურვილისამებრ)</span></label>
-                            <button type="button" onclick="addRoomBlock()"
-                                class="text-xs font-bold text-amber-600 hover:text-amber-700 flex items-center bg-amber-50 px-3 py-1.5 rounded-lg hover:bg-amber-100 transition-colors">
-                                <svg class="w-4 h-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M12 4v16m8-8H4" />
-                                </svg>
-                                ოთახის დამატება
-                            </button>
-                        </div>
-                        <div id="roomBlocksContainer" class="space-y-4">
-                            <!-- Room Blocks injected here -->
-                        </div>
-                    </div>
-
-                    <div class="border-t border-gray-100 my-6"></div>
-
-                    <!-- Basic Info -->
-                    <!-- Row 1: Property Name -->
-                    <div class="group">
-                        <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">
-                            ობიექტის სახელი (სასტუმროს სახელი)</label>
-                        <input type="text" id="propertyName" required placeholder="მაგ: Green Cottage"
-                            class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:border-amber-500 focus:ring-4 focus:ring-amber-500/10 outline-none transition-all placeholder-gray-400 font-medium text-gray-800">
-                    </div>
-
-                    <!-- Row 2: Owner Name -->
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
-                        <div class="group">
-                            <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">
-                                მფლობელის სახელი</label>
-                            <input type="text" id="firstName" required placeholder="თქვენი სახელი"
-                                class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:border-amber-500 focus:ring-4 focus:ring-amber-500/10 outline-none transition-all placeholder-gray-400 font-medium text-gray-800">
-                        </div>
-                        <div class="group">
-                            <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">
-                                მფლობელის გვარი</label>
-                            <input type="text" id="lastName" required placeholder="თქვენი გვარი"
-                                class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:border-amber-500 focus:ring-4 focus:ring-amber-500/10 outline-none transition-all placeholder-gray-400 font-medium text-gray-800">
-                        </div>
-                    </div>
-
-                    <!-- Row 2: Location -->
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div class="group dropdown-container relative">
-                            <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">
-                                რეგიონი</label>
-                            <div class="relative">
-                                <select id="regionSelect" onchange="handleRegionChange(this.value)"
-                                    class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:border-amber-500 focus:ring-4 focus:ring-amber-500/10 outline-none transition-all appearance-none font-medium text-gray-800 cursor-pointer">
-                                    <option value="">აირჩიეთ რეგიონი...</option>
-                                    <option value="აჭარა">აჭარა</option>
-                                    <option value="იმერეთი">იმერეთი</option>
-                                    <option value="კახეთი">კახეთი</option>
-                                    <option value="შიდა ქართლი">შიდა ქართლი</option>
-                                    <option value="ქვემო ქართლი">ქვემო ქართლი</option>
-                                    <option value="მცხეთა-მთიანეთი">მცხეთა-მთიანეთი</option>
-                                    <option value="სამეგრელო-ზემო სვანეთი">სამეგრელო-ზემო სვანეთი</option>
-                                    <option value="სამცხე-ჯავახეთი">სამცხე-ჯავახეთი</option>
-                                    <option value="გურია">გურია</option>
-                                    <option value="რაჭა-ლეჩხუმი და ქვემო სვანეთი">რაჭა-ლეჩხუმი და ქვემო სვანეთი</option>
-                                    <option value="აფხაზეთი">აფხაზეთი</option>
-                                </select>
-                                <svg class="w-5 h-5 text-gray-400 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none"
-                                    fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M19 9l-7 7-7-7" />
-                                </svg>
-                            </div>
-                        </div>
-
-                        <div class="group dropdown-container relative" id="locationContainer">
-                            <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">ქალაქი /
-                                სოფელი</label>
-                            <div class="relative">
-                                <input type="text" id="locationSearch" placeholder="აირჩიეთ ან ჩაწერეთ..."
-                                    class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:border-amber-500 focus:ring-4 focus:ring-amber-500/10 outline-none transition-all font-medium text-gray-800 cursor-pointer"
-                                    autocomplete="off">
-                                <input type="hidden" name="location" id="locationValue" required>
-                                <svg class="w-5 h-5 text-gray-400 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none"
-                                    fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M19 9l-7 7-7-7" />
-                                </svg>
-
-                                <!-- Cities Dropdown -->
-                                <ul id="citiesDropdown"
-                                    class="absolute top-full left-0 right-0 mt-2 bg-white border border-gray-100 rounded-xl shadow-xl max-h-60 overflow-y-auto hidden z-[100] divide-y divide-gray-50 custom-scrollbar">
-                                    <!-- Populated via JS -->
-                                </ul>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div class="group">
-                            <label
-                                class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">საკონტაქტო
-                                ნომერი</label>
-                            <input type="tel" name="phone" required placeholder="+995 5XX XX XX XX"
-                                class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:border-amber-500 focus:ring-4 focus:ring-amber-500/10 outline-none transition-all font-medium text-gray-800">
-                        </div>
-                        <div class="group dropdown-container relative">
-                            <label
-                                class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">ტიპი</label>
-                            <div class="relative">
-                                <select name="type" required
-                                    class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:border-amber-500 focus:ring-4 focus:ring-amber-500/10 outline-none transition-all appearance-none font-medium text-gray-800 cursor-pointer relative z-10">
-                                    <!-- Options updated by user request -->
-                                    <option value="hotel">სასტუმრო</option>
-                                    <option value="Guest house">საოჯახო სასტუმრო</option>
-                                    <option value="Apartment">ბინა</option>
-                                    <option value="Cottage">კოტეჯი</option>
-                                    <option value="Private house">კერძო სახლი</option>
-                                </select>
-                                <svg class="w-5 h-5 text-gray-400 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none z-20"
-                                    fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M19 9l-7 7-7-7" />
-                                </svg>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Description -->
-                    <div class="group">
-                        <label
-                            class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">აღწერა</label>
-                        <textarea name="description" rows="4" required placeholder="აღწერეთ თქვენი ობიექტი დეტალურად..."
-                            class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:border-amber-500 focus:ring-4 focus:ring-amber-500/10 outline-none transition-all resize-none font-medium text-gray-800 custom-scrollbar"></textarea>
-                    </div>
-
-                    <!-- Price & Tier -->
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div class="group">
-                            <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">ფასი
-                                (გამოჩნდება ავტომატურად როცა შეავსებთ სეზონური ფასების ცხრილს)</label>
-                            <div class="relative">
-                                <span class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 font-bold">₾</span>
-                                <input type="text" name="price" required readonly placeholder="-"
-                                    class="w-full pl-8 pr-4 py-3 bg-gray-100 border border-gray-200 rounded-xl focus:bg-gray-100 outline-none font-bold text-gray-700 cursor-not-allowed">
-                            </div>
-                            <p class="text-[10px] text-gray-500 mt-1 ml-1">ფასი გამოითვლება ავტომატურად სეზონური ცხრილის
-                                მიხედვით მიმდინარე თვისთვის.</p>
-                        </div>
-                        <div class="group">
-                            <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">თქვენი
-                                პაკეტი</label>
-                            <div class="relative bg-gray-50 border border-gray-200 rounded-xl px-4 py-3">
-                                <span id="userTierDisplay" class="font-bold text-gray-800">იტვირთება...</span>
-                                <input type="hidden" name="tier" id="tierInput" value="free">
-                            </div>
-                            <div id="tierUpgradeMsg"
-                                class="hidden mt-2 text-[10px] text-amber-600 font-medium bg-amber-50 p-2 rounded-lg">
-                                * პაკეტის შესაცვლელად ეწვიეთ <a href="pricing.html"
-                                    class="underline hover:text-amber-700">ფასების გვერდს</a>.
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Amenities -->
-                    <div class="space-y-4">
-                        <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider">კომფორტი /
-                            სერვისები</label>
-                        <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                            <label
-                                class="flex items-center space-x-3 p-3 border border-gray-100 rounded-xl cursor-pointer hover:bg-gray-50 hover:border-amber-300 transition-all select-none group">
-                                <input type="checkbox" name="amenities" value="WiFi"
-                                    class="w-5 h-5 text-amber-500 border-gray-300 rounded focus:ring-amber-500/20">
-                                <span class="text-sm font-medium text-gray-700 group-hover:text-amber-700">WiFi</span>
-                            </label>
-                            <label
-                                class="flex items-center space-x-3 p-3 border border-gray-100 rounded-xl cursor-pointer hover:bg-gray-50 hover:border-amber-300 transition-all select-none group">
-                                <input type="checkbox" name="amenities" value="პარკინგი"
-                                    class="w-5 h-5 text-amber-500 border-gray-300 rounded focus:ring-amber-500/20">
-                                <span
-                                    class="text-sm font-medium text-gray-700 group-hover:text-amber-700">პარკინგი</span>
-                            </label>
-                            <label
-                                class="flex items-center space-x-3 p-3 border border-gray-100 rounded-xl cursor-pointer hover:bg-gray-50 hover:border-amber-300 transition-all select-none group">
-                                <input type="checkbox" name="amenities" value="აუზი"
-                                    class="w-5 h-5 text-amber-500 border-gray-300 rounded focus:ring-amber-500/20">
-                                <span class="text-sm font-medium text-gray-700 group-hover:text-amber-700">აუზი</span>
-                            </label>
-                            <label
-                                class="flex items-center space-x-3 p-3 border border-gray-100 rounded-xl cursor-pointer hover:bg-gray-50 hover:border-amber-300 transition-all select-none group">
-                                <input type="checkbox" name="amenities" value="საუზმე"
-                                    class="w-5 h-5 text-amber-500 border-gray-300 rounded focus:ring-amber-500/20">
-                                <span class="text-sm font-medium text-gray-700 group-hover:text-amber-700">საუზმე</span>
-                            </label>
-                            <label
-                                class="flex items-center space-x-3 p-3 border border-gray-100 rounded-xl cursor-pointer hover:bg-gray-50 hover:border-amber-300 transition-all select-none group">
-                                <input type="checkbox" name="amenities" value="ბუხარი"
-                                    class="w-5 h-5 text-amber-500 border-gray-300 rounded focus:ring-amber-500/20">
-                                <span class="text-sm font-medium text-gray-700 group-hover:text-amber-700">ბუხარი</span>
-                            </label>
-                            <label
-                                class="flex items-center space-x-3 p-3 border border-gray-100 rounded-xl cursor-pointer hover:bg-gray-50 hover:border-amber-300 transition-all select-none group">
-                                <input type="checkbox" name="amenities" value="ხედი"
-                                    class="w-5 h-5 text-amber-500 border-gray-300 rounded focus:ring-amber-500/20">
-                                <span class="text-sm font-medium text-gray-700 group-hover:text-amber-700">ხედი</span>
-                            </label>
-                        </div>
-                    </div>
-
-                    <!-- Seasonal Prices -->
-                    <div class="space-y-4 pt-4 border-t border-gray-100">
-                        <div class="flex justify-between items-center">
-                            <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider">სეზონური
-                                ფასები
-                                (არასავალდებულო)</label>
-                            <button type="button" onclick="addSeasonalRow()"
-                                class="text-xs font-bold text-amber-600 hover:text-amber-700 flex items-center bg-amber-50 px-3 py-1.5 rounded-lg hover:bg-amber-100 transition-colors">
-                                <svg class="w-4 h-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M12 4v16m8-8H4" />
-                                </svg>
-                                ოთახის დამატება
-                            </button>
-                        </div>
-                        <div class="overflow-x-auto border border-gray-200 rounded-xl bg-white shadow-sm">
-                            <table class="w-full text-sm text-left">
-                                <thead class="bg-gray-50 text-gray-500 font-medium text-xs uppercase">
-                                    <tr>
-                                        <th
-                                            class="p-2 min-w-[120px] sticky left-0 bg-gray-50 z-10 border-r border-gray-100">
-                                            ტიპი</th>
-                                        <th class="p-1 min-w-[30px] text-center border-r border-gray-100"
-                                            title="Apply Jan to all">⚡</th>
-                                        <th class="p-2 min-w-[60px]">იან</th>
-                                        <th class="p-2 min-w-[60px]">თებ</th>
-                                        <th class="p-2 min-w-[60px]">მარ</th>
-                                        <th class="p-2 min-w-[60px]">აპრ</th>
-                                        <th class="p-2 min-w-[60px]">მაი</th>
-                                        <th class="p-2 min-w-[60px]">ივნ</th>
-                                        <th class="p-2 min-w-[60px]">ივლ</th>
-                                        <th class="p-2 min-w-[60px]">აგვ</th>
-                                        <th class="p-2 min-w-[60px]">სექ</th>
-                                        <th class="p-2 min-w-[60px]">ოქტ</th>
-                                        <th class="p-2 min-w-[60px]">ნოე</th>
-                                        <th class="p-2 min-w-[60px]">დეკ</th>
-                                        <th class="p-2 min-w-[40px]"></th>
-                                    </tr>
-                                </thead>
-                                <tbody id="seasonalPricesBody" class="divide-y divide-gray-100">
-                                    <!-- Rows added by JS -->
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-
-
-
-                    <!-- Actions -->
-                    <div class="pt-6 border-t border-gray-100 flex items-center justify-between">
-                        <a href="profile.html"
-                            class="px-6 py-3 text-gray-500 font-bold hover:text-gray-800 transition-colors">გაუქმება</a>
-                        <button type="submit"
-                            class="bg-amber-500 hover:bg-amber-600 text-white font-bold py-4 px-10 rounded-xl shadow-lg shadow-amber-200 transition-all transform active:scale-[0.98] flex items-center justify-center text-lg">
-                            განცხადების გამოქვეყნება
-                        </button>
-                    </div>
-                </form>
             </div>
+        </div>
+        <!-- Dynamic Rooms Container (Relocated) -->
+        <div class="space-y-4 pt-2 border-t border-gray-100">
+            <div class="flex justify-between items-center">
+                <label class="block text-sm font-bold text-gray-900">ოთახები დეტალურად <span
+                        class="text-gray-400 font-normal ml-1">(სურვილისამებრ)</span></label>
+            </div>
+            <div id="roomBlocksContainer" class="space-y-4">
+                <!-- Room Blocks injected here -->
+            </div>
+
+            <!-- Add Room Button (Bottom) -->
+            <div class="flex justify-end pt-2">
+                <button type="button" onclick="addRoomBlock()"
+                    class="text-xs font-bold text-amber-600 hover:text-amber-700 flex items-center bg-amber-50 px-3 py-1.5 rounded-lg hover:bg-amber-100 transition-colors">
+                    <svg class="w-4 h-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                    </svg>
+                    ოთახის დამატება
+                </button>
+            </div>
+        </div>
+
+        <div class="border-t border-gray-100 my-6"></div>
+
+        <!-- Basic Info -->
+        <!-- Row 1: Property Name -->
+        <div class="group">
+            <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">
+                ობიექტის სახელი (სასტუმროს სახელი)</label>
+            <input type="text" id="propertyName" required placeholder="მაგ: Green Cottage"
+                class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:border-amber-500 focus:ring-4 focus:ring-amber-500/10 outline-none transition-all placeholder-gray-400 font-medium text-gray-800">
+        </div>
+
+        <!-- Row 2: Owner Name -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
+            <div class="group">
+                <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">
+                    მფლობელის სახელი</label>
+                <input type="text" id="firstName" required placeholder="თქვენი სახელი"
+                    class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:border-amber-500 focus:ring-4 focus:ring-amber-500/10 outline-none transition-all placeholder-gray-400 font-medium text-gray-800">
+            </div>
+            <div class="group">
+                <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">
+                    მფლობელის გვარი</label>
+                <input type="text" id="lastName" required placeholder="თქვენი გვარი"
+                    class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:border-amber-500 focus:ring-4 focus:ring-amber-500/10 outline-none transition-all placeholder-gray-400 font-medium text-gray-800">
+            </div>
+        </div>
+
+        <!-- Row 2: Location -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="group dropdown-container relative">
+                <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">
+                    რეგიონი</label>
+                <div class="relative">
+                    <select id="regionSelect" onchange="handleRegionChange(this.value)"
+                        class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:border-amber-500 focus:ring-4 focus:ring-amber-500/10 outline-none transition-all appearance-none font-medium text-gray-800 cursor-pointer">
+                        <option value="">აირჩიეთ რეგიონი...</option>
+                        <option value="აჭარა">აჭარა</option>
+                        <option value="იმერეთი">იმერეთი</option>
+                        <option value="კახეთი">კახეთი</option>
+                        <option value="შიდა ქართლი">შიდა ქართლი</option>
+                        <option value="ქვემო ქართლი">ქვემო ქართლი</option>
+                        <option value="მცხეთა-მთიანეთი">მცხეთა-მთიანეთი</option>
+                        <option value="სამეგრელო-ზემო სვანეთი">სამეგრელო-ზემო სვანეთი</option>
+                        <option value="სამცხე-ჯავახეთი">სამცხე-ჯავახეთი</option>
+                        <option value="გურია">გურია</option>
+                        <option value="რაჭა-ლეჩხუმი და ქვემო სვანეთი">რაჭა-ლეჩხუმი და ქვემო სვანეთი</option>
+                        <option value="აფხაზეთი">აფხაზეთი</option>
+                    </select>
+                    <svg class="w-5 h-5 text-gray-400 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none"
+                        fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                    </svg>
+                </div>
+            </div>
+
+            <div class="group dropdown-container relative" id="locationContainer">
+                <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">ქალაქი /
+                    სოფელი</label>
+                <div class="relative">
+                    <input type="text" id="locationSearch" placeholder="აირჩიეთ ან ჩაწერეთ..."
+                        class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:border-amber-500 focus:ring-4 focus:ring-amber-500/10 outline-none transition-all font-medium text-gray-800 cursor-pointer"
+                        autocomplete="off">
+                    <input type="hidden" name="location" id="locationValue" required>
+                    <svg class="w-5 h-5 text-gray-400 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none"
+                        fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                    </svg>
+
+                    <!-- Cities Dropdown -->
+                    <ul id="citiesDropdown"
+                        class="absolute top-full left-0 right-0 mt-2 bg-white border border-gray-100 rounded-xl shadow-xl max-h-60 overflow-y-auto hidden z-[100] divide-y divide-gray-50 custom-scrollbar">
+                        <!-- Populated via JS -->
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="group">
+                <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">საკონტაქტო
+                    ნომერი</label>
+                <input type="tel" name="phone" required placeholder="+995 5XX XX XX XX"
+                    class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:border-amber-500 focus:ring-4 focus:ring-amber-500/10 outline-none transition-all font-medium text-gray-800">
+            </div>
+            <div class="group dropdown-container relative">
+                <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">ტიპი</label>
+                <div class="relative">
+                    <select name="type" required
+                        class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:border-amber-500 focus:ring-4 focus:ring-amber-500/10 outline-none transition-all appearance-none font-medium text-gray-800 cursor-pointer relative z-10">
+                        <!-- Options updated by user request -->
+                        <option value="hotel">სასტუმრო</option>
+                        <option value="Guest house">საოჯახო სასტუმრო</option>
+                        <option value="Apartment">ბინა</option>
+                        <option value="Cottage">კოტეჯი</option>
+                        <option value="Private house">კერძო სახლი</option>
+                    </select>
+                    <svg class="w-5 h-5 text-gray-400 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none z-20"
+                        fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                    </svg>
+                </div>
+            </div>
+        </div>
+
+        <!-- Description -->
+        <div class="group">
+            <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">აღწერა</label>
+            <textarea name="description" rows="4" required placeholder="აღწერეთ თქვენი ობიექტი დეტალურად..."
+                class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:border-amber-500 focus:ring-4 focus:ring-amber-500/10 outline-none transition-all resize-none font-medium text-gray-800 custom-scrollbar"></textarea>
+        </div>
+
+        <!-- Price & Tier -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="group">
+                <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">ფასი
+                    (გამოჩნდება ავტომატურად როცა შეავსებთ სეზონური ფასების ცხრილს)</label>
+                <div class="relative">
+                    <span class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 font-bold">₾</span>
+                    <input type="text" name="price" required readonly placeholder="-"
+                        class="w-full pl-8 pr-4 py-3 bg-gray-100 border border-gray-200 rounded-xl focus:bg-gray-100 outline-none font-bold text-gray-700 cursor-not-allowed">
+                </div>
+                <p class="text-[10px] text-gray-500 mt-1 ml-1">ფასი გამოითვლება ავტომატურად სეზონური ცხრილის
+                    მიხედვით მიმდინარე თვისთვის.</p>
+            </div>
+            <div class="group">
+                <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">თქვენი
+                    პაკეტი</label>
+                <div class="relative">
+                    <div
+                        class="inline-flex items-center space-x-2 bg-gradient-to-r from-gray-800 to-gray-700 text-white rounded-xl px-4 py-3 shadow-md w-full">
+                        <svg class="w-5 h-5 text-amber-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
+                        </svg>
+                        <span class="font-bold tracking-wide" id="userTierDisplay">იტვირთება...</span>
+                    </div>
+                    <input type="hidden" name="tier" id="tierInput" value="free">
+                </div>
+                <div id="tierUpgradeMsg"
+                    class="hidden mt-2 text-[10px] text-amber-600 font-medium bg-amber-50 p-2 rounded-lg border border-amber-100">
+                    * პაკეტის შესაცვლელად ეწვიეთ <a href="pricing.html"
+                        class="underline hover:text-amber-800 font-bold">ფასების
+                        გვერდს</a>.
+                </div>
+            </div>
+        </div>
+
+        <!-- Amenities -->
+        <div class="space-y-4">
+            <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider">კომფორტი /
+                სერვისები</label>
+            <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                <label
+                    class="flex items-center space-x-3 p-3 border border-gray-100 rounded-xl cursor-pointer hover:bg-gray-50 hover:border-amber-300 transition-all select-none group">
+                    <input type="checkbox" name="amenities" value="WiFi"
+                        class="w-5 h-5 text-amber-500 border-gray-300 rounded focus:ring-amber-500/20">
+                    <span class="text-sm font-medium text-gray-700 group-hover:text-amber-700">WiFi</span>
+                </label>
+                <label
+                    class="flex items-center space-x-3 p-3 border border-gray-100 rounded-xl cursor-pointer hover:bg-gray-50 hover:border-amber-300 transition-all select-none group">
+                    <input type="checkbox" name="amenities" value="პარკინგი"
+                        class="w-5 h-5 text-amber-500 border-gray-300 rounded focus:ring-amber-500/20">
+                    <span class="text-sm font-medium text-gray-700 group-hover:text-amber-700">პარკინგი</span>
+                </label>
+                <label
+                    class="flex items-center space-x-3 p-3 border border-gray-100 rounded-xl cursor-pointer hover:bg-gray-50 hover:border-amber-300 transition-all select-none group">
+                    <input type="checkbox" name="amenities" value="აუზი"
+                        class="w-5 h-5 text-amber-500 border-gray-300 rounded focus:ring-amber-500/20">
+                    <span class="text-sm font-medium text-gray-700 group-hover:text-amber-700">აუზი</span>
+                </label>
+                <label
+                    class="flex items-center space-x-3 p-3 border border-gray-100 rounded-xl cursor-pointer hover:bg-gray-50 hover:border-amber-300 transition-all select-none group">
+                    <input type="checkbox" name="amenities" value="საუზმე"
+                        class="w-5 h-5 text-amber-500 border-gray-300 rounded focus:ring-amber-500/20">
+                    <span class="text-sm font-medium text-gray-700 group-hover:text-amber-700">საუზმე</span>
+                </label>
+                <label
+                    class="flex items-center space-x-3 p-3 border border-gray-100 rounded-xl cursor-pointer hover:bg-gray-50 hover:border-amber-300 transition-all select-none group">
+                    <input type="checkbox" name="amenities" value="ბუხარი"
+                        class="w-5 h-5 text-amber-500 border-gray-300 rounded focus:ring-amber-500/20">
+                    <span class="text-sm font-medium text-gray-700 group-hover:text-amber-700">ბუხარი</span>
+                </label>
+                <label
+                    class="flex items-center space-x-3 p-3 border border-gray-100 rounded-xl cursor-pointer hover:bg-gray-50 hover:border-amber-300 transition-all select-none group">
+                    <input type="checkbox" name="amenities" value="ხედი"
+                        class="w-5 h-5 text-amber-500 border-gray-300 rounded focus:ring-amber-500/20">
+                    <span class="text-sm font-medium text-gray-700 group-hover:text-amber-700">ხედი</span>
+                </label>
+            </div>
+
+            <!-- Custom Services Container -->
+            <div id="customAmenitiesContainer" class="space-y-3 mt-3">
+                <!-- Dynamic inputs will be added here -->
+            </div>
+
+            <!-- Add Service Button -->
+            <button type="button" onclick="addCustomAmenity()"
+                class="text-xs font-bold text-amber-600 hover:text-amber-700 flex items-center bg-amber-50 px-3 py-2 rounded-lg hover:bg-amber-100 transition-colors mt-2">
+                <svg class="w-4 h-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                </svg>
+                + სერვისის დამატება
+            </button>
+        </div>
+
+        <!-- Seasonal Prices -->
+        <div class="space-y-4 pt-4 border-t border-gray-100">
+            <div class="flex justify-between items-center">
+                <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider">სეზონური
+                    ფასები</label>
+                <button type="button" onclick="clearSeasonalPrices()"
+                    class="text-[10px] font-bold text-red-500 hover:text-red-700 bg-red-50 hover:bg-red-100 px-3 py-1.5 rounded-lg transition-colors">
+                    ყველას წაშლა
+                </button>
+            </div>
+            <div class="overflow-x-auto border border-gray-200 rounded-xl bg-white shadow-sm">
+                <table class="w-full text-sm text-left">
+                    <thead class="bg-gray-50 text-gray-500 font-medium text-xs uppercase">
+                        <tr>
+                            <th class="p-2 min-w-[120px] sticky left-0 bg-gray-50 z-10 border-r border-gray-100">
+                                ოთახის სახელი</th>
+                            <th class="p-1 min-w-[30px] text-center border-r border-gray-100" title="Apply Jan to all">⚡
+                            </th>
+                            <th class="p-2 min-w-[60px]">იან</th>
+                            <th class="p-2 min-w-[60px]">თებ</th>
+                            <th class="p-2 min-w-[60px]">მარ</th>
+                            <th class="p-2 min-w-[60px]">აპრ</th>
+                            <th class="p-2 min-w-[60px]">მაი</th>
+                            <th class="p-2 min-w-[60px]">ივნ</th>
+                            <th class="p-2 min-w-[60px]">ივლ</th>
+                            <th class="p-2 min-w-[60px]">აგვ</th>
+                            <th class="p-2 min-w-[60px]">სექ</th>
+                            <th class="p-2 min-w-[60px]">ოქტ</th>
+                            <th class="p-2 min-w-[60px]">ნოე</th>
+                            <th class="p-2 min-w-[60px]">დეკ</th>
+                            <th class="p-2 min-w-[40px] sticky right-0 bg-gray-50 z-10"></th>
+                        </tr>
+                    </thead>
+                    <tbody id="seasonalPricesBody" class="divide-y divide-gray-100">
+                        <!-- Rows added by JS -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+
+
+        <!-- Actions -->
+        <div class="pt-6 border-t border-gray-100 flex items-center justify-between">
+            <a href="profile.html"
+                class="px-6 py-3 text-gray-500 font-bold hover:text-gray-800 transition-colors">გაუქმება</a>
+            <button type="submit"
+                class="bg-amber-500 hover:bg-amber-600 text-white font-bold py-4 px-10 rounded-xl shadow-lg shadow-amber-200 transition-all transform active:scale-[0.98] flex items-center justify-center text-lg">
+                განცხადების გამოქვეყნება
+            </button>
+        </div>
+        </form>
+        </div>
         </div>
     </main>
 
@@ -698,9 +713,23 @@
 
                 // Amenities
                 const checkboxes = document.querySelectorAll('input[name="amenities"]');
+                const standardAmenities = Array.from(checkboxes).map(cb => cb.value); // ["WiFi", "Checking", ...]
+
                 if (data.amenities) {
-                    checkboxes.forEach(cb => {
-                        if (data.amenities.includes(cb.value)) cb.checked = true;
+                    data.amenities.forEach(item => {
+                        // Check standard if match
+                        let isStandard = false;
+                        checkboxes.forEach(cb => {
+                            if (cb.value === item) {
+                                cb.checked = true;
+                                isStandard = true;
+                            }
+                        });
+
+                        // If not standard, add as custom
+                        if (!isStandard) {
+                            addCustomAmenity(item);
+                        }
                     });
                 }
 
@@ -742,6 +771,28 @@
                 } else {
                     State.originalRoomIds = [];
                 }
+
+                // Wait for rooms to render then sync
+                setTimeout(() => {
+                    window.syncSeasonalRows();
+                    // Populate prices from saved data if available logic complicated because we need to map names back to UIDs.
+                    // But wait, roomsData has id. saved seasonal prices are by label (name).
+                    // We can try to match by name.
+                    if (sPrices && sPrices.length > 0) {
+                        const rows = document.querySelectorAll('#seasonalPricesBody tr');
+                        rows.forEach(row => {
+                            const name = row.querySelector('td').innerText.trim();
+                            const match = sPrices.find(sp => sp.label === name);
+                            if (match && match.prices) {
+                                const inputs = row.querySelectorAll('input[type="number"]');
+                                inputs.forEach((inp, i) => {
+                                    if (match.prices[i]) inp.value = match.prices[i];
+                                });
+                            }
+                        });
+                        calculatePriceRange();
+                    }
+                }, 200);
 
             } catch (err) {
                 console.error(err);
@@ -1022,42 +1073,61 @@
         }
 
         // --- SEASONAL & PRICE LOGIC ---
-        window.addSeasonalRow = function (data = null) {
+        // --- ROOM <-> PRICE SYNC ---
+        window.syncSeasonalRows = function () {
             const tbody = document.getElementById('seasonalPricesBody');
-            if (!tbody) return;
-            const rowId = 'sp-row-' + Date.now() + Math.random().toString(36).substr(2, 5);;
-            const tr = document.createElement('tr');
-            tr.className = "hover:bg-gray-50 transition-colors group";
-            tr.id = rowId;
+            const roomBlocks = document.querySelectorAll('.room-block');
 
-            const labelValue = data ? data.label : '';
-            const prices = data ? data.prices : Array(12).fill('');
+            // Map existing rows to preserve values using UID
+            const existingValues = {};
+            tbody.querySelectorAll('tr').forEach(tr => {
+                const uid = tr.dataset.roomUid;
+                if (uid) {
+                    const inputs = tr.querySelectorAll('input[type="number"]');
+                    existingValues[uid] = Array.from(inputs).map(i => i.value);
+                }
+            });
 
-            // Helper to safe access
-            const getP = (i) => {
-                if (data && data.prices && data.prices[i] !== undefined) return data.prices[i];
-                return '';
+            tbody.innerHTML = '';
+
+            roomBlocks.forEach(block => {
+                const uid = block.dataset.uid;
+                const nameInput = block.querySelector(`input[name="room_name_${uid}"]`);
+                const roomName = nameInput && nameInput.value ? nameInput.value : 'ახალი ოთახი';
+
+                const tr = document.createElement('tr');
+                tr.dataset.roomUid = uid;
+                tr.className = "hover:bg-gray-50 transition-colors group";
+
+                const prices = existingValues[uid] || Array(12).fill('');
+
+                tr.innerHTML = `
+                    <td class="p-2 sticky left-0 bg-white group-hover:bg-gray-50 border-r border-gray-100 z-10 font-medium text-xs text-gray-700 w-48 truncate" title="${roomName}">
+                        ${roomName}
+                    </td>
+                    <td class="p-1 min-w-[30px] text-center bg-white group-hover:bg-gray-50 border-r border-gray-100 z-10">
+                         <button type="button" onclick="fillSeasonalRow(this)" class="p-1 text-emerald-500 hover:bg-emerald-50 rounded transition-colors" title="იანვრის ფასის ყველგან გავრცელება">
+                            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 5l7 7-7 7M5 5l7 7-7 7" /></svg>
+                        </button>
+                    </td>
+                    ${Array(12).fill(0).map((_, i) => `
+                        <td class="p-1"><input type="number" min="0" value="${prices[i]}" class="w-full px-1 py-1.5 text-xs text-center border border-gray-200 rounded focus:border-emerald-500 outline-none" placeholder="-"></td>
+                    `).join('')}
+                     <td class="p-1 text-center border-l border-gray-100 sticky right-0 bg-white z-10">
+                        <button type="button" onclick="clearRowPrices(this)" class="p-1 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded transition-colors" title="ფასების გასუფთავება">
+                             <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                             </svg>
+                        </button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+
+            if (roomBlocks.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="15" class="p-4 text-center text-gray-400 text-xs">ჯერ დაამატეთ ოთახი ზემოთ, რომ ფასები გაწეროთ.</td></tr>`;
             }
 
-            tr.innerHTML = `
-                <td class="p-2 sticky left-0 bg-white group-hover:bg-gray-50 border-r border-gray-100 z-10">
-                    <input type="text" value="${labelValue}" placeholder="მაგ: 2 ადგილიანი" class="w-full px-2 py-1.5 text-xs border border-gray-200 rounded focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 outline-none">
-                </td>
-                <td class="p-1 text-center bg-white group-hover:bg-gray-50 border-r border-gray-100 z-10">
-                    <button type="button" onclick="fillSeasonalRow(this)" class="p-1 text-emerald-500 hover:bg-emerald-50 rounded transition-colors" title="იანვრის ფასის ყველგან გავრცელება">
-                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 5l7 7-7 7M5 5l7 7-7 7" /></svg>
-                    </button>
-                </td>
-                ${Array(12).fill(0).map((_, i) => `
-                    <td class="p-1"><input type="number" min="0" value="${getP(i)}" class="w-full px-1 py-1.5 text-xs text-center border border-gray-200 rounded focus:border-emerald-500 outline-none" placeholder="-"></td>
-                `).join('')}
-                <td class="p-2 text-center">
-                    <button type="button" onclick="document.getElementById('${rowId}').remove(); calculatePriceRange();" class="text-gray-300 hover:text-red-500 transition-colors">
-                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
-                    </button>
-                </td>
-            `;
-            tbody.appendChild(tr);
             calculatePriceRange();
         };
 
@@ -1073,9 +1143,34 @@
             }
 
             inputs.forEach(input => input.value = firstVal);
+            calculatePriceRange();
+        };
+
+        // Old functions to be removed or ignored
+
+
+        window.fillSeasonalRow = function (btn) {
+            const tr = btn.closest('tr');
+            const inputs = tr.querySelectorAll('input[type="number"]');
+            if (inputs.length === 0) return;
+
+            const firstVal = inputs[0].value;
+            if (!firstVal) {
+                if (typeof showError === 'function') {
+                    showError("ჯერ მიუთითეთ იანვრის ფასი");
+                } else {
+                    alert("ჯერ მიუთითეთ იანვრის ფასი");
+                }
+                return;
+            }
+
+            inputs.forEach(input => input.value = firstVal);
             calculatePriceRange(); // Recalc
         };
 
+
+
+        // --- AUTOMATED PRICE CALCULATION ---
         // --- AUTOMATED PRICE CALCULATION ---
         window.calculatePriceRange = function () {
             const currentMonth = new Date().getMonth(); // 0 = Jan
@@ -1085,24 +1180,24 @@
 
             rows.forEach(row => {
                 const inputs = row.querySelectorAll('input[type="number"]');
-                // inputs[0] is Jan, inputs[currentMonth] is for current month
-                if (inputs[currentMonth]) {
-                    const val = parseInt(inputs[currentMonth].value) || 0;
+                // Iterate ALL inputs to find absolute min/max for the "From" price display
+                inputs.forEach(inp => {
+                    const val = parseInt(inp.value) || 0;
                     if (val > 0) {
                         if (val < min) min = val;
                         if (val > max) max = val;
                     }
-                }
+                });
             });
 
             const priceInput = document.querySelector('input[name="price"]');
             if (!priceInput) return;
 
-            if (min !== Infinity && max !== -Infinity) {
+            if (min !== Infinity) {
                 if (min === max) {
                     priceInput.value = `${min}`;
                 } else {
-                    priceInput.value = `${min} - ${max}`;
+                    priceInput.value = `${min} - ${max}`; // Display range
                 }
             } else {
                 priceInput.value = "";
@@ -1116,150 +1211,7 @@
             }
         });
 
-        // --- SUBMIT ---
-        window.submitProperty = async function (e) {
-            e.preventDefault();
-            // Validation: Check if there are ANY images (pending OR existing)
-            if (State.pendingUploads.length === 0 && State.existingImages.length === 0) {
-                alert("გთხოვთ ატვირთოთ მინიმუმ 1 სურათი");
-                return;
-            }
 
-            // Super VIP Limit Check
-            const tierValue = document.getElementById('tierInput').value; // Updated ID
-            const locationVal = DOM.locationValue.value;
-            if (tierValue === 'super-vip') {
-                const { count, error: countError } = await State.supabase
-                    .from('guesthouse ge')
-                    .select('*', { count: 'exact', head: true })
-                    .eq('location', locationVal)
-                    .eq('tier', 'super-vip');
-
-                if (countError) {
-                    console.error(countError);
-                    alert("ვერ მოხერხდა Super VIP ლიმიტის შემოწმება");
-                    return;
-                }
-
-                if (count >= 1 && (!State.editMode)) { // Only block new inputs, allow editing existing
-                    // Actually, if I am editing my OWN super-vip property, I shouldn't be blocked.
-                    // The logic above checks ALL super-vip in location. It includes ME if I already saved.
-                    // So for edit mode, we might need to exclude my current property ID.
-                    // But simpler: just warn. Or rely on backend constraint.
-                    // Let's refine:
-                }
-
-                if (count >= 1 && !State.editMode) {
-                    alert(`ქალაქში "${locationVal}" უკვე არის 1 Super VIP განცხადება.`);
-                    return;
-                }
-            }
-
-            const btn = e.target.querySelector('button[type="submit"]');
-            const origText = btn.innerHTML;
-            btn.innerHTML = `<svg class="animate-spin h-5 w-5 mr-3" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> იტვირთება...`;
-            btn.disabled = true;
-
-            try {
-                // 1. Upload Images
-                const userId = State.user.id;
-                const uploadedUrls = [];
-                for (let i = 0; i < State.pendingUploads.length; i++) {
-                    const item = State.pendingUploads[i];
-                    const fileName = `${Date.now()}_${i}_${Math.random().toString(36).substr(2, 9)}.webp`;
-                    const { data, error } = await State.supabase.storage
-                        .from('guesthouse statement')
-                        .upload(fileName, item.blob);
-
-                    if (error) throw error;
-
-                    const publicUrl = State.supabase.storage.from('guesthouse statement').getPublicUrl(fileName).data.publicUrl;
-                    uploadedUrls.push(publicUrl);
-                }
-
-                // 2. Form Data
-                const formData = new FormData(e.target);
-                const amenities = Array.from(formData.getAll('amenities'));
-
-                // Seasonal Prices
-                const seasonal_prices = [];
-                const sRows = document.querySelectorAll('#seasonalPricesBody tr');
-                sRows.forEach(row => {
-                    const label = row.querySelector('input[type="text"]').value;
-                    const prices = Array.from(row.querySelectorAll('input[type="number"]')).map(inp => parseInt(inp.value) || 0);
-                    if (label) seasonal_prices.push({ label, prices });
-                });
-
-                // Name concatenation
-                const propertyName = document.getElementById('propertyName').value.trim();
-                const firstName = document.getElementById('firstName').value.trim();
-                const lastName = document.getElementById('lastName').value.trim();
-                const hostName = `${firstName} ${lastName}`;
-
-                // Handle Price (Min vs Range)
-                let priceRaw = formData.get('price'); // e.g., "40 - 60" or "40"
-                let finalPrice = 0;
-                let priceDisplay = priceRaw;
-
-                if (priceRaw.includes('-')) {
-                    const parts = priceRaw.split('-').map(p => parseInt(p.trim()));
-                    finalPrice = Math.min(...parts); // Store min for sorting
-                } else {
-                    finalPrice = parseInt(priceRaw) || 0;
-                }
-
-                // Combine Existing + New Integers
-                const finalImages = [...(State.existingImages || []), ...uploadedUrls];
-
-                const newProp = {
-                    user_id: userId,
-                    name: propertyName, // Property Name
-                    // host_name: hostName, // Owner Name REMOVED as per request
-
-                    location: formData.get('location'),
-                    price: finalPrice,
-                    price_display: priceDisplay,
-                    type: formData.get('type'),
-                    tier: formData.get('tier'),
-                    description: formData.get('description'),
-                    amenities: amenities,
-                    images: finalImages, // Correct Array
-                    phone: formData.get('phone'),
-                    seasonal_prices: seasonal_prices,
-                    rating: 5.0
-                };
-
-                let error = null;
-                if (State.editMode) {
-                    // Security Check handled by RLS, but double check ID
-                    const { error: updateError } = await State.supabase
-                        .from('guesthouse ge')
-                        .update(newProp)
-                        .eq('id', State.editId)
-                        .eq('user_id', State.user.id); // Extra safety
-                    error = updateError;
-                } else {
-                    const { error: insertError } = await State.supabase.from('guesthouse ge').insert([newProp]);
-                    error = insertError;
-                }
-
-                if (error) throw error;
-
-                // Success
-                e.target.reset();
-                State.pendingUploads = [];
-                renderUploadGrid();
-                alert("განცხადება წარმატებით დაემატა!");
-                window.location.href = 'profile.html';
-
-            } catch (err) {
-                console.error(err);
-                alert("შეცდომა: " + err.message);
-            } finally {
-                btn.innerHTML = origText;
-                btn.disabled = false;
-            }
-        };
 
         // --- DYNAMIC ROOMS JS ---
         window.State.roomFiles = {};
@@ -1278,7 +1230,7 @@
             const bedsVal = data ? (data.beds || 1) : 1;
 
             div.innerHTML = `
-                <button type="button" onclick="this.closest('.room-block').remove(); delete window.State.roomFiles['${uniqueId}']" 
+                <button type="button" onclick="this.closest('.room-block').remove(); delete window.State.roomFiles['${uniqueId}']; window.syncSeasonalRows();" 
                     class="absolute top-2 right-2 text-gray-400 hover:text-red-500 transition-colors p-1 bg-white rounded-full shadow-sm">
                     <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
                 </button>
@@ -1306,6 +1258,16 @@
                 </div>
             `;
             container.appendChild(div);
+
+            // Add Listener for Name Change to Sync Dropdowns
+            const nameInput = div.querySelector(`input[name="room_name_${uniqueId}"]`);
+            if (nameInput) {
+                nameInput.addEventListener('input', () => {
+                    window.syncSeasonalRows();
+                });
+            }
+            // Trigger update immediately
+            window.syncSeasonalRows();
 
             // Existing room images (if any)
             if (data && data.image_url) {
@@ -1361,11 +1323,58 @@
             window.renderRoomImages(uid);
         };
 
+        window.addCustomAmenity = function (value = '') {
+            const container = document.getElementById('customAmenitiesContainer');
+            const div = document.createElement('div');
+            div.className = "flex items-center space-x-2 animate-fade-in";
+            div.innerHTML = `
+                <input type="text" value="${value}" placeholder="ჩაწერეთ სერვისი (მაგ: ცხენით გასეირნება)" 
+                    class="custom-amenity-input w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:border-amber-500 focus:ring-2 focus:ring-amber-500/10 outline-none transition-all font-medium text-gray-800 text-sm">
+                <button type="button" onclick="this.parentElement.remove()" 
+                    class="p-2 text-gray-400 hover:text-red-500 bg-white border border-gray-200 hover:border-red-200 rounded-xl transition-all shadow-sm">
+                    <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                    </svg>
+                </button>
+            `;
+            container.appendChild(div);
+        };
+
         window.submitProperty = async function (e) {
             e.preventDefault();
-            // Validation: Check if there are ANY images (pending OR existing) for MAIN property
-            if (State.pendingUploads.length === 0 && State.existingImages.length === 0) {
-                alert("გთხოვთ ატვირთოთ მინიმუმ 1 მთავარი სურათი (ექსტერიერი/საერთო)");
+            console.log("Submitting data..."); // Debugging
+
+            // Recalculate price range to ensure inputs are populated
+            calculatePriceRange();
+
+            // Validation: Ensure Rooms exists
+            const roomBlocks = document.querySelectorAll('.room-block');
+            if (roomBlocks.length === 0) {
+                showError("გთხოვთ დაამატოთ მინიმუმ 1 ოთახი.");
+                return;
+            }
+
+            // Validation: Ensure ALL rooms have prices
+            let allPricesFilled = true;
+            const priceRows = document.querySelectorAll('#seasonalPricesBody tr');
+
+            // Reset borders
+            priceRows.forEach(row => {
+                row.querySelectorAll('input').forEach(i => i.classList.remove('border-red-500'));
+            });
+
+            for (const row of priceRows) {
+                const inputs = row.querySelectorAll('input[type="number"]');
+                let hasValue = false;
+                inputs.forEach(i => { if (i.value && parseInt(i.value) > 0) hasValue = true; });
+                if (!hasValue) {
+                    allPricesFilled = false;
+                    inputs.forEach(i => i.classList.add('border-red-500'));
+                }
+            }
+
+            if (!allPricesFilled) {
+                showError("გთხოვთ მიუთითოთ ფასი ყველა ოთახისთვის სეზონურ ცხრილში (მინიმუმ ერთი თვე).");
                 return;
             }
 
@@ -1391,17 +1400,29 @@
                     uploadedUrls.push(publicUrl);
                 }
 
-                // 2. Form Data
+                // 2. Form Data Construction
                 const formData = new FormData(e.target);
-                const amenities = Array.from(formData.getAll('amenities'));
+                let amenities = Array.from(formData.getAll('amenities'));
 
-                // Seasonal Prices
+                // Collect Custom Amenities
+                const customInputs = document.querySelectorAll('.custom-amenity-input');
+                customInputs.forEach(input => {
+                    const val = input.value.trim();
+                    if (val) amenities.push(val);
+                });
+
+                // Seasonal Prices Logic (Revised)
                 const seasonal_prices = [];
-                const sRows = document.querySelectorAll('#seasonalPricesBody tr');
-                sRows.forEach(row => {
-                    const label = row.querySelector('input[type="text"]').value;
-                    const prices = Array.from(row.querySelectorAll('input[type="number"]')).map(inp => parseInt(inp.value) || 0);
-                    if (label) seasonal_prices.push({ label, prices });
+                document.querySelectorAll('.room-block').forEach(block => {
+                    const uid = block.dataset.uid;
+                    const name = block.querySelector(`input[name="room_name_${uid}"]`).value;
+
+                    // matching row
+                    const row = document.querySelector(`#seasonalPricesBody tr[data-room-uid="${uid}"]`);
+                    if (row) {
+                        const prices = Array.from(row.querySelectorAll('input[type="number"]')).map(inp => parseInt(inp.value) || 0);
+                        seasonal_prices.push({ label: name, prices: prices });
+                    }
                 });
 
                 // Name concatenation
@@ -1410,24 +1431,53 @@
                 const lastName = document.getElementById('lastName').value.trim();
                 const hostName = `${firstName} ${lastName}`;
 
-                // Handle Price
-                let priceRaw = formData.get('price');
+                // Handle Price (Min value logic from seasonal prices if available)
                 let finalPrice = 0;
-                let priceDisplay = priceRaw;
+                let priceDisplay = "";
 
-                if (priceRaw && priceRaw.includes('-')) {
-                    const parts = priceRaw.split('-').map(p => parseInt(p.trim()));
-                    finalPrice = Math.min(...parts);
+                // Calculate from seasonal table first
+                let minSeas = Infinity;
+                let maxSeas = -Infinity;
+                let hasSeasonal = false;
+
+                seasonal_prices.forEach(sp => {
+                    sp.prices.forEach(p => {
+                        if (p > 0) {
+                            if (p < minSeas) minSeas = p;
+                            if (p > maxSeas) maxSeas = p;
+                            hasSeasonal = true;
+                        }
+                    });
+                });
+
+                if (hasSeasonal) {
+                    finalPrice = minSeas;
+                    if (minSeas === maxSeas) {
+                        priceDisplay = `${minSeas}`;
+                    } else {
+                        priceDisplay = `${minSeas} - ${maxSeas}`;
+                    }
                 } else {
-                    finalPrice = parseInt(priceRaw) || 0;
+                    // Fallback
+                    let priceRaw = formData.get('price');
+                    if (priceRaw && priceRaw.includes('-')) {
+                        const parts = priceRaw.split('-').map(p => parseInt(p.trim()));
+                        finalPrice = Math.min(...parts);
+                        priceDisplay = priceRaw;
+                    } else {
+                        finalPrice = parseInt(priceRaw) || 0;
+                        priceDisplay = finalPrice.toString();
+                    }
                 }
+
+                if (isNaN(finalPrice)) finalPrice = 0;
 
                 const finalImages = [...(State.existingImages || []), ...uploadedUrls];
 
                 const newProp = {
                     user_id: userId,
                     name: propertyName,
-                    host_name: hostName,
+                    // REMOVED host_name, host_surname, property_name based on user request to fix DB error
                     location: formData.get('location'),
                     region: document.getElementById('regionSelect').value,
                     price: finalPrice,
@@ -1442,7 +1492,7 @@
                     seasonal_prices: seasonal_prices,
                 };
 
-                // 3. Save Property
+                // 3. Save Property FIRST
                 let propertyId = State.editId;
                 let error = null;
 
@@ -1459,38 +1509,47 @@
                         .insert([newProp])
                         .select();
 
-                    if (data && data.length > 0) propertyId = data[0].id;
+                    if (data && data.length > 0) propertyId = data[0].id; // CAPTURE ID
                     error = insertError;
                 }
 
                 if (error) throw error;
                 if (!propertyId) throw new Error("Property ID not found.");
 
-                // 4. Save Rooms
-                // 4. Save Rooms
-                const blocks = document.querySelectorAll('.room-block');
+                // 4. Save Rooms SEQUENTIALLY using propertyId
 
-                for (let block of blocks) {
+                // First delete removed rooms if in edit mode
+                const currentBlocks = document.querySelectorAll('.room-block');
+                const keptRoomIds = [];
+                currentBlocks.forEach(b => {
+                    if (b.dataset.roomId) keptRoomIds.push(parseInt(b.dataset.roomId));
+                });
+
+                if (State.originalRoomIds && State.originalRoomIds.length > 0) {
+                    const toDelete = State.originalRoomIds.filter(id => !keptRoomIds.includes(id));
+                    if (toDelete.length > 0) {
+                        await State.supabase.from('rooms').delete().in('id', toDelete);
+                    }
+                }
+
+                for (let block of currentBlocks) {
                     const uid = block.dataset.uid;
-                    const roomId = block.dataset.roomId; // Get existing ID
+                    const existingId = block.dataset.roomId ? parseInt(block.dataset.roomId) : null;
                     const name = block.querySelector(`input[name="room_name_${uid}"]`).value;
                     const beds = block.querySelector(`input[name="room_beds_${uid}"]`).value;
 
-                    // Collect Existing Images (that haven't been deleted)
-                    // We need to look at the DOM for images that are NOT blob: (or store them better)
-                    // The easiest way with current setup: 
-                    // addRoomBlock renders existing images. We can iterate the img tags in the container that start with 'http'
+                    // Collect Existing Images for THIS room
                     const imgContainer = block.querySelector(`#room_images_container_${uid}`);
                     const livingImages = [];
                     if (imgContainer) {
                         imgContainer.querySelectorAll('img').forEach(img => {
-                            if (img.src.startsWith('http') && !img.src.startsWith('blob:')) {
+                            if (!img.src.startsWith('blob:')) {
                                 livingImages.push(img.src);
                             }
                         });
                     }
 
-                    // Upload New Files
+                    // Upload New Files for THIS room
                     const files = window.State.roomFiles[uid] || [];
                     const newImageUrls = [];
 
@@ -1500,66 +1559,79 @@
                             .from('guesthouse statement')
                             .upload(fileName, file);
 
-                        if (!uploadError) {
-                            const pub = State.supabase.storage.from('guesthouse statement').getPublicUrl(fileName).data.publicUrl;
-                            newImageUrls.push(pub);
+                        if (uploadError) {
+                            console.error("Room image upload failed", uploadError);
+                            continue;
                         }
+
+                        const publicUrl = State.supabase.storage.from('guesthouse statement').getPublicUrl(fileName).data.publicUrl;
+                        newImageUrls.push(publicUrl);
                     }
 
                     const finalRoomImages = [...livingImages, ...newImageUrls];
-
                     const roomPayload = {
-                        property_id: propertyId,
+                        property_id: propertyId, // USE CONFIRMED ID
                         name: name,
-                        beds: parseInt(beds),
-                        image_url: finalRoomImages[0] || null,
-                        images: finalRoomImages
+                        beds: parseInt(beds) || 1,
+                        images: finalRoomImages,
+                        image_url: finalRoomImages[0] || ''
                     };
 
-                    if (roomId) {
-                        // UPDATE
-                        const { error: roomErr } = await State.supabase
-                            .from('rooms')
-                            .update(roomPayload)
-                            .eq('id', roomId);
-                        if (roomErr) console.error("Room Update Error:", roomErr);
+                    if (existingId) {
+                        await State.supabase.from('rooms').update(roomPayload).eq('id', existingId);
                     } else {
-                        // INSERT
-                        const { error: roomErr } = await State.supabase
-                            .from('rooms')
-                            .insert([roomPayload]);
-                        if (roomErr) console.error("Room Insert Error:", roomErr);
+                        await State.supabase.from('rooms').insert([roomPayload]);
                     }
                 }
 
-                // 5. Delete Removed Rooms
-                if (State.originalRoomIds && State.originalRoomIds.length > 0) {
-                    const submittedIds = Array.from(document.querySelectorAll('.room-block'))
-                        .map(b => parseInt(b.dataset.roomId))
-                        .filter(id => !isNaN(id));
-
-                    const idsToDelete = State.originalRoomIds.filter(id => !submittedIds.includes(id));
-
-                    if (idsToDelete.length > 0) {
-                        const { error: delErr } = await State.supabase
-                            .from('rooms')
-                            .delete()
-                            .in('id', idsToDelete);
-                        if (delErr) console.error("Room Delete Error:", delErr);
-                    }
+                if (typeof Swal !== 'undefined') {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'წარმატება!',
+                        text: 'განცხადება წარმატებით გამოქვეყნდა!',
+                        confirmButtonColor: '#10b981'
+                    }).then(() => {
+                        window.location.href = "profile.html";
+                    });
+                } else {
+                    alert("განცხადება წარმატებით გამოქვეყნდა!");
+                    window.location.href = "profile.html";
                 }
-
-                alert("წარმატებით შეინახა!");
-                window.location.href = 'profile.html';
 
             } catch (err) {
-                console.error(err);
-                alert("შეცდომა: " + err.message);
-            } finally {
+                console.error("Submission Error:", err);
+                showError("სისტემური შეცდომა: " + (err.message || JSON.stringify(err))); // Show exact error
                 btn.innerHTML = origText;
                 btn.disabled = false;
             }
         };
+
+        window.clearSeasonalPrices = function () {
+            if (!confirm("ნამდვილად გსურთ ყველა ფასის წაშლა?")) return;
+            document.querySelectorAll('#seasonalPricesBody input[type="number"]').forEach(inpt => inpt.value = '');
+            calculatePriceRange();
+        };
+
+        window.clearRowPrices = function (btn) {
+            const tr = btn.closest('tr');
+            tr.querySelectorAll('input[type="number"]').forEach(inp => inp.value = '');
+            calculatePriceRange();
+        };
+
+        // --- ERROR UTILS ---
+        function showError(msg) {
+            // Fallback if Swal not loaded (though we should add CDN)
+            if (typeof Swal !== 'undefined') {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'შეცდომა',
+                    text: msg,
+                    confirmButtonColor: '#f59e0b'
+                });
+            } else {
+                alert(msg);
+            }
+        }
 
         init();
     </script>
