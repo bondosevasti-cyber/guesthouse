@@ -9,6 +9,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Georgian:wght@400;500;600;700&display=swap"
         rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <!-- FullCalendar -->
     <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js'></script>
     <!-- Tippy.js -->
@@ -61,7 +62,7 @@
                     </svg>
                 </button>
                 <div id="navAuthBtnContainer">
-                    <button id="navAuthBtn" onclick="window.location.href='index.html'"
+                    <button id="navAuthBtn" onclick="window.location.href='index.html?auth=register'"
                         class="bg-[#2d78b1] hover:bg-[#236a9e] text-white font-bold py-2 px-6 rounded-full transition-all shadow-sm">
                         შესვლა
                     </button>
@@ -144,10 +145,19 @@
             loadUserListings();
         }
 
+        // Helper for Image URLs
+        function getFullImageUrl(path) {
+            if (!path) return CONFIG.DEFAULT_IMAGE;
+            if (path.startsWith('http') || path.startsWith('blob:')) return path;
+            const { data } = State.supabase.storage.from('images').getPublicUrl(path);
+            return data.publicUrl;
+        }
+
         async function loadUserListings() {
             try {
+                // CHANGED: From 'guesthouse ge' to 'guesthouse_ge'
                 const { data, error } = await State.supabase
-                    .from('guesthouse ge')
+                    .from('guesthouse_ge')
                     .select('*')
                     .eq('user_id', State.user.id)
                     .order('created_at', { ascending: false });
@@ -183,6 +193,11 @@
             const currentMonthIndex = new Date().getMonth();
             let display = "შეთანხმებით";
 
+            // Check for new price_display field first
+            if (p.price_display && p.price_display > 0) {
+                return `₾${p.price_display}`;
+            }
+
             let seasonal = [];
             if (p.seasonal_prices) {
                 if (Array.isArray(p.seasonal_prices)) seasonal = p.seasonal_prices;
@@ -204,17 +219,71 @@
             return display;
         }
 
+        // ... existing createCardHTML function ...
+
+        // ... existing updateAuthUI function ...
+
+        // ... existing handleLogout function ...
+
+        window.deleteProperty = async function (id) {
+            const result = await Swal.fire({
+                title: 'ნამდვილად გსურთ წაშლა?',
+                text: "ეს ქმედება შეუქცევადია!",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#3085d6',
+                confirmButtonText: 'დიახ, წაშლა!',
+                cancelButtonText: 'გაუქმება'
+            });
+
+            if (!result.isConfirmed) return;
+
+            try {
+                // CHANGED: From 'guesthouse ge' to 'guesthouse_ge'
+                const { error } = await State.supabase.from('guesthouse_ge').delete().eq('id', id);
+                if (error) throw error;
+
+                await Swal.fire(
+                    'წაიშალა!',
+                    'თქვენი განცხადება წარმატებით წაიშალა.',
+                    'success'
+                );
+                window.location.reload();
+            } catch (e) {
+                console.error("Delete error:", e);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'შეცდომა',
+                    text: 'ვერ მოხერხდა წაშლა: ' + e.message
+                });
+            }
+        }
+
         function createCardHTML(prop) {
             // 0. Image Logic
             let displayImage = CONFIG.DEFAULT_IMAGE;
+            let rawImages = [];
             if (prop.images) {
-                if (Array.isArray(prop.images) && prop.images.length > 0) displayImage = prop.images[0];
+                if (Array.isArray(prop.images)) rawImages = prop.images;
                 else if (typeof prop.images === 'string') {
                     try {
-                        const parsed = JSON.parse(prop.images);
-                        if (Array.isArray(parsed) && parsed.length > 0) displayImage = parsed[0];
-                    } catch (e) { }
+                        if (prop.images.startsWith('{')) rawImages = prop.images.slice(1, -1).split(',');
+                        else rawImages = JSON.parse(prop.images);
+                    } catch (e) {
+                        if (prop.images.trim()) rawImages = [prop.images];
+                    }
                 }
+            }
+            if (rawImages.length === 0 && prop.image_url) rawImages = [prop.image_url];
+
+            if (rawImages.length > 0 && rawImages[0]) {
+                let img = rawImages[0].trim();
+                // Clean quotes from postgres array string
+                if ((img.startsWith('"') && img.endsWith('"')) || (img.startsWith("'") && img.endsWith("'"))) {
+                    img = img.slice(1, -1);
+                }
+                displayImage = getFullImageUrl(img);
             }
 
             // Price Calculation
@@ -222,7 +291,8 @@
 
             // Badge & Glow Logic
             let badge = '';
-            if (prop.tier === 'super-vip') badge = '<span class="bg-gradient-to-r from-yellow-400 to-amber-500 text-white text-[10px] font-bold px-2 py-1 rounded shadow-sm uppercase tracking-wider ml-2 border border-white/20">SUPER VIP</span>';
+            // CHANGED: super-vip -> super_vip
+            if (prop.tier === 'super_vip') badge = '<span class="bg-gradient-to-r from-yellow-400 to-amber-500 text-white text-[10px] font-bold px-2 py-1 rounded shadow-sm uppercase tracking-wider ml-2 border border-white/20">SUPER VIP</span>';
             else if (prop.tier === 'vip-plus') badge = '<span class="bg-indigo-600 text-white text-[10px] font-bold px-2 py-1 rounded shadow-sm uppercase tracking-wider ml-2">VIP +</span>';
             else if (prop.tier === 'vip') badge = '<span class="bg-amber-500 text-white text-[10px] font-bold px-2 py-1 rounded shadow-sm uppercase tracking-wider ml-2">VIP</span>';
 
@@ -244,7 +314,8 @@
                 </div>`;
 
             // Super VIP Layout
-            if (prop.tier === 'super-vip') {
+            // CHANGED: super-vip -> super_vip
+            if (prop.tier === 'super_vip') {
                 return `
             <div class="col-span-1 sm:col-span-2 lg:col-span-3 bg-white rounded-2xl shadow-xl overflow-hidden cursor-default fade-in group border-4 border-yellow-400 transform hover:scale-[1.01] transition-all duration-300 relative">
                 <div class="absolute inset-0 bg-yellow-400/5 z-0 pointer-events-none"></div>
@@ -400,7 +471,7 @@
             } else {
                 const loginBtnHTML = `
                 <div id="navAuthBtnContainer">
-                    <button id="navAuthBtn" onclick="window.location.href='index.html'"
+                    <button id="navAuthBtn" onclick="window.location.href='index.html?auth=register'"
                         class="bg-[#2d78b1] hover:bg-[#236a9e] text-white font-bold py-2 px-6 rounded-full transition-all shadow-sm">
                         შესვლა
                     </button>
@@ -420,16 +491,7 @@
             window.location.href = 'index.html';
         };
 
-        window.deleteProperty = async function (id) {
-            if (!confirm("ნამდვილად გსურთ წაშლა?")) return;
-            try {
-                const { error } = await State.supabase.from('guesthouse ge').delete().eq('id', id);
-                if (error) throw error;
-                loadUserListings();
-            } catch (e) {
-                alert('შეცდომა: ' + e.message);
-            }
-        }
+
 
         // Start
         init();

@@ -1,0 +1,211 @@
+window.submitProperty = async function (e) {
+    e.preventDefault();
+    const submitBtn = e.target.querySelector('button[type="submit"]');
+    const originalBtnText = submitBtn.innerHTML;
+
+    // Loading State
+    Swal.fire({
+        title: 'ინახება...',
+        text: 'გთხოვთ დაელოდოთ მონაცემების ატვირთვას',
+        allowOutsideClick: false,
+        didOpen: () => Swal.showLoading()
+    });
+
+    try {
+        const formData = new FormData(e.target);
+        
+        // 1. Validation
+        const roomBlocks = document.querySelectorAll('.room-block');
+        // თუ ოთახები სავალდებულო არაა, ეს ხაზი შეგიძლია დააკომენტარო
+        // if (roomBlocks.length === 0) throw new Error("გთხოვთ დაამატოთ მინიმუმ 1 ოთახი.");
+
+        // 2. Image Upload (Main Property)
+        const userId = State.user.id;
+        const uploadedUrls = [];
+
+        if (State.pendingUploads.length > 0) {
+            for (let i = 0; i < State.pendingUploads.length; i++) {
+                const item = State.pendingUploads[i];
+                const fileName = `prop_${userId}_${Date.now()}_${i}.webp`;
+
+                // ყურადღება: ბაკეტის სახელი შევცვალე 'images'-ით
+                const { error: uploadError } = await State.supabase.storage
+                    .from('images') 
+                    .upload(fileName, item.blob);
+
+                if (uploadError) throw new Error("სურათის ატვირთვის შეცდომა: " + uploadError.message);
+
+                const { data: { publicUrl } } = State.supabase.storage
+                    .from('images')
+                    .getPublicUrl(fileName);
+                uploadedUrls.push(publicUrl);
+            }
+        }
+
+        const finalImages = [...(State.existingImages || []), ...uploadedUrls];
+
+        // 3. Data Preparation
+        const name = document.getElementById('propertyName').value;
+        const location = document.getElementById('locationValue').value || document.getElementById('locationSearch').value;
+        const description = formData.get('description');
+        const phone = formData.get('phone'); // დავაბრუნეთ
+        const type = document.querySelector('select[name="type"]').value; // დავაბრუნეთ
+        const hostName = document.getElementById('firstName').value + ' ' + document.getElementById('lastName').value; // დავაბრუნეთ
+
+        // Price Calculation
+        let priceDisplay = parseInt(document.querySelector('input[name="price"]').value) || 0; // Default base price
+        
+        // Check seasonal prices
+        const priceRows = document.querySelectorAll('#seasonalPricesBody tr');
+        let minP = Infinity, maxP = -Infinity, hasP = false;
+        
+        priceRows.forEach(row => {
+            row.querySelectorAll('input[type="number"]').forEach(inpt => {
+                const val = parseInt(inpt.value) || 0;
+                if (val > 0) {
+                    if (val < minP) minP = val;
+                    if (val > maxP) maxP = val;
+                    hasP = true;
+                }
+            });
+        });
+
+        if (hasP) {
+            priceDisplay = (minP === maxP) ? `${minP}` : `${minP} - ${maxP}`;
+        }
+
+        // Amenities
+        const amenities = [];
+        document.querySelectorAll('input[name="amenities"]:checked').forEach(cb => amenities.push(cb.value));
+        document.querySelectorAll('.custom-amenity-input').forEach(inp => {
+            const v = inp.value.trim();
+            if (v) amenities.push(v);
+        });
+        
+        // Seasonal Prices JSON
+        const seasonalPrices = [];
+        priceRows.forEach(tr => {
+            const label = tr.querySelector('td:first-child')?.innerText.trim();
+            if (label) {
+                const prices = [];
+                tr.querySelectorAll('input[type="number"]').forEach(inp => prices.push(parseInt(inp.value) || 0));
+                seasonalPrices.push({ label, prices });
+            }
+        });
+
+        // Construct Payload
+        const propertyPayload = {
+            name: name,
+            host_name: hostName, // Added back
+            phone: phone,        // Added back
+            type: type,          // Added back
+            location: location,
+            description: description,
+            amenities: amenities,
+            images: finalImages,
+            price_display: priceDisplay, // String value
+            seasonal_prices: seasonalPrices, // Added seasonal structure
+            user_id: userId,
+            updated_at: new Date()
+        };
+
+        // 4. Insert/Update Property
+        // ყურადღება: ცხრილის სახელი შევცვალე 'guesthouse_ge'-ით
+        let propertyId = State.editId;
+        if (State.editMode && propertyId) {
+            const { error: dbError } = await State.supabase
+                .from('guesthouse_ge')
+                .update(propertyPayload)
+                .eq('id', propertyId);
+            if (dbError) throw dbError;
+        } else {
+            const { data, error: dbError } = await State.supabase
+                .from('guesthouse_ge')
+                .insert([propertyPayload])
+                .select();
+            if (dbError) throw dbError;
+            if (!data || data.length === 0) throw new Error("პროფილის შექმნა ვერ მოხერხდა.");
+            propertyId = data[0].id;
+        }
+
+        // 5. Handle Rooms
+        // Delete removed rooms (Edit Mode)
+        if (State.editMode && State.originalRoomIds) {
+            const currentRoomIds = Array.from(document.querySelectorAll('.room-block'))
+                .map(b => b.dataset.roomId) // Make sure you store roomId in dataset when loading
+                .filter(id => id);
+            
+            // State.originalRoomIds უნდა იყოს მასივი, რომელიც ივსება loadPropertyForEdit-ის დროს
+            const toDelete = State.originalRoomIds.filter(oid => !currentRoomIds.includes(oid.toString()));
+            if (toDelete.length > 0) {
+                await State.supabase.from('rooms').delete().in('id', toDelete);
+            }
+        }
+
+        // Upsert Rooms
+        for (const block of roomBlocks) {
+            const uid = block.dataset.uid;
+            const existingRoomId = block.dataset.roomId; // If editing
+            const roomName = block.querySelector(`input[name="room_name_${uid}"]`).value;
+            const beds = block.querySelector(`input[name="room_beds_${uid}"]`).value;
+
+            // Image handling logic
+            const currentRoomFiles = State.roomFiles[uid] || [];
+            
+            // Separate existing URLs from New Files
+            const existingUrls = currentRoomFiles.filter(f => f.type === 'url').map(f => f.url);
+            const newFiles = currentRoomFiles.filter(f => f.type === 'file').map(f => f.file);
+            
+            const newUploadedUrls = [];
+
+            for (const file of newFiles) {
+                const fName = `room_${propertyId}_${Date.now()}_${Math.random().toString(36).substr(2, 5)}.webp`;
+                const { error: rUploadError } = await State.supabase.storage
+                    .from('images') // Changed bucket name
+                    .upload(fName, file);
+                
+                if (!rUploadError) {
+                    const { data: { publicUrl: rUrl } } = State.supabase.storage
+                        .from('images')
+                        .getPublicUrl(fName);
+                    newUploadedUrls.push(rUrl);
+                }
+            }
+
+            const finalRoomImages = [...existingUrls, ...newUploadedUrls];
+
+            const roomPayload = {
+                property_id: propertyId,
+                name: roomName,
+                beds: parseInt(beds) || 1,
+                images: finalRoomImages
+            };
+
+            if (existingRoomId) {
+                await State.supabase.from('rooms').update(roomPayload).eq('id', existingRoomId);
+            } else {
+                await State.supabase.from('rooms').insert([roomPayload]);
+            }
+        }
+
+        // Success
+        Swal.fire({
+            icon: 'success',
+            title: 'წარმატება!',
+            text: 'განცხადება წარმატებით გამოქვეყნდა!',
+            confirmButtonColor: '#10b981'
+        }).then(() => {
+            window.location.href = "index.html"; // ან profile.html
+        });
+
+    } catch (err) {
+        console.error("Critical submission error:", err);
+        Swal.fire({
+            icon: 'error',
+            title: 'შეცდომა',
+            text: err.message || 'დაფიქსირდა გაურკვეველი შეცდომა.'
+        });
+        submitBtn.innerHTML = originalBtnText;
+        submitBtn.disabled = false;
+    }
+};

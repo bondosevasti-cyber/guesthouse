@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="ka">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>დეტალები | GuesthouseGE</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Georgian:wght@400;500;600;700&display=swap"
+        rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <style>
+        body {
+            font-family: 'Noto Sans Georgian', sans-serif;
+        }
+
+        .hero-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            grid-template-rows: 1fr 1fr;
+            gap: 8px;
+            height: 450px;
+        }
+
+        @media (max-width: 768px) {
+            .hero-grid {
+                display: block;
+                height: auto;
+            }
+
+            .hero-grid img {
+                height: 250px;
+                width: 100%;
+                border-radius: 0;
+            }
+        }
+
+        .vip-badge {
+            background: linear-gradient(135deg, #ffd700, #ffae00);
+            color: #000;
+            box-shadow: 0 0 15px rgba(255, 215, 0, 0.4);
+        }
+
+        .super-vip-badge {
+            background: linear-gradient(135deg, #00d2ff, #3a7bd5);
+            color: #fff;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 0 20px rgba(0, 210, 255, 0.5);
+        }
+
+        .super-vip-badge::after {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+            transform: rotate(45deg);
+            animation: shine 3s infinite;
+        }
+
+        @keyframes shine {
+            0% {
+                left: -100%;
+            }
+
+            100% {
+                left: 100%;
+            }
+        }
+
+        .current-month-highlight {
+            background-color: #f0fdf4;
+            border: 2px solid #22c55e;
+            color: #15803d;
+            font-weight: 700;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar {
+            height: 4px;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #ddd;
+            border-radius: 10px;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: #ccc;
+        }
+    </style>
+</head>
+
+<body class="bg-white">
+
+    <!-- Navbar Replicated -->
+    <nav
+        class="fixed top-0 left-0 w-full z-50 bg-white/80 backdrop-blur-md border-b border-gray-100 py-3 transition-all duration-300">
+        <div class="max-w-7xl mx-auto px-4 flex justify-between items-center">
+            <a href="index.html">
+                <img src="images/gh_logo.webp" alt="Logo" class="h-9 w-auto object-contain">
+            </a>
+            <div id="navAuthBtnContainer"></div>
+        </div>
+    </nav>
+
+    <main class="max-w-7xl mx-auto px-4 pt-24 pb-32">
+        <!-- Hero Section -->
+        <div id="heroContainer" class="rounded-2xl overflow-hidden mb-8 hero-grid">
+            <div class="bg-gray-100 animate-pulse col-span-1 row-span-2 rounded-l-2xl"></div>
+            <div class="bg-gray-200 animate-pulse rounded-tr-2xl"></div>
+            <div class="bg-gray-100 animate-pulse rounded-br-2xl"></div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-12">
+            <!-- Left Info Panel -->
+            <div class="lg:col-span-2 space-y-8">
+                <div class="flex justify-between items-start">
+                    <div>
+                        <div id="tierBadge" class="mb-2"></div>
+                        <h1 id="propName" class="text-3xl md:text-4xl font-bold text-gray-900 mb-2">...</h1>
+                        <p id="propLocation" class="text-gray-500 flex items-center gap-1 font-medium italic">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path
+                                    d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                                <path d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                            </svg>
+                            <span>...</span>
+                        </p>
+                    </div>
+                </div>
+
+                <div class="flex flex-wrap gap-4 py-6 border-y border-gray-100">
+                    <div class="flex items-center gap-2 bg-gray-50 px-4 py-2 rounded-xl">
+                        <span class="text-xl">🏠</span>
+                        <div>
+                            <p class="text-[10px] text-gray-400 font-bold uppercase">ტიპი</p>
+                            <p id="propType" class="text-sm font-bold text-gray-700">...</p>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-2 bg-gray-50 px-4 py-2 rounded-xl">
+                        <span class="text-xl">🛏️</span>
+                        <div>
+                            <p class="text-[10px] text-gray-400 font-bold uppercase">საწოლები</p>
+                            <p id="totalBeds" class="text-sm font-bold text-gray-700">...</p>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-2 bg-gray-50 px-4 py-2 rounded-xl">
+                        <span class="text-xl">🚪</span>
+                        <div>
+                            <p class="text-[10px] text-gray-400 font-bold uppercase">ოთახები</p>
+                            <p id="roomCount" class="text-sm font-bold text-gray-700">...</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div>
+                    <!-- Room Tabs Section -->
+                    <div id="roomTabsSection" class="mb-8 mt-2 hidden">
+                        <section class="flex space-x-2 overflow-x-auto pb-4 custom-scrollbar" id="tabsContainer">
+                            <!-- Tabs JS Generated -->
+                        </section>
+                        <div id="roomInfoDisplay"
+                            class="hidden mt-3 bg-gray-50 border border-gray-100 rounded-2xl p-4 animate-fade-in flex items-center gap-3">
+                            <span class="text-indigo-600 bg-indigo-50 p-2 rounded-lg">🛏️</span>
+                            <div>
+                                <h4 id="displayRoomName" class="font-bold text-gray-900"></h4>
+                                <p id="displayRoomBeds" class="text-sm text-gray-500"></p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <h2 class="text-xl font-bold text-gray-900 mb-4">აღწერა</h2>
+                    <p id="propDescription" class="text-gray-600 leading-relaxed whitespace-pre-line text-lg">...</p>
+                </div>
+
+                <div id="amenitiesSection">
+                    <h2 class="text-xl font-bold text-gray-900 mb-4">კეთილმოწყობა</h2>
+                    <div id="amenitiesList" class="grid grid-cols-2 md:grid-cols-3 gap-4"></div>
+                </div>
+
+                <div>
+                    <h2 class="text-xl font-bold text-gray-900 mb-4">სეზონური ფასები</h2>
+                    <div class="overflow-x-auto rounded-2xl border border-gray-100">
+                        <table class="w-full text-sm">
+                            <thead class="bg-gray-50">
+                                <tr id="priceHeader">
+                                    <th class="p-4 text-left text-gray-400 font-bold uppercase text-[10px]">ოთახი</th>
+                                </tr>
+                            </thead>
+                            <tbody id="priceBody" class="divide-y divide-gray-100"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Sidebar -->
+            <div class="space-y-6">
+                <!-- Pricing Card -->
+                <div class="bg-white border border-gray-100 rounded-3xl p-8 shadow-xl sticky top-24">
+                    <div class="flex justify-between items-center mb-6">
+                        <div>
+                            <p class="text-gray-400 text-sm font-bold uppercase mb-1">ფასი</p>
+                            <h2 id="propPrice" class="text-3xl font-extrabold text-gray-900">...</h2>
+                        </div>
+                        <div class="bg-green-50 text-green-600 px-3 py-1 rounded-full text-xs font-bold">ხელმისაწვდომია
+                        </div>
+                    </div>
+                    <button id="bookBtn"
+                        class="w-full bg-gray-900 hover:bg-black text-white py-4 rounded-2xl font-bold text-lg shadow-lg transition active:scale-95 mb-4">
+                        დაჯავშნა
+                    </button>
+                    <p class="text-center text-xs text-gray-400">თანხის გადახდა ხდება მასპინძელთან</p>
+                </div>
+
+                <!-- Host Card -->
+                <div class="bg-gray-50 rounded-3xl p-6 flex items-center gap-4">
+                    <div id="hostAvatar"
+                        class="w-14 h-14 rounded-full bg-gray-200 overflow-hidden border-2 border-white shadow-sm">
+                        <img src="https://www.gravatar.com/avatar/?d=mp" class="w-full h-full object-cover">
+                    </div>
+                    <div>
+                        <p class="text-[10px] text-gray-400 font-bold uppercase">მასპინძელი</p>
+                        <h3 id="hostName" class="font-bold text-gray-800 text-lg">...</h3>
+                        <p id="hostPhone" class="text-sm text-gray-500 font-medium">...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        const SUPABASE_URL = 'https://akmbyvovhubccznrzotv.supabase.co';
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFrbWJ5dm92aHViY2N6bnJ6b3R2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjY3NTgwMTAsImV4cCI6MjA4MjMzNDAxMH0.oHLvbx5_4hYATF-hQkJvp0oxZ6ljUfGKYP-Mf7_CVtM';
+        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+        const MONTHS = ["იან", "თებ", "მარ", "აპრ", "მაი", "ივნ", "ივლ", "აგვ", "სექ", "ოქტ", "ნოე", "დეკ"];
+        const CUR_MONTH = new Date().getMonth();
+
+        let GSTATE = {
+            property: null,
+            rooms: []
+        };
+
+        async function init() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const id = urlParams.get('id');
+            if (!id) { window.location.href = 'index.html'; return; }
+
+            // Fetch Prop and Rooms in parallel
+            const [propRes, roomsRes] = await Promise.all([
+                supabaseClient.from('guesthouse_ge').select('*').eq('id', id).single(),
+                supabaseClient.from('rooms').select('*').eq('property_id', id)
+            ]);
+
+            if (propRes.error || !propRes.data) {
+                Swal.fire('შეცდომა', 'განცხადება ვერ მოიძებნა', 'error');
+                return;
+            }
+
+            GSTATE.property = propRes.data;
+            GSTATE.rooms = roomsRes.data || [];
+
+            renderProperty(GSTATE.property);
+            if (GSTATE.rooms.length > 0) {
+                initRoomTabs(GSTATE.property, GSTATE.rooms);
+            }
+            updateAuthUI();
+        }
+
+        function renderProperty(p) {
+            document.title = `${p.name} | GuesthouseGE`;
+            document.getElementById('propName').innerText = p.name;
+            document.getElementById('propLocation').querySelector('span').innerText = p.location;
+            document.getElementById('propType').innerText = p.type;
+            document.getElementById('propDescription').innerText = p.description;
+            document.getElementById('propPrice').innerText = p.price_display;
+            document.getElementById('hostName').innerText = p.host_name;
+            document.getElementById('hostPhone').innerText = p.phone;
+
+            // Tier Badge
+            const tb = document.getElementById('tierBadge');
+            if (p.tier === 'vip') {
+                tb.innerHTML = `<span class="vip-badge px-3 py-1 rounded-full text-[10px] font-extrabold uppercase tracking-widest">VIP</span>`;
+            } else if (p.tier === 'super_vip') {
+                tb.innerHTML = `<span class="super-vip-badge px-3 py-1 rounded-full text-[10px] font-extrabold uppercase tracking-widest">Super VIP</span>`;
+            }
+
+            // Hero Images
+            window.updateHeroGallery(p.images && p.images.length > 0 ? p.images : [p.image_url || 'images/gh_logo.webp']);
+
+            // Amenities
+            const amList = document.getElementById('amenitiesList');
+            if (p.amenities && p.amenities.length > 0) {
+                p.amenities.forEach(a => {
+                    const d = document.createElement('div');
+                    d.className = "flex items-center gap-3 text-gray-600 font-medium";
+                    d.innerHTML = `<span class="text-green-500">✓</span> ${a}`;
+                    amList.appendChild(d);
+                });
+            } else {
+                document.getElementById('amenitiesSection').classList.add('hidden');
+            }
+
+            // Pricing Table
+            const header = document.getElementById('priceHeader');
+            const body = document.getElementById('priceBody');
+            MONTHS.forEach((m, idx) => {
+                const th = document.createElement('th');
+                th.className = `p-4 text-center text-[10px] font-bold uppercase transition-colors ${idx === CUR_MONTH ? 'bg-green-500 text-white' : 'text-gray-400'}`;
+                th.innerText = m;
+                header.appendChild(th);
+            });
+
+            if (p.seasonal_prices && p.seasonal_prices.length > 0) {
+                p.seasonal_prices.forEach(row => {
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `<td class="p-4 font-bold text-gray-700 bg-gray-50/30">${row.label}</td>`;
+                    row.prices.forEach((price, idx) => {
+                        tr.innerHTML += `<td class="p-4 text-center font-medium ${idx === CUR_MONTH ? 'current-month-highlight' : 'text-gray-500'}">${price || '-'}₾</td>`;
+                    });
+                    body.appendChild(tr);
+                });
+            }
+
+            // Badge Counts
+            document.getElementById('roomCount').innerText = GSTATE.rooms.length || p.seasonal_prices?.length || 0;
+            const totalBeds = GSTATE.rooms.reduce((acc, r) => acc + (parseInt(r.beds) || 0), 0);
+            document.getElementById('totalBeds').innerText = totalBeds;
+        }
+
+        window.updateHeroGallery = function (imgs) {
+            const hero = document.getElementById('heroContainer');
+            if (!imgs || imgs.length === 0) imgs = ['images/gh_logo.webp'];
+
+            // Fill grid placeholders if less than 3 images
+            const displayImgs = [
+                imgs[0],
+                imgs[1] || imgs[0],
+                imgs[2] || imgs[1] || imgs[0]
+            ];
+
+            hero.innerHTML = `
+                <div class="col-span-1 row-span-2 relative group cursor-pointer overflow-hidden rounded-l-2xl">
+                    <img src="${displayImgs[0]}" class="w-full h-full object-cover group-hover:scale-110 transition duration-700">
+                </div>
+                <div class="relative group cursor-pointer overflow-hidden rounded-tr-2xl">
+                    <img src="${displayImgs[1]}" class="w-full h-full object-cover group-hover:scale-110 transition duration-700">
+                </div>
+                <div class="relative group cursor-pointer overflow-hidden rounded-br-2xl">
+                    <img src="${displayImgs[2]}" class="w-full h-full object-cover group-hover:scale-110 transition duration-700">
+                </div>
+            `;
+        };
+
+        function initRoomTabs(property, rooms) {
+            const section = document.getElementById('roomTabsSection');
+            const container = document.getElementById('tabsContainer');
+            section.classList.remove('hidden');
+            container.innerHTML = '';
+
+            // 1. Exterior Tab
+            const mainBtn = document.createElement('button');
+            mainBtn.className = 'tab-btn active px-6 py-2.5 bg-black text-white rounded-full text-sm font-bold shadow-md transition-all whitespace-nowrap';
+            mainBtn.innerText = '🏡 გარე ვიზუალი';
+            mainBtn.onclick = () => switchTab('main', property.images, null, mainBtn);
+            container.appendChild(mainBtn);
+
+            // 2. Room Tabs
+            rooms.forEach(room => {
+                const btn = document.createElement('button');
+                btn.className = 'tab-btn px-6 py-2.5 bg-white text-gray-700 border border-gray-200 rounded-full text-sm font-bold shadow-sm hover:bg-gray-50 transition-all whitespace-nowrap';
+                btn.innerText = `🛏️ ${room.name}`;
+                btn.onclick = () => switchTab('room', room.images, room, btn);
+                container.appendChild(btn);
+            });
+        }
+
+        function switchTab(type, images, roomData, btn) {
+            // Update Active Tab UI
+            document.querySelectorAll('.tab-btn').forEach(b => {
+                b.className = 'tab-btn px-6 py-2.5 bg-white text-gray-700 border border-gray-200 rounded-full text-sm font-bold shadow-sm hover:bg-gray-50 transition-all whitespace-nowrap';
+            });
+            btn.className = 'tab-btn active px-6 py-2.5 bg-black text-white rounded-full text-sm font-bold shadow-md transition-all whitespace-nowrap';
+
+            // Switch Hero Gallery
+            const galleryImgs = (images && images.length > 0) ? images : [GSTATE.property.image_url || 'images/gh_logo.webp'];
+            window.updateHeroGallery(galleryImgs);
+
+            // Show Room Info
+            const infoBox = document.getElementById('roomInfoDisplay');
+            if (type === 'room' && roomData) {
+                infoBox.classList.remove('hidden');
+                document.getElementById('displayRoomName').innerText = roomData.name;
+                document.getElementById('displayRoomBeds').innerText = `${roomData.beds} საწოლი`;
+            } else {
+                infoBox.classList.add('hidden');
+            }
+        }
+
+        async function updateAuthUI() {
+            const container = document.getElementById('navAuthBtnContainer');
+            const { data: { session } } = await supabaseClient.auth.getSession();
+            if (!session) {
+                container.innerHTML = `<button onclick="window.location.href='index.html?auth=login'" class="bg-[#2d78b1] text-white font-bold py-2 px-6 rounded-full text-sm">შესვლა</button>`;
+                return;
+            }
+            const name = session.user.user_metadata.full_name || session.user.email.split('@')[0];
+            const avatar = session.user.user_metadata.avatar_url || 'https://www.gravatar.com/avatar/?d=mp';
+            container.innerHTML = `<div class="flex items-center gap-2"><img src="${avatar}" class="w-8 h-8 rounded-full border border-gray-200"><span class="text-sm font-bold text-gray-700">${name}</span></div>`;
+        }
+
+        init();
+    </script>
+</body>
+
+</html>

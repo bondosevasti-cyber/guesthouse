@@ -7,6 +7,7 @@
     <title>ტარიფები - GeorgiaTravel</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Georgian:wght@400;500;600;700&display=swap"
         rel="stylesheet">
     <style>
@@ -74,12 +75,33 @@
             opacity: 0;
             transform: translateY(-30px);
         }
+
+        /* Super VIP Golden Text */
+        .super-vip-text {
+            font-weight: 800;
+            text-transform: uppercase;
+            background: linear-gradient(to right, #BF953F 0%, #FCF6BA 25%, #B38728 50%, #FBF5B7 75%, #AA771C 100%);
+            background-size: 200% auto;
+            color: #b8860b;
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: shine 3s linear infinite;
+            filter: drop-shadow(0px 2px 2px rgba(0, 0, 0, 0.1));
+        }
+
+        @keyframes shine {
+            to {
+                background-position: 200% center;
+            }
+        }
     </style>
 </head>
 
 <body class="bg-gray-50 text-gray-800">
 
     <!-- Navbar -->
+    <!-- Navbar (Synced from index.html) -->
     <nav class="fixed top-0 left-0 w-full z-40 bg-white shadow-md py-3 transition-all duration-300" id="navbar">
         <div class="max-w-7xl mx-auto px-4 flex justify-between items-center">
             <a href="index.html">
@@ -87,6 +109,7 @@
                     class="h-10 max-h-[40px] w-auto drop-shadow-md object-contain cursor-pointer transition-transform hover:scale-105 active:scale-95">
             </a>
             <div class="flex items-center space-x-3">
+                <!-- Pricing Link Removed for Pricing Page -->
                 <button onclick="window.location.href='add-property.html'"
                     class="bg-amber-500 hover:bg-amber-600 text-white font-bold p-2.5 rounded-full transition-all shadow-md hover:shadow-lg flex items-center justify-center transform hover:-translate-y-0.5"
                     title="დამატება">
@@ -308,7 +331,7 @@
                             საიტის გამოყენება როგორც კლიენტი
                         </li>
                     </ul>
-                    <button onclick="selectPlan('Free Commission')"
+                    <button onclick="selectPlan('free')"
                         class="w-full block bg-gray-100 hover:bg-gray-200 text-gray-800 font-bold py-3 rounded-xl transition-colors transform active:scale-95">
                         დაწყება (Free)
                     </button>
@@ -351,7 +374,7 @@
                             რისკის გარეშე
                         </li>
                     </ul>
-                    <button onclick="selectPlan('Regular Commission')"
+                    <button onclick="selectPlan('regular')"
                         class="w-full block bg-amber-100 hover:bg-amber-200 text-amber-800 font-bold py-3 rounded-xl transition-colors transform active:scale-95">
                         დაწყება (Regular)
                     </button>
@@ -398,7 +421,7 @@
                             ერთი განცხადება უფასოდ
                         </li>
                     </ul>
-                    <button onclick="selectPlan('VIP Commission')"
+                    <button onclick="selectPlan('vip')"
                         class="w-full block bg-amber-500 hover:bg-amber-600 text-white font-bold py-3 rounded-xl transition-colors shadow-lg shadow-amber-200 transform active:scale-95">
                         დაწყება (VIP)
                     </button>
@@ -449,7 +472,7 @@
                             განცხადების ვიზუალური გაფორმება
                         </li>
                     </ul>
-                    <button onclick="selectPlan('SuperVIP Commission')"
+                    <button onclick="selectPlan('super_vip')"
                         class="w-full block bg-gradient-to-r from-yellow-400 to-amber-500 hover:from-yellow-300 hover:to-amber-400 text-gray-900 font-bold py-3 rounded-xl transition-colors shadow-lg transform active:scale-95">
                         დაწყება (Super VIP)
                     </button>
@@ -536,7 +559,7 @@
                             საიტის გამოყენება როგორც კლიენტი
                         </li>
                     </ul>
-                    <button onclick="selectPlan('Free')"
+                    <button onclick="selectPlan('free')"
                         class="w-full block bg-gray-100 hover:bg-gray-200 text-gray-800 font-bold py-3 rounded-xl transition-colors transform active:scale-95">
                         არჩევა
                     </button>
@@ -580,7 +603,7 @@
                             ყველაფერი რაც უფასოშია
                         </li>
                     </ul>
-                    <button onclick="selectPlan('Regular')"
+                    <button onclick="selectPlan('regular')"
                         class="w-full block bg-amber-100 hover:bg-amber-200 text-amber-800 font-bold py-3 rounded-xl transition-colors transform active:scale-95">
                         არჩევა
                     </button>
@@ -636,7 +659,7 @@
                             ყველაფერი რაც უფაასოშია
                         </li>
                     </ul>
-                    <button onclick="selectPlan('VIP')"
+                    <button onclick="selectPlan('vip')"
                         class="w-full block bg-amber-500 hover:bg-amber-600 text-white font-bold py-3 rounded-xl transition-colors shadow-lg shadow-amber-200 transform active:scale-95">
                         არჩევა
                     </button>
@@ -686,7 +709,7 @@
                             განცხადების ვიზუალური გაფორმება
                         </li>
                     </ul>
-                    <button onclick="selectPlan('SuperVIP')"
+                    <button onclick="selectPlan('super_vip')"
                         class="w-full block bg-gradient-to-r from-yellow-400 to-amber-500 hover:from-yellow-300 hover:to-amber-400 text-gray-900 font-bold py-3 rounded-xl transition-colors shadow-lg transform active:scale-95">
                         არჩევა
                     </button>
@@ -814,16 +837,6 @@
         // ==========================================
         //  CONFIGURATION & STATE
         // ==========================================
-        const CONFIG = {
-            SUPABASE_URL: 'https://akmbyvovhubccznrzotv.supabase.co',
-            SUPABASE_KEY: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFrbWJ5dm92aHViY2N6bnJ6b3R2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjY3NTgwMTAsImV4cCI6MjA4MjMzNDAxMH0.oHLvbx5_4hYATF-hQkJvp0oxZ6ljUfGKYP-Mf7_CVtM',
-        };
-
-        const State = {
-            supabase: null,
-            user: null,
-        };
-
         const DOM = {
             authModal: document.getElementById('authModal'),
             authBackdrop: document.getElementById('authBackdrop'),
@@ -1021,8 +1034,21 @@
                     console.error("Error fetching profile tier:", e);
                 }
 
-                let tierDisplay = `<span class="font-bold text-gray-700 ml-1">${tier}</span>`;
-                if (tier === 'Free') {
+                // Tier UI Logic
+                let tierDisplay = '';
+
+                if (tier === 'super_vip') {
+                    // Gold & Animated
+                    tierDisplay = `<span class="super-vip-text ml-1">✨ Super VIP</span>`;
+                } else if (tier === 'vip') {
+                    // Blue & Bold (Standard VIP)
+                    tierDisplay = `<span style="color: #4F46E5; font-weight: 800; text-transform: uppercase;" class="ml-1">💎 VIP</span>`;
+                } else if (tier === 'regular') {
+                    // Green (Regular)
+                    tierDisplay = `<span style="color: #10B981; font-weight: bold;" class="ml-1">Standard</span>`;
+                } else {
+                    // Default Gray (Free)
+                    tierDisplay = `<span style="color: #6B7280;" class="ml-1">Free Plan</span>`;
                     tierDisplay += `<a href="pricing.html" class="ml-2 text-[10px] bg-amber-500 text-white px-2 py-0.5 rounded-full hover:bg-amber-600 transition-colors uppercase font-bold tracking-wide shadow-sm">Upgrade</a>`;
                 }
 
@@ -1107,15 +1133,26 @@
             }
         }
 
+        // --- 1. Supabase Initialization (Global) ---
+        const supabaseUrl = 'https://akmbyvovhubccznrzotv.supabase.co';
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFrbWJ5dm92aHViY2N6bnJ6b3R2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjY3NTgwMTAsImV4cCI6MjA4MjMzNDAxMH0.oHLvbx5_4hYATF-hQkJvp0oxZ6ljUfGKYP-Mf7_CVtM';
+        const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
+        window.supabase = supabaseClient;
+
+        // State Definition
+        const State = {
+            supabase: supabaseClient,
+            user: null
+        };
+
+        const CONFIG = {
+            SUPABASE_URL: supabaseUrl,
+            SUPABASE_KEY: supabaseKey
+        };
+
         async function initAuth() {
             try {
-                State.supabase = supabase.createClient(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_OPTIONS ? CONFIG.SUPABASE_OPTIONS : undefined);
-                // If CONFIG only has URL, KEY is implied or needs to be passed. 
-                // bookings.html and pricing.html define key in CONFIG.
-                if (CONFIG.SUPABASE_KEY) {
-                    State.supabase = supabase.createClient(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_KEY);
-                }
-
+                // Auth Listener
                 State.supabase.auth.onAuthStateChange((event, session) => {
                     State.user = session ? session.user : null;
                     updateAuthUI();
@@ -1130,6 +1167,7 @@
                 console.error("Init Error:", e);
             }
         }
+
         document.addEventListener('DOMContentLoaded', initAuth);
 
 
@@ -1267,24 +1305,56 @@
             });
         }
 
-        function selectPlan(planName) {
-            const isYearly = billingToggle.checked;
-            const cycle = isYearly ? 'yearly' : 'monthly';
-            const priceEl = document.querySelector(`.price-card h2:contains('${planName}')`)?.nextElementSibling; // Just logic idea, better to pass explicit data if possible or capture robustly.
+        window.selectPlan = async function (tierName) {
+            try {
+                // Use State.supabase to ensure client is ready, or use the global listener updated user
+                if (!State.user) {
+                    // Try waiting/checking or just redirect
+                    alert("გთხოვთ გაიაროთ ავტორიზაცია.");
+                    openAuthModal('login');
+                    return;
+                }
 
-            // Simpler: Map plan names to raw values or correct storage
-            console.log(`Selected Plan: ${planName}, Cycle: ${cycle}`);
+                const user = State.user;
 
-            // Store in LocalStorage for index.html to read
-            localStorage.setItem('selectedPlan', JSON.stringify({
-                name: planName,
-                cycle: cycle,
-                timestamp: Date.now()
-            }));
+                Swal.fire({ title: 'მიმდინარეობს აქტივაცია...', didOpen: () => Swal.showLoading() });
 
-            // Redirect to Home/Auth
-            window.location.href = 'index.html?action=register&plan=' + encodeURIComponent(planName);
-        }
+                // განახლების ბრძანება + select() რომ დაგვიბრუნოს რა ქნა
+                const { data, error } = await State.supabase
+                    .from('profiles')
+                    .update({ subscription_tier: tierName })
+                    .eq('id', user.id)
+                    .select();
+
+                // 1. თუ სისტემური შეცდომაა
+                if (error) throw error;
+
+                // 2. თუ "წარმატებაა" მაგრამ არაფერი შეცვლილა (აი ეს არის შენი პრობლემა!)
+                if (!data || data.length === 0) {
+                    throw new Error("პროფილი ვერ მოიძებნა! გთხოვთ დაუკავშირდეთ ადმინისტრაციას ან თავიდან გაიაროთ რეგისტრაცია.");
+                }
+
+                // 3. ნამდვილი წარმატება
+                Swal.fire({
+                    icon: 'success',
+                    title: 'გილოცავთ!',
+                    text: `თქვენ გაიაქტიურეთ ${tierName} პაკეტი!`,
+                    timer: 2000,
+                    showConfirmButton: false
+                }).then(() => {
+                    // Redirect to add-property as per original flow, or reload? 
+                    // User asked for reload() in snippet, but original flow was add-property.
+                    // I will stick to add-property.html because that's the goal of this flow (pay -> post).
+                    // Update: User snippet explicitly said .then(() => window.location.reload());
+                    // I will follow the user snippet for now to match the "teach site" instruction.
+                    window.location.reload();
+                });
+
+            } catch (error) {
+                console.error("Update failed:", error);
+                Swal.fire('შეცდომა', error.message, 'error');
+            }
+        };
 
         billingToggle.addEventListener('change', toggleBilling);
         if (stickyBillingToggle) {

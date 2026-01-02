@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>განცხადების დამატება - GeorgiaTravel</title>
+    <title>განცხადების დამატება | GuesthouseGE</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Georgian:wght@400;500;600;700&display=swap"
         rel="stylesheet">
@@ -16,12 +16,7 @@
         }
 
         .custom-scrollbar::-webkit-scrollbar {
-            width: 6px;
-        }
-
-        .custom-scrollbar::-webkit-scrollbar-track {
-            background: #f1f1f1;
-            border-radius: 4px;
+            height: 6px;
         }
 
         .custom-scrollbar::-webkit-scrollbar-thumb {
@@ -29,1612 +24,683 @@
             border-radius: 4px;
         }
 
-        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-            background: #9ca3af;
+        .current-month-col {
+            background-color: #f0fdf4;
+            border-left: 2px solid #22c55e;
+            border-right: 2px solid #22c55e;
+        }
+
+        .current-month-header {
+            background-color: #22c55e;
+            color: white;
         }
 
         .animate-fade-in {
-            animation: fadeIn 0.3s ease-out;
+            animation: fadeIn 0.3s ease-in-out;
         }
 
         @keyframes fadeIn {
             from {
                 opacity: 0;
-                transform: scale(0.95);
+                transform: translateY(10px);
             }
 
             to {
                 opacity: 1;
-                transform: scale(1);
+                transform: translateY(0);
             }
-        }
-
-        /* Force image opacity to 1 immediately for testing if anim fails */
-        .animate-fade-in {
-            opacity: 1 !important;
-        }
-
-        /* Dropdown z-index fix */
-        .dropdown-container {
-            position: relative;
-            z-index: 50;
-        }
-
-        #citiesDropdown {
-            z-index: 9999 !important;
         }
     </style>
 </head>
 
-<body class="bg-gray-50 min-h-screen pb-20">
+<body class="bg-gray-50 pb-32">
 
-    <!-- Navbar -->
-    <nav class="bg-white shadow-sm sticky top-0 z-50">
-        <div class="max-w-3xl mx-auto px-4 h-16 flex justify-between items-center">
-            <a href="index.html" class="flex items-center space-x-2">
-                <img src="images/gh_logo.webp" alt="GeorgiaTravel"
-                    class="h-10 max-h-[40px] w-auto drop-shadow-md object-contain">
+    <!-- NAVBAR -->
+    <nav class="fixed top-0 left-0 w-full z-50 bg-white shadow-sm py-3 transition-all duration-300">
+        <div class="max-w-7xl mx-auto px-4 flex justify-between items-center">
+            <a href="index.html">
+                <img src="images/gh_logo.webp" alt="GuesthouseGE" class="h-10 w-auto object-contain cursor-pointer">
             </a>
-            <a href="profile.html"
-                class="text-sm font-medium text-gray-500 hover:text-amber-600 transition-colors flex items-center">
-                <svg class="w-5 h-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                        d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-                </svg>
-                უკან
-            </a>
+            <div class="flex items-center space-x-3">
+                <a href="pricing.html"
+                    class="hidden md:flex items-center bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-lg shadow-sm transition-all text-sm">
+                    ფასების ნახვა
+                </a>
+                <button onclick="window.location.href='add-property.html'"
+                    class="bg-amber-500 hover:bg-amber-600 text-white font-bold p-2 rounded-full transition-all shadow-md flex items-center justify-center">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                    </svg>
+                </button>
+                <div id="navAuthBtnContainer"></div>
+            </div>
         </div>
     </nav>
 
-    <!-- Main Content -->
-    <main class="max-w-3xl mx-auto px-4 py-8">
+    <!-- MAIN FORM -->
+    <main class="max-w-5xl mx-auto px-4 mt-24 space-y-8">
 
-        <div class="bg-white rounded-3xl shadow-xl border border-gray-100 relative z-0">
-            <!-- Removed overflow-hidden to allow dropdowns to spill out if needed, but relative z-0 to establish context -->
-            <!-- Header -->
-            <div class="px-8 py-6 border-b border-gray-100 bg-gray-50/50 rounded-t-3xl">
-                <h1 class="text-2xl font-bold text-gray-900 flex items-center">
-                    <span
-                        class="w-10 h-10 rounded-full bg-amber-100 flex items-center justify-center mr-3 text-amber-600 shadow-sm">
-                        <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <!-- SECTION 1: MAIN EXTERIOR PHOTOS -->
+        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+            <h2 class="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
+                <span class="bg-amber-100 text-amber-600 p-1.5 rounded-md">📸</span>
+                გარე ვიზუალი (მთავარი ფოტოები)
+            </h2>
+            <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3" id="mainImagesGrid">
+                <!-- Add Button -->
+                <label
+                    class="aspect-square border-2 border-dashed border-gray-300 rounded-xl hover:border-amber-500 hover:bg-amber-50 cursor-pointer flex flex-col items-center justify-center transition group">
+                    <input type="file" multiple accept="image/*" class="hidden"
+                        onchange="window.handleMainImages(this)">
+                    <div
+                        class="w-8 h-8 bg-gray-100 text-gray-400 rounded-full flex items-center justify-center mb-1 group-hover:bg-amber-100 group-hover:text-amber-500 transition">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
                         </svg>
-                    </span>
-                    ახალი განცხადება
-                </h1>
-                <p class="text-gray-500 text-sm mt-2 ml-14">შეავსეთ ინფორმაცია თქვენი ობიექტის შესახებ</p>
-            </div>
-
-            <!-- Form -->
-            <div class="p-8">
-                <form id="addPropertyForm" onsubmit="submitProperty(event)" class="space-y-8">
-
-                    <!-- Images Section -->
-                    <div class="space-y-4">
-                        <label class="block text-sm font-bold text-gray-900">
-                            სურათები <span class="text-gray-400 font-normal ml-1">(მაქს. 30)</span>
-                        </label>
-
-                        <div id="uploadGrid" class="grid grid-cols-3 sm:grid-cols-4 gap-4">
-                            <!-- Helper / Add Button -->
-                            <div class="relative aspect-square rounded-xl border-2 border-dashed border-gray-300 hover:border-amber-500 hover:bg-amber-50 transition-all group flex flex-col items-center justify-center cursor-pointer overflow-hidden"
-                                id="uploadAddBtn" onclick="document.getElementById('fileInput').click()">
-                                <input type="file" id="fileInput" multiple accept="image/png, image/jpeg, image/webp"
-                                    class="hidden" onchange="handleImageSelection(this)">
-                                <div
-                                    class="w-10 h-10 rounded-full bg-gray-100 group-hover:bg-amber-100 text-gray-400 group-hover:text-amber-500 flex items-center justify-center mb-2 transition-colors">
-                                    <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                            d="M12 4v16m8-8H4" />
-                                    </svg>
-                                </div>
-                                <span
-                                    class="text-[10px] font-bold text-gray-400 group-hover:text-amber-600 uppercase tracking-wide">
-                                    დამატება
-                                </span>
-                            </div>
-                            <!-- Previews injected here -->
-                        </div>
                     </div>
-
+                    <span class="text-[10px] font-bold text-gray-400 group-hover:text-amber-600">დამატება</span>
+                </label>
             </div>
         </div>
-        <!-- Dynamic Rooms Container (Relocated) -->
-        <div class="space-y-4 pt-2 border-t border-gray-100">
-            <div class="flex justify-between items-center">
-                <label class="block text-sm font-bold text-gray-900">ოთახები დეტალურად <span
-                        class="text-gray-400 font-normal ml-1">(სურვილისამებრ)</span></label>
-            </div>
-            <div id="roomBlocksContainer" class="space-y-4">
-                <!-- Room Blocks injected here -->
-            </div>
 
-            <!-- Add Room Button (Bottom) -->
-            <div class="flex justify-end pt-2">
-                <button type="button" onclick="addRoomBlock()"
-                    class="text-xs font-bold text-amber-600 hover:text-amber-700 flex items-center bg-amber-50 px-3 py-1.5 rounded-lg hover:bg-amber-100 transition-colors">
-                    <svg class="w-4 h-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-                    </svg>
-                    ოთახის დამატება
+        <!-- SECTION 2: ROOM MANAGEMENT -->
+        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-lg font-bold text-gray-800 flex items-center gap-2">
+                    <span class="bg-indigo-100 text-indigo-600 p-1.5 rounded-md">🛏️</span>
+                    ოთახების მართვა
+                </h2>
+                <button onclick="window.addRoom()"
+                    class="bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-bold px-4 py-2 rounded-lg shadow flex items-center gap-2 transition hover:scale-105 active:scale-95">
+                    <span>+</span> ოთახის დამატება
                 </button>
             </div>
-        </div>
-
-        <div class="border-t border-gray-100 my-6"></div>
-
-        <!-- Basic Info -->
-        <!-- Row 1: Property Name -->
-        <div class="group">
-            <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">
-                ობიექტის სახელი (სასტუმროს სახელი)</label>
-            <input type="text" id="propertyName" required placeholder="მაგ: Green Cottage"
-                class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:border-amber-500 focus:ring-4 focus:ring-amber-500/10 outline-none transition-all placeholder-gray-400 font-medium text-gray-800">
-        </div>
-
-        <!-- Row 2: Owner Name -->
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
-            <div class="group">
-                <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">
-                    მფლობელის სახელი</label>
-                <input type="text" id="firstName" required placeholder="თქვენი სახელი"
-                    class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:border-amber-500 focus:ring-4 focus:ring-amber-500/10 outline-none transition-all placeholder-gray-400 font-medium text-gray-800">
-            </div>
-            <div class="group">
-                <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">
-                    მფლობელის გვარი</label>
-                <input type="text" id="lastName" required placeholder="თქვენი გვარი"
-                    class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:border-amber-500 focus:ring-4 focus:ring-amber-500/10 outline-none transition-all placeholder-gray-400 font-medium text-gray-800">
+            <div id="roomsContainer" class="space-y-4">
+                <!-- Room Blocks -->
             </div>
         </div>
 
-        <!-- Row 2: Location -->
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div class="group dropdown-container relative">
-                <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">
-                    რეგიონი</label>
-                <div class="relative">
-                    <select id="regionSelect" onchange="handleRegionChange(this.value)"
-                        class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:border-amber-500 focus:ring-4 focus:ring-amber-500/10 outline-none transition-all appearance-none font-medium text-gray-800 cursor-pointer">
-                        <option value="">აირჩიეთ რეგიონი...</option>
-                        <option value="აჭარა">აჭარა</option>
-                        <option value="იმერეთი">იმერეთი</option>
-                        <option value="კახეთი">კახეთი</option>
-                        <option value="შიდა ქართლი">შიდა ქართლი</option>
-                        <option value="ქვემო ქართლი">ქვემო ქართლი</option>
-                        <option value="მცხეთა-მთიანეთი">მცხეთა-მთიანეთი</option>
-                        <option value="სამეგრელო-ზემო სვანეთი">სამეგრელო-ზემო სვანეთი</option>
-                        <option value="სამცხე-ჯავახეთი">სამცხე-ჯავახეთი</option>
-                        <option value="გურია">გურია</option>
-                        <option value="რაჭა-ლეჩხუმი და ქვემო სვანეთი">რაჭა-ლეჩხუმი და ქვემო სვანეთი</option>
-                        <option value="აფხაზეთი">აფხაზეთი</option>
-                    </select>
-                    <svg class="w-5 h-5 text-gray-400 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none"
-                        fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-                    </svg>
-                </div>
-            </div>
-
-            <div class="group dropdown-container relative" id="locationContainer">
-                <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">ქალაქი /
-                    სოფელი</label>
-                <div class="relative">
-                    <input type="text" id="locationSearch" placeholder="აირჩიეთ ან ჩაწერეთ..."
-                        class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:border-amber-500 focus:ring-4 focus:ring-amber-500/10 outline-none transition-all font-medium text-gray-800 cursor-pointer"
-                        autocomplete="off">
-                    <input type="hidden" name="location" id="locationValue" required>
-                    <svg class="w-5 h-5 text-gray-400 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none"
-                        fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-                    </svg>
-
-                    <!-- Cities Dropdown -->
-                    <ul id="citiesDropdown"
-                        class="absolute top-full left-0 right-0 mt-2 bg-white border border-gray-100 rounded-xl shadow-xl max-h-60 overflow-y-auto hidden z-[100] divide-y divide-gray-50 custom-scrollbar">
-                        <!-- Populated via JS -->
-                    </ul>
-                </div>
-            </div>
-        </div>
-
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div class="group">
-                <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">საკონტაქტო
-                    ნომერი</label>
-                <input type="tel" name="phone" required placeholder="+995 5XX XX XX XX"
-                    class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:border-amber-500 focus:ring-4 focus:ring-amber-500/10 outline-none transition-all font-medium text-gray-800">
-            </div>
-            <div class="group dropdown-container relative">
-                <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">ტიპი</label>
-                <div class="relative">
-                    <select name="type" required
-                        class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:border-amber-500 focus:ring-4 focus:ring-amber-500/10 outline-none transition-all appearance-none font-medium text-gray-800 cursor-pointer relative z-10">
-                        <!-- Options updated by user request -->
-                        <option value="hotel">სასტუმრო</option>
-                        <option value="Guest house">საოჯახო სასტუმრო</option>
-                        <option value="Apartment">ბინა</option>
-                        <option value="Cottage">კოტეჯი</option>
-                        <option value="Private house">კერძო სახლი</option>
-                    </select>
-                    <svg class="w-5 h-5 text-gray-400 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none z-20"
-                        fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-                    </svg>
-                </div>
-            </div>
-        </div>
-
-        <!-- Description -->
-        <div class="group">
-            <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">აღწერა</label>
-            <textarea name="description" rows="4" required placeholder="აღწერეთ თქვენი ობიექტი დეტალურად..."
-                class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:border-amber-500 focus:ring-4 focus:ring-amber-500/10 outline-none transition-all resize-none font-medium text-gray-800 custom-scrollbar"></textarea>
-        </div>
-
-        <!-- Price & Tier -->
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div class="group">
-                <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">ფასი
-                    (გამოჩნდება ავტომატურად როცა შეავსებთ სეზონური ფასების ცხრილს)</label>
-                <div class="relative">
-                    <span class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 font-bold">₾</span>
-                    <input type="text" name="price" required readonly placeholder="-"
-                        class="w-full pl-8 pr-4 py-3 bg-gray-100 border border-gray-200 rounded-xl focus:bg-gray-100 outline-none font-bold text-gray-700 cursor-not-allowed">
-                </div>
-                <p class="text-[10px] text-gray-500 mt-1 ml-1">ფასი გამოითვლება ავტომატურად სეზონური ცხრილის
-                    მიხედვით მიმდინარე თვისთვის.</p>
-            </div>
-            <div class="group">
-                <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">თქვენი
-                    პაკეტი</label>
-                <div class="relative">
-                    <div
-                        class="inline-flex items-center space-x-2 bg-gradient-to-r from-gray-800 to-gray-700 text-white rounded-xl px-4 py-3 shadow-md w-full">
-                        <svg class="w-5 h-5 text-amber-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
-                        </svg>
-                        <span class="font-bold tracking-wide" id="userTierDisplay">იტვირთება...</span>
-                    </div>
-                    <input type="hidden" name="tier" id="tierInput" value="free">
-                </div>
-                <div id="tierUpgradeMsg"
-                    class="hidden mt-2 text-[10px] text-amber-600 font-medium bg-amber-50 p-2 rounded-lg border border-amber-100">
-                    * პაკეტის შესაცვლელად ეწვიეთ <a href="pricing.html"
-                        class="underline hover:text-amber-800 font-bold">ფასების
-                        გვერდს</a>.
-                </div>
-            </div>
-        </div>
-
-        <!-- Amenities -->
-        <div class="space-y-4">
-            <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider">კომფორტი /
-                სერვისები</label>
-            <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                <label
-                    class="flex items-center space-x-3 p-3 border border-gray-100 rounded-xl cursor-pointer hover:bg-gray-50 hover:border-amber-300 transition-all select-none group">
-                    <input type="checkbox" name="amenities" value="WiFi"
-                        class="w-5 h-5 text-amber-500 border-gray-300 rounded focus:ring-amber-500/20">
-                    <span class="text-sm font-medium text-gray-700 group-hover:text-amber-700">WiFi</span>
-                </label>
-                <label
-                    class="flex items-center space-x-3 p-3 border border-gray-100 rounded-xl cursor-pointer hover:bg-gray-50 hover:border-amber-300 transition-all select-none group">
-                    <input type="checkbox" name="amenities" value="პარკინგი"
-                        class="w-5 h-5 text-amber-500 border-gray-300 rounded focus:ring-amber-500/20">
-                    <span class="text-sm font-medium text-gray-700 group-hover:text-amber-700">პარკინგი</span>
-                </label>
-                <label
-                    class="flex items-center space-x-3 p-3 border border-gray-100 rounded-xl cursor-pointer hover:bg-gray-50 hover:border-amber-300 transition-all select-none group">
-                    <input type="checkbox" name="amenities" value="აუზი"
-                        class="w-5 h-5 text-amber-500 border-gray-300 rounded focus:ring-amber-500/20">
-                    <span class="text-sm font-medium text-gray-700 group-hover:text-amber-700">აუზი</span>
-                </label>
-                <label
-                    class="flex items-center space-x-3 p-3 border border-gray-100 rounded-xl cursor-pointer hover:bg-gray-50 hover:border-amber-300 transition-all select-none group">
-                    <input type="checkbox" name="amenities" value="საუზმე"
-                        class="w-5 h-5 text-amber-500 border-gray-300 rounded focus:ring-amber-500/20">
-                    <span class="text-sm font-medium text-gray-700 group-hover:text-amber-700">საუზმე</span>
-                </label>
-                <label
-                    class="flex items-center space-x-3 p-3 border border-gray-100 rounded-xl cursor-pointer hover:bg-gray-50 hover:border-amber-300 transition-all select-none group">
-                    <input type="checkbox" name="amenities" value="ბუხარი"
-                        class="w-5 h-5 text-amber-500 border-gray-300 rounded focus:ring-amber-500/20">
-                    <span class="text-sm font-medium text-gray-700 group-hover:text-amber-700">ბუხარი</span>
-                </label>
-                <label
-                    class="flex items-center space-x-3 p-3 border border-gray-100 rounded-xl cursor-pointer hover:bg-gray-50 hover:border-amber-300 transition-all select-none group">
-                    <input type="checkbox" name="amenities" value="ხედი"
-                        class="w-5 h-5 text-amber-500 border-gray-300 rounded focus:ring-amber-500/20">
-                    <span class="text-sm font-medium text-gray-700 group-hover:text-amber-700">ხედი</span>
-                </label>
-            </div>
-
-            <!-- Custom Services Container -->
-            <div id="customAmenitiesContainer" class="space-y-3 mt-3">
-                <!-- Dynamic inputs will be added here -->
-            </div>
-
-            <!-- Add Service Button -->
-            <button type="button" onclick="addCustomAmenity()"
-                class="text-xs font-bold text-amber-600 hover:text-amber-700 flex items-center bg-amber-50 px-3 py-2 rounded-lg hover:bg-amber-100 transition-colors mt-2">
-                <svg class="w-4 h-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-                </svg>
-                + სერვისის დამატება
-            </button>
-        </div>
-
-        <!-- Seasonal Prices -->
-        <div class="space-y-4 pt-4 border-t border-gray-100">
-            <div class="flex justify-between items-center">
-                <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider">სეზონური
-                    ფასები</label>
-                <button type="button" onclick="clearSeasonalPrices()"
-                    class="text-[10px] font-bold text-red-500 hover:text-red-700 bg-red-50 hover:bg-red-100 px-3 py-1.5 rounded-lg transition-colors">
-                    ყველას წაშლა
+        <!-- SECTION 3: SEASONAL PRICES -->
+        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 overflow-hidden">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-lg font-bold text-gray-800 flex items-center gap-2">
+                    <span class="bg-green-100 text-green-600 p-1.5 rounded-md">📅</span>
+                    სეზონური ფასები
+                </h2>
+                <button onclick="window.clearSeasonalTable()"
+                    class="text-xs text-red-500 font-bold hover:bg-red-50 px-3 py-1 rounded transition">
+                    გასუფთავება
                 </button>
             </div>
-            <div class="overflow-x-auto border border-gray-200 rounded-xl bg-white shadow-sm">
-                <table class="w-full text-sm text-left">
-                    <thead class="bg-gray-50 text-gray-500 font-medium text-xs uppercase">
-                        <tr>
-                            <th class="p-2 min-w-[120px] sticky left-0 bg-gray-50 z-10 border-r border-gray-100">
-                                ოთახის სახელი</th>
-                            <th class="p-1 min-w-[30px] text-center border-r border-gray-100" title="Apply Jan to all">⚡
-                            </th>
-                            <th class="p-2 min-w-[60px]">იან</th>
-                            <th class="p-2 min-w-[60px]">თებ</th>
-                            <th class="p-2 min-w-[60px]">მარ</th>
-                            <th class="p-2 min-w-[60px]">აპრ</th>
-                            <th class="p-2 min-w-[60px]">მაი</th>
-                            <th class="p-2 min-w-[60px]">ივნ</th>
-                            <th class="p-2 min-w-[60px]">ივლ</th>
-                            <th class="p-2 min-w-[60px]">აგვ</th>
-                            <th class="p-2 min-w-[60px]">სექ</th>
-                            <th class="p-2 min-w-[60px]">ოქტ</th>
-                            <th class="p-2 min-w-[60px]">ნოე</th>
-                            <th class="p-2 min-w-[60px]">დეკ</th>
-                            <th class="p-2 min-w-[40px] sticky right-0 bg-gray-50 z-10"></th>
+            <div class="overflow-x-auto custom-scrollbar pb-2">
+                <table class="w-full text-sm border-collapse">
+                    <thead>
+                        <tr class="bg-gray-50 text-gray-500 text-xs uppercase" id="seasonalHeader">
+                            <th class="p-3 text-left min-w-[150px] sticky left-0 bg-gray-50 z-10 border-b">ოთახი</th>
+                            <th class="p-2 border-b text-center">⚡</th>
+                            <!-- Months JS generated -->
                         </tr>
                     </thead>
-                    <tbody id="seasonalPricesBody" class="divide-y divide-gray-100">
-                        <!-- Rows added by JS -->
+                    <tbody id="seasonalBody" class="divide-y divide-gray-100">
+                        <tr>
+                            <td colspan="14" class="p-8 text-center text-gray-400">ჯერ დაამატეთ ოთახები</td>
+                        </tr>
                     </tbody>
                 </table>
             </div>
         </div>
 
+        <!-- SECTION 4: BASIC INFO -->
+        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+            <h2 class="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
+                <span class="bg-blue-100 text-blue-600 p-1.5 rounded-md">ℹ️</span>
+                ძირითადი ინფორმაცია
+            </h2>
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-xs font-bold text-gray-500 uppercase mb-1">სასტუმროს სახელი</label>
+                    <input type="text" id="propName"
+                        class="w-full p-2.5 bg-gray-50 border border-gray-200 rounded-lg outline-none focus:border-amber-500 focus:bg-white transition"
+                        placeholder="მაგ: Villa Green">
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-bold text-gray-500 uppercase mb-1">მასპინძლის სახელი</label>
+                        <input type="text" id="hostName"
+                            class="w-full p-2.5 bg-gray-50 border border-gray-200 rounded-lg outline-none focus:border-amber-500 focus:bg-white transition">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-gray-500 uppercase mb-1">გვარი</label>
+                        <input type="text" id="hostSurname"
+                            class="w-full p-2.5 bg-gray-50 border border-gray-200 rounded-lg outline-none focus:border-amber-500 focus:bg-white transition">
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-gray-500 uppercase mb-1">ტელეფონი</label>
+                    <input type="tel" id="hostPhone"
+                        class="w-full p-2.5 bg-gray-50 border border-gray-200 rounded-lg outline-none focus:border-amber-500 focus:bg-white transition"
+                        placeholder="+995 555 00 00 00">
+                </div>
+            </div>
+        </div>
 
+        <!-- SECTION 5: LOCATION -->
+        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 relative z-30">
+            <h2 class="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
+                <span class="bg-red-100 text-red-600 p-1.5 rounded-md">📍</span>
+                ლოკაცია
+            </h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="relative">
+                    <label class="block text-xs font-bold text-gray-500 uppercase mb-1">ქალაქი / სოფელი</label>
+                    <input type="text" id="cityInput" placeholder="დაიწყეთ წერა..."
+                        class="w-full p-2.5 bg-gray-50 border border-gray-200 rounded-lg outline-none focus:border-amber-500 focus:bg-white transition"
+                        autocomplete="off">
+                    <!-- Dropdown -->
+                    <ul id="cityDropdown"
+                        class="hidden absolute top-full left-0 w-full bg-white border border-gray-100 rounded-lg shadow-xl mt-1 max-h-60 overflow-y-auto z-50 divide-y divide-gray-50">
+                    </ul>
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-gray-500 uppercase mb-1">რეგიონი</label>
+                    <input type="text" id="regionInput" readonly
+                        class="w-full p-2.5 bg-gray-100 border border-gray-200 rounded-lg text-gray-500">
+                </div>
+            </div>
+        </div>
 
-        <!-- Actions -->
-        <div class="pt-6 border-t border-gray-100 flex items-center justify-between">
-            <a href="profile.html"
-                class="px-6 py-3 text-gray-500 font-bold hover:text-gray-800 transition-colors">გაუქმება</a>
-            <button type="submit"
-                class="bg-amber-500 hover:bg-amber-600 text-white font-bold py-4 px-10 rounded-xl shadow-lg shadow-amber-200 transition-all transform active:scale-[0.98] flex items-center justify-center text-lg">
+        <!-- SECTION 6: TYPE & DESCRIPTION -->
+        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+            <h2 class="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
+                <span class="bg-purple-100 text-purple-600 p-1.5 rounded-md">📝</span>
+                აღწერა და ტიპი
+            </h2>
+            <div class="mb-4">
+                <label class="block text-xs font-bold text-gray-500 uppercase mb-1">ობიექტის ტიპი</label>
+                <select id="propType"
+                    class="w-full p-2.5 bg-gray-50 border border-gray-200 rounded-lg outline-none focus:border-amber-500 cursor-pointer">
+                    <option value="Hotel">სასტუმრო</option>
+                    <option value="Guest House">საოჯახო სასტუმრო</option>
+                    <option value="Cottage">კოტეჯი</option>
+                    <option value="Apartment">ბინა</option>
+                    <option value="Villa">ვილა</option>
+                    <option value="Glamping">გლემპინგი</option>
+                </select>
+            </div>
+            <div>
+                <div class="flex justify-between">
+                    <label class="block text-xs font-bold text-gray-500 uppercase mb-1">აღწერა</label>
+                    <span id="descCount" class="text-xs text-gray-400">0 / 1500</span>
+                </div>
+                <textarea id="propDesc" rows="4" maxlength="1500"
+                    class="w-full p-2.5 bg-gray-50 border border-gray-200 rounded-lg outline-none focus:border-amber-500 focus:bg-white transition resize-none"></textarea>
+            </div>
+        </div>
+
+        <!-- SECTION 7: AMENITIES -->
+        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+            <h2 class="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
+                <span class="bg-orange-100 text-orange-600 p-1.5 rounded-md">✨</span>
+                კეთილმოწყობა
+            </h2>
+            <div class="grid grid-cols-2 md:grid-cols-3 gap-3" id="amenitiesContainer">
+                <label
+                    class="flex items-center space-x-2 p-2 border border-gray-100 rounded-lg hover:border-amber-300 cursor-pointer transition">
+                    <input type="checkbox" value="WiFi" class="w-4 h-4 text-amber-500 rounded focus:ring-amber-500">
+                    <span class="text-sm text-gray-700">WiFi</span>
+                </label>
+                <label
+                    class="flex items-center space-x-2 p-2 border border-gray-100 rounded-lg hover:border-amber-300 cursor-pointer transition">
+                    <input type="checkbox" value="Parking" class="w-4 h-4 text-amber-500 rounded focus:ring-amber-500">
+                    <span class="text-sm text-gray-700">პარკინგი</span>
+                </label>
+                <label
+                    class="flex items-center space-x-2 p-2 border border-gray-100 rounded-lg hover:border-amber-300 cursor-pointer transition">
+                    <input type="checkbox" value="Pool" class="w-4 h-4 text-amber-500 rounded focus:ring-amber-500">
+                    <span class="text-sm text-gray-700">აუზი</span>
+                </label>
+                <label
+                    class="flex items-center space-x-2 p-2 border border-gray-100 rounded-lg hover:border-amber-300 cursor-pointer transition">
+                    <input type="checkbox" value="Breakfast"
+                        class="w-4 h-4 text-amber-500 rounded focus:ring-amber-500">
+                    <span class="text-sm text-gray-700">საუზმე</span>
+                </label>
+                <label
+                    class="flex items-center space-x-2 p-2 border border-gray-100 rounded-lg hover:border-amber-300 cursor-pointer transition">
+                    <input type="checkbox" value="AC" class="w-4 h-4 text-amber-500 rounded focus:ring-amber-500">
+                    <span class="text-sm text-gray-700">კონდიციონერი</span>
+                </label>
+                <label
+                    class="flex items-center space-x-2 p-2 border border-gray-100 rounded-lg hover:border-amber-300 cursor-pointer transition">
+                    <input type="checkbox" value="Balcony" class="w-4 h-4 text-amber-500 rounded focus:ring-amber-500">
+                    <span class="text-sm text-gray-700">აივანი</span>
+                </label>
+            </div>
+            <button onclick="window.addCustomService()"
+                class="mt-4 text-sm font-bold text-amber-600 hover:text-amber-700 flex items-center gap-1 transition">
+                <span>+</span> სხვა სერვისის დამატება
+            </button>
+        </div>
+
+        <!-- SUBMIT -->
+        <div
+            class="fixed bottom-0 left-0 w-full bg-white border-t border-gray-100 p-4 z-40 flex justify-center md:justify-end md:px-20 shadow-[0_-5px_10px_rgba(0,0,0,0.05)]">
+            <button onclick="window.submitProperty()" id="submitBtn"
+                class="bg-gray-900 hover:bg-black text-white font-bold py-3 px-8 rounded-full shadow-lg transform active:scale-95 transition-all text-base w-full md:w-auto">
                 განცხადების გამოქვეყნება
             </button>
         </div>
-        </form>
-        </div>
-        </div>
+
     </main>
 
     <script>
-        const CONFIG = {
-            SUPABASE_URL: 'https://akmbyvovhubccznrzotv.supabase.co',
-            SUPABASE_KEY: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFrbWJ5dm92aHViY2N6bnJ6b3R2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjY3NTgwMTAsImV4cCI6MjA4MjMzNDAxMH0.oHLvbx5_4hYATF-hQkJvp0oxZ6ljUfGKYP-Mf7_CVtM'
-        };
+        // CONFIG
+        const SUPABASE_URL = 'https://akmbyvovhubccznrzotv.supabase.co';
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFrbWJ5dm92aHViY2N6bnJ6b3R2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjY3NTgwMTAsImV4cCI6MjA4MjMzNDAxMH0.oHLvbx5_4hYATF-hQkJvp0oxZ6ljUfGKYP-Mf7_CVtM';
+        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-        const supabaseClient = supabase.createClient(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_KEY);
-
-        // Define State
-        // Define State
-        const State = {
-            supabase: supabaseClient,
-            pendingUploads: [],
-            user: null,
-            locations: [],
-            // Edit Mode State
-            editMode: false,
-            editId: null,
-            editId: null,
-            existingImages: []
-        };
-        window.State = State; // Expose to window for dynamic functions
-
-        // DOM Elements
-        const DOM = {
-            fileInput: document.getElementById('fileInput'),
-
-            // Name Inputs
-            propertyName: document.getElementById('propertyName'),
-            firstName: document.getElementById('firstName'),
-            lastName: document.getElementById('lastName'),
-
-            // Location Inputs
-            locationSearch: document.getElementById('locationSearch'),
-            locationValue: document.getElementById('locationValue'),
-            citiesDropdown: document.getElementById('citiesDropdown'),
-            locationContainer: document.getElementById('locationContainer'),
-            regionSelect: document.getElementById('regionSelect')
-        };
-
-        // Comprehensive Locations List
-        const GEORGIAN_LOCATIONS = [
-            // Tbilisi
-            { city: "თბილისი", region: "თბილისი" },
-
-            // Adjara
-            { city: "ბათუმი", region: "აჭარა" },
-            { city: "ქობულეთი", region: "აჭარა" },
-            { city: "ჩაქვი", region: "აჭარა" },
-            { city: "გონიო", region: "აჭარა" },
-            { city: "კვარიათი", region: "აჭარა" },
-            { city: "სარფი", region: "აჭარა" },
-            { city: "მახინჯაური", region: "აჭარა" },
-            { city: "ციხისძირი", region: "აჭარა" },
-            { city: "მწვანე კონცხი", region: "აჭარა" },
-            { city: "ხელვაჩაური", region: "აჭარა" },
-            { city: "ქედა", region: "აჭარა" },
-            { city: "შუახევი", region: "აჭარა" },
-            { city: "ხულო", region: "აჭარა" },
-            { city: "გოდერძი", region: "აჭარა" },
-            { city: "ბეშუმი", region: "აჭარა" },
-
-            // Imereti
-            { city: "ქუთაისი", region: "იმერეთი" },
-            { city: "ზესტაფონი", region: "იმერეთი" },
-            { city: "სამტრედია", region: "იმერეთი" },
-            { city: "ჭიათურა", region: "იმერეთი" },
-            { city: "საჩხერე", region: "იმერეთი" },
-            { city: "ტყიბული", region: "იმერეთი" },
-            { city: "წყალტუბო", region: "იმერეთი" },
-            { city: "ბაღდათი", region: "იმერეთი" },
-            { city: "ვანი", region: "იმერეთი" },
-            { city: "ხონი", region: "იმერეთი" },
-            { city: "თერჯოლა", region: "იმერეთი" },
-            { city: "ხარაგაული", region: "იმერეთი" },
-            { city: "საირმე", region: "იმერეთი" },
-
-            // Kvemo Kartli
-            { city: "რუსთავი", region: "ქვემო ქართლი" },
-            { city: "მარნეული", region: "ქვემო ქართლი" },
-            { city: "გარდაბანი", region: "ქვემო ქართლი" },
-            { city: "ბოლნისი", region: "ქვემო ქართლი" },
-            { city: "დმანისი", region: "ქვემო ქართლი" },
-            { city: "წალკა", region: "ქვემო ქართლი" },
-            { city: "თეთრიწყარო", region: "ქვემო ქართლი" },
-            { city: "მანგლისი", region: "ქვემო ქართლი" },
-
-            // Shida Kartli
-            { city: "გორი", region: "შიდა ქართლი" },
-            { city: "კასპი", region: "შიდა ქართლი" },
-            { city: "ქარელი", region: "შიდა ქართლი" },
-            { city: "ხაშური", region: "შიდა ქართლი" },
-            { city: "სურამი", region: "შიდა ქართლი" },
-            { city: "ატენი", region: "შიდა ქართლი" },
-            { city: "ცხინვალი", region: "შიდა ქართლი" },
-
-            // Samegrelo-Zemo Svaneti
-            { city: "ზუგდიდი", region: "სამეგრელო-ზემო სვანეთი" },
-            { city: "ფოთი", region: "სამეგრელო-ზემო სვანეთი" },
-            { city: "სენაკი", region: "სამეგრელო-ზემო სვანეთი" },
-            { city: "მარტვილი", region: "სამეგრელო-ზემო სვანეთი" },
-            { city: "ხობი", region: "სამეგრელო-ზემო სვანეთი" },
-            { city: "წალენჯიხა", region: "სამეგრელო-ზემო სვანეთი" },
-            { city: "ჩხოროწყუ", region: "სამეგრელო-ზემო სვანეთი" },
-            { city: "აბაშა", region: "სამეგრელო-ზემო სვანეთი" },
-            { city: "ჯვარი", region: "სამეგრელო-ზემო სვანეთი" },
-            { city: "მესტია", region: "სამეგრელო-ზემო სვანეთი" },
-            { city: "უშგული", region: "სამეგრელო-ზემო სვანეთი" },
-            { city: "ანაკლია", region: "სამეგრელო-ზემო სვანეთი" },
-            { city: "განმუხური", region: "სამეგრელო-ზემო სვანეთი" },
-
-            // Kakheti
-            { city: "თელავი", region: "კახეთი" },
-            { city: "გურჯაანი", region: "კახეთი" },
-            { city: "სიღნაღი", region: "კახეთი" },
-            { city: "ყვარელი", region: "კახეთი" },
-            { city: "ახმეტა", region: "კახეთი" },
-            { city: "დედოფლისწყარო", region: "კახეთი" },
-            { city: "ლაგოდეხი", region: "კახეთი" },
-            { city: "საგარეჯო", region: "კახეთი" },
-            { city: "წნორი", region: "კახეთი" },
-            { city: "ომალო", region: "კახეთი" },
-            { city: "წინანდალი", region: "კახეთი" },
-            { city: "ნაფარეული", region: "კახეთი" },
-
-            // Samtskhe-Javakheti
-            { city: "ახალციხე", region: "სამცხე-ჯავახეთი" },
-            { city: "ბორჯომი", region: "სამცხე-ჯავახეთი" },
-            { city: "ბაკურიანი", region: "სამცხე-ჯავახეთი" },
-            { city: "ახალქალაქი", region: "სამცხე-ჯავახეთი" },
-            { city: "ნინოწმინდა", region: "სამცხე-ჯავახეთი" },
-            { city: "ადიგენი", region: "სამცხე-ჯავახეთი" },
-            { city: "ასპინძა", region: "სამცხე-ჯავახეთი" },
-            { city: "აბასთუმანი", region: "სამცხე-ჯავახეთი" },
-            { city: "წაღვერი", region: "სამცხე-ჯავახეთი" },
-            { city: "ლიკანი", region: "სამცხე-ჯავახეთი" },
-            { city: "ვალე", region: "სამცხე-ჯავახეთი" },
-
-            // Mtskheta-Mtianeti
-            { city: "მცხეთა", region: "მცხეთა-მთიანეთი" },
-            { city: "დუშეთი", region: "მცხეთა-მთიანეთი" },
-            { city: "თიანეთი", region: "მცხეთა-მთიანეთი" },
-            { city: "სტეფანწმინდა", region: "მცხეთა-მთიანეთი" }, // ყაზბეგი
-            { city: "გუდაური", region: "მცხეთა-მთიანეთი" },
-            { city: "ფასანაური", region: "მცხეთა-მთიანეთი" },
-            { city: "სნო", region: "მცხეთა-მთიანეთი" },
-            { city: "ჯუთა", region: "მცხეთა-მთიანეთი" },
-            { city: "შატილი", region: "მცხეთა-მთიანეთი" },
-            { city: "ჟინვალი", region: "მცხეთა-მთიანეთი" },
-            { city: "ნატახტარი", region: "მცხეთა-მთიანეთი" },
-
-            // Racha-Lechkhumi
-            { city: "ამბროლაური", region: "რაჭა-ლეჩხუმი და ქვემო სვანეთი" },
-            { city: "ონი", region: "რაჭა-ლეჩხუმი და ქვემო სვანეთი" },
-            { city: "ცაგერი", region: "რაჭა-ლეჩხუმი და ქვემო სვანეთი" },
-            { city: "ლენტეხი", region: "რაჭა-ლეჩხუმი და ქვემო სვანეთი" },
-            { city: "შოვი", region: "რაჭა-ლეჩხუმი და ქვემო სვანეთი" },
-            { city: "უწერა", region: "რაჭა-ლეჩხუმი და ქვემო სვანეთი" },
-            { city: "ნიკორწმინდა", region: "რაჭა-ლეჩხუმი და ქვემო სვანეთი" },
-
-            // Guria
-            { city: "ოზურგეთი", region: "გურია" },
-            { city: "ლანჩხუთი", region: "გურია" },
-            { city: "ჩოხატაური", region: "გურია" },
-            { city: "ურეკი", region: "გურია" },
-            { city: "შეკვეთილი", region: "გურია" },
-            { city: "გრიგოლეთი", region: "გურია" },
-            { city: "ბახმარო", region: "გურია" },
-            { city: "გომისმთა", region: "გურია" },
-
-            // Abkhazia
-            { city: "სოხუმი", region: "აფხაზეთი" },
-            { city: "გაგრა", region: "აფხაზეთი" },
-            { city: "ბიჭვინთა", region: "აფხაზეთი" },
-            { city: "ახალი ათონი", region: "აფხაზეთი" }
+        const LOCATIONS = [
+            { c: "თბილისი", r: "თბილისი" }, { c: "ბათუმი", r: "აჭარა" }, { c: "ქუთაისი", r: "იმერეთი" }, { c: "რუსთავი", r: "ქვემო ქართლი" },
+            { c: "გორი", r: "შიდა ქართლი" }, { c: "ზუგდიდი", r: "სამეგრელო" }, { c: "ფოთი", r: "სამეგრელო" }, { c: "ქობულეთი", r: "აჭარა" },
+            { c: "ხაშური", r: "შიდა ქართლი" }, { c: "სამტრედია", r: "იმერეთი" }, { c: "სენაკი", r: "სამეგრელო" }, { c: "ზესტაფონი", r: "იმერეთი" },
+            { c: "მარნეული", r: "ქვემო ქართლი" }, { c: "თელავი", r: "კახეთი" }, { c: "ახალციხე", r: "სამცხე-ჯავახეთი" }, { c: "ქედა", r: "აჭარა" },
+            { c: "ოზურგეთი", r: "გურია" }, { c: "კასპი", r: "შიდა ქართლი" }, { c: "ჭიათურა", r: "იმერეთი" }, { c: "წყალტუბო", r: "იმერეთი" },
+            { c: "საგარეჯო", r: "კახეთი" }, { c: "გარდაბანი", r: "ქვემო ქართლი" }, { c: "ბორჯომი", r: "სამცხე-ჯავახეთი" }, { c: "ტყიბული", r: "იმერეთი" },
+            { c: "ხონი", r: "იმერეთი" }, { c: "ბოლნისი", r: "ქვემო ქართლი" }, { c: "ახალქალაქი", r: "სამცხე-ჯავახეთი" }, { c: "გურჯაანი", r: "კახეთი" },
+            { c: "მცხეთა", r: "მცხეთა-მთიანეთი" }, { c: "ყვარელი", r: "კახეთი" }, { c: "ახმეტა", r: "კახეთი" }, { c: "ქარელი", r: "შიდა ქართლი" },
+            { c: "ლანჩხუთი", r: "გურია" }, { c: "დუშეთი", r: "მცხეთა-მთიანეთი" }, { c: "საჩხერე", r: "იმერეთი" }, { c: "დედოფლისწყარო", r: "კახეთი" },
+            { c: "ლაგოდეხი", r: "კახეთი" }, { c: "ნინოწმინდა", r: "სამცხე-ჯავახეთი" }, { c: "აბაშა", r: "სამეგრელო" }, { c: "წნორი", r: "კახეთი" },
+            { c: "თერჯოლა", r: "იმერეთი" }, { c: "მარტვილი", r: "სამეგრელო" }, { c: "ჯვარი", r: "სამეგრელო" }, { c: "ხობი", r: "სამეგრელო" },
+            { c: "ვანი", r: "იმერეთი" }, { c: "ბაღდათი", r: "იმერეთი" }, { c: "ვალე", r: "სამცხე-ჯავახეთი" }, { c: "ჩხოროწყუ", r: "სამეგრელო" },
+            { c: "თეთრიწყარო", r: "ქვემო ქართლი" }, { c: "დმანისი", r: "ქვემო ქართლი" }, { c: "ონი", r: "რაჭა" }, { c: "ამბროლაური", r: "რაჭა" },
+            { c: "სიღნაღი", r: "კახეთი" }, { c: "ცაგერი", r: "ლეჩხუმი" }, { c: "წალკა", r: "ქვემო ქართლი" }, { c: "მესტია", r: "სვანეთი" },
+            { c: "ყაზბეგი", r: "მცხეთა-მთიანეთი" }, { c: "სტეფანწმინდა", r: "მცხეთა-მთიანეთი" }, { c: "გუდაური", r: "მცხეთა-მთიანეთი" },
+            { c: "ბაკურიანი", r: "სამცხე-ჯავახეთი" }, { c: "ურეკი", r: "გურია" }, { c: "შეკვეთილი", r: "გურია" }, { c: "გონიო", r: "აჭარა" },
+            { c: "სარფი", r: "აჭარა" }, { c: "ანაკლია", r: "სამეგრელო" }, { c: "შოვი", r: "რაჭა" }, { c: "ბახმარო", r: "გურია" },
+            { c: "საირმე", r: "იმერეთი" }, { c: "აბასთუმანი", r: "სამცხე-ჯავახეთი" }, { c: "გრიგოლეთი", r: "გურია" }, { c: "მალთაყვა", r: "სამეგრელო" }
         ];
 
-        async function init() {
-            // Check Session
+        const MONTHS = ["იან", "თებ", "მარ", "აპრ", "მაი", "ივნ", "ივლ", "აგვ", "სექ", "ოქტ", "ნოე", "დეკ"];
+        const CUR_MONTH_IDX = new Date().getMonth();
+
+        // STATE
+        let GSTATE = {
+            editId: new URLSearchParams(window.location.search).get('id'),
+            mainImages: [],
+            rooms: [],
+            user: null,
+            originalRoomIds: []
+        };
+
+        // 1. AUTH & INIT
+        window.checkAuth = async function () {
             const { data: { session } } = await supabaseClient.auth.getSession();
+            GSTATE.user = session ? session.user : null;
+            window.updateAuthUI();
+            if (GSTATE.editId) await window.loadPropertyForEdit();
+        };
 
-            if (!session) {
-                window.location.href = 'index.html'; // Redirect to login
-                return;
-            }
-
-            State.user = session.user;
-            State.locations = GEORGIAN_LOCATIONS;
-
-            // Setup Listeners
-            setupCityListeners();
-            calculatePriceRange();
-
-            // Check for Edit Mode
-            const urlParams = new URLSearchParams(window.location.search);
-            const editId = urlParams.get('id');
-            if (editId) {
-                State.editMode = true;
-                State.editId = editId;
-                document.title = "განცხადების რედაქტირება - GeorgiaTravel";
-                document.querySelector('h1').innerHTML = `
-                    <span class="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center mr-3 text-blue-600 shadow-sm">
-                        <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
-                    </span>
-                    განცხადების რედაქტირება
-                `;
-                document.querySelector('button[type="submit"]').textContent = "ცვლილებების შენახვა";
-                await loadPropertyForEdit(editId);
-            } else {
-                // New Property - Fetch & Set Default Tier
-                await fetchAndSetUserTier();
-            }
-        }
-
-        async function fetchAndSetUserTier(overrideTier = null) {
+        window.loadPropertyForEdit = async function () {
             try {
-                let tier = 'free';
-                if (overrideTier) {
-                    tier = overrideTier;
-                } else {
-                    const { data } = await State.supabase
-                        .from('profiles')
-                        .select('subscription_tier')
-                        .eq('id', State.user.id)
-                        .single();
-                    if (data && data.subscription_tier) tier = data.subscription_tier;
-                }
-
-                // UI Update
-                const tierDisplay = document.getElementById('userTierDisplay');
-                const tierInput = document.getElementById('tierInput');
-                const msg = document.getElementById('tierUpgradeMsg');
-
-                if (tierDisplay) tierDisplay.textContent = tier.charAt(0).toUpperCase() + tier.slice(1);
-                if (tierInput) tierInput.value = tier;
-
-                if (msg && (tier.toLowerCase() === 'free' || tier.toLowerCase() === 'regular')) {
-                    msg.classList.remove('hidden');
-                } else if (msg) {
-                    msg.classList.add('hidden');
-                }
-
-            } catch (e) {
-                console.error("Error fetching tier:", e);
-            }
-        }
-
-        async function loadPropertyForEdit(id) {
-            try {
-                const { data, error } = await State.supabase
-                    .from('guesthouse ge')
-                    .select('*')
-                    .eq('id', id)
-                    .single();
-
-                if (error) throw error;
-                if (data.user_id !== State.user.id) {
-                    alert("თქვენ არ გაქვთ ამ განცხადების რედაქტირების უფლება!");
-                    window.location.href = "profile.html";
-                    return;
-                }
+                const { data: prop, error } = await supabaseClient.from('guesthouse_ge').select('*').eq('id', GSTATE.editId).single();
+                if (error || !prop) throw new Error('განცხადება ვერ მოიძებნა');
 
                 // Populate Fields
-                document.getElementById('propertyName').value = data.name || '';
-
-                const hostNameVal = data.host_name || '';
-                const names = hostNameVal ? hostNameVal.split(' ') : [];
-                document.getElementById('firstName').value = names[0] || '';
-                document.getElementById('lastName').value = names.slice(1).join(' ') || '';
-
-                document.querySelector('input[name="phone"]').value = data.phone || '';
-                document.querySelector('textarea[name="description"]').value = data.description || '';
-
-                // Selects
-                if (data.type) document.querySelector('select[name="type"]').value = data.type;
-                if (data.type) document.querySelector('select[name="type"]').value = data.type;
-
-                // Set Tier (Read Only now)
-                await fetchAndSetUserTier(data.tier); // Use stored tier for edit, or fetch user's current? 
-                // Using user's current tier is SAFER so they can't keep VIP if they downgraded. 
-                // But for edit mode, maybe we should show what it WAS saved as? 
-                // Requirement says "fetch the user's current subscription_tier". So we ignore saved tier and check profile.
-                await fetchAndSetUserTier(); // Fetch fresh
-
-                if (data.location) {
-                    document.getElementById('locationSearch').value = data.location;
-                    document.getElementById('locationValue').value = data.location;
-                }
+                document.getElementById('propName').value = prop.name;
+                const hName = prop.host_name || "";
+                document.getElementById('hostName').value = hName.split(' ')[0] || "";
+                document.getElementById('hostSurname').value = hName.split(' ').slice(1).join(' ') || "";
+                document.getElementById('hostPhone').value = prop.phone;
+                document.getElementById('cityInput').value = prop.location;
+                const rgn = LOCATIONS.find(l => l.c === prop.location)?.r || "";
+                document.getElementById('regionInput').value = rgn;
+                document.getElementById('propType').value = prop.type;
+                document.getElementById('propDesc').value = prop.description;
+                document.getElementById('descCount').innerText = `${prop.description.length} / 1500`;
 
                 // Amenities
-                const checkboxes = document.querySelectorAll('input[name="amenities"]');
-                const standardAmenities = Array.from(checkboxes).map(cb => cb.value); // ["WiFi", "Checking", ...]
-
-                if (data.amenities) {
-                    data.amenities.forEach(item => {
-                        // Check standard if match
-                        let isStandard = false;
-                        checkboxes.forEach(cb => {
-                            if (cb.value === item) {
-                                cb.checked = true;
-                                isStandard = true;
-                            }
-                        });
-
-                        // If not standard, add as custom
-                        if (!isStandard) {
-                            addCustomAmenity(item);
-                        }
+                const amensContainer = document.getElementById('amenitiesContainer');
+                if (prop.amenities) {
+                    prop.amenities.forEach(a => {
+                        const cb = amensContainer.querySelector(`input[value="${a}"]`);
+                        if (cb) cb.checked = true;
+                        else window.addCustomService(a);
                     });
                 }
 
                 // Images
-                let imgs = [];
-                if (data.images) {
-                    if (Array.isArray(data.images)) imgs = data.images;
-                    else if (typeof data.images === 'string') {
-                        try {
-                            if (data.images.startsWith('{')) imgs = data.images.slice(1, -1).split(',');
-                            else imgs = JSON.parse(data.images);
-                        } catch (e) { }
-                    }
-                }
-                State.existingImages = imgs;
-                renderExistingImages();
+                GSTATE.mainImages = prop.images || [];
+                window.renderMainImages();
 
-                // Seasonal Prices
-                let sPrices = [];
-                if (data.seasonal_prices) {
-                    if (Array.isArray(data.seasonal_prices)) sPrices = data.seasonal_prices;
-                    else if (typeof data.seasonal_prices === 'string') {
-                        try { sPrices = JSON.parse(data.seasonal_prices); } catch (e) { }
-                    }
-                }
-
-                // Clear existing empty row if any
-                document.getElementById('seasonalPricesBody').innerHTML = '';
-                sPrices.forEach(sp => {
-                    addSeasonalRow(sp);
+                // Rooms
+                const { data: rooms, error: rErr } = await supabaseClient.from('rooms').select('*').eq('property_id', GSTATE.editId);
+                if (rErr) throw rErr;
+                GSTATE.originalRoomIds = rooms.map(r => r.id);
+                GSTATE.rooms = rooms.map(r => {
+                    // Try matching prices from JSON by room name
+                    const sp = prop.seasonal_prices?.find(s => s.label === r.name);
+                    return {
+                        id: r.id,
+                        isNew: false,
+                        name: r.name,
+                        beds: r.beds,
+                        images: r.images || [],
+                        prices: sp ? sp.prices : Array(12).fill('')
+                    };
                 });
-                if (sPrices.length === 0) addSeasonalRow();
 
-                // Load Rooms
-                const { data: roomsData } = await State.supabase.from('rooms').select('*').eq('property_id', id);
-                if (roomsData && roomsData.length > 0) {
-                    State.originalRoomIds = roomsData.map(r => r.id); // Track for deletion
-                    roomsData.forEach(r => addRoomBlock(r));
-                } else {
-                    State.originalRoomIds = [];
-                }
-
-                // Wait for rooms to render then sync
-                setTimeout(() => {
-                    window.syncSeasonalRows();
-                    // Populate prices from saved data if available logic complicated because we need to map names back to UIDs.
-                    // But wait, roomsData has id. saved seasonal prices are by label (name).
-                    // We can try to match by name.
-                    if (sPrices && sPrices.length > 0) {
-                        const rows = document.querySelectorAll('#seasonalPricesBody tr');
-                        rows.forEach(row => {
-                            const name = row.querySelector('td').innerText.trim();
-                            const match = sPrices.find(sp => sp.label === name);
-                            if (match && match.prices) {
-                                const inputs = row.querySelectorAll('input[type="number"]');
-                                inputs.forEach((inp, i) => {
-                                    if (match.prices[i]) inp.value = match.prices[i];
-                                });
-                            }
-                        });
-                        calculatePriceRange();
-                    }
-                }, 200);
+                window.renderRooms();
+                window.renderSeasonalTable();
+                document.getElementById('submitBtn').innerText = 'ცვლილებების შენახვა';
 
             } catch (err) {
                 console.error(err);
-                alert("ვერ მოხერხდა მონაცემების ჩატვირთვა.");
+                Swal.fire('შეცდომა', 'მონაცემების ჩატვირთვა ვერ მოხერხდა', 'error');
             }
-        }
+        };
 
-        function renderExistingImages() {
-            // Simplified rendering of existing images
-            const grid = document.getElementById('uploadGrid');
-            // Clear previous existing ones? No, just keep the Add button and append
-            // Actually, let's remove everything except the Add button first
-            const addBtn = document.getElementById('uploadAddBtn');
+        window.updateAuthUI = function () {
+            const container = document.getElementById('navAuthBtnContainer');
+            if (!container) return;
+            if (!GSTATE.user) {
+                container.innerHTML = `<button onclick="window.location.href='index.html?auth=login'" class="bg-[#2d78b1] hover:bg-[#236a9e] text-white font-bold py-2 px-6 rounded-full transition-all shadow-sm">შესვლა</button>`;
+                return;
+            }
+            const name = GSTATE.user.user_metadata.full_name || GSTATE.user.email.split('@')[0];
+            const avatar = GSTATE.user.user_metadata.avatar_url || 'https://www.gravatar.com/avatar/?d=mp';
+            container.innerHTML = `
+                <div class="relative ml-2 group">
+                    <button class="flex items-center space-x-2 focus:outline-none bg-white hover:bg-gray-50 rounded-full pl-1 pr-3 py-1 transition-colors border border-gray-200 shadow-sm">
+                        <img src="${avatar}" class="w-8 h-8 rounded-full border border-gray-200 object-cover">
+                        <span class="hidden sm:inline text-sm font-bold text-gray-700 max-w-[100px] truncate">${name}</span>
+                        <svg class="w-4 h-4 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>
+                    </button>
+                    <div class="absolute right-0 mt-2 w-56 bg-white rounded-xl shadow-xl border border-gray-100 py-2 hidden group-hover:block z-50">
+                        <a href="profile.html" class="block px-4 py-2 text-sm text-gray-700 hover:bg-amber-50 hover:text-amber-600 transition">ჩემი განცხადებები</a>
+                        <div class="border-t border-gray-100 mt-1">
+                            <button onclick="supabaseClient.auth.signOut().then(()=>window.location.reload())" class="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition">გასვლა</button>
+                        </div>
+                    </div>
+                </div>`;
+        };
+
+        // 2. MAIN IMAGES
+        window.handleMainImages = function (input) {
+            const files = Array.from(input.files);
+            GSTATE.mainImages = [...GSTATE.mainImages, ...files];
+            window.renderMainImages();
+        };
+
+        window.renderMainImages = function () {
+            const grid = document.getElementById('mainImagesGrid');
+            const addBtn = grid.firstElementChild;
             grid.innerHTML = '';
             grid.appendChild(addBtn);
-
-            State.existingImages.forEach((url, index) => {
+            GSTATE.mainImages.forEach((item, index) => {
+                const src = (typeof item === 'string') ? item : URL.createObjectURL(item);
                 const div = document.createElement('div');
-                div.className = "relative aspect-square rounded-xl overflow-hidden group shadow-sm animate-fade-in";
+                div.className = "relative aspect-square rounded-xl overflow-hidden shadow-sm border border-gray-200 group";
                 div.innerHTML = `
-                    <img src="${url}" class="w-full h-full object-cover">
-                    <button type="button" onclick="removeExistingImage(${index})" 
-                        class="absolute top-2 right-2 p-1 bg-white rounded-full shadow-md text-red-500 hover:text-red-600 hover:bg-red-50 transition-all opacity-0 group-hover:opacity-100 transform scale-90 group-hover:scale-100">
-                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+                    <img src="${src}" class="w-full h-full object-cover">
+                    <button onclick="window.removeMainImage(${index})" class="absolute top-1 right-1 bg-white text-red-500 rounded-full p-1 opacity-0 group-hover:opacity-100 transition shadow hover:bg-red-50">
+                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
                     </button>
-                    <div class="absolute bottom-2 left-2 bg-black/50 text-white text-[10px] px-2 py-0.5 rounded backdrop-blur-sm">
-                        არსებული
-                    </div>
                 `;
                 grid.appendChild(div);
             });
+        };
+        window.removeMainImage = (i) => { GSTATE.mainImages.splice(i, 1); window.renderMainImages(); };
 
-            // Then render new pending uploads
-            renderUploadGrid(false); // Pass false to not clear grid
-        }
-
-        function removeExistingImage(index) {
-            State.existingImages.splice(index, 1);
-            renderExistingImages();
-        }
-        // --- LOCATION LOGIC ---
-        function handleRegionChange(region) {
-            // Filter dropdown immediately if open, or just set internal filter state
-            const dropdownOpen = !DOM.citiesDropdown.classList.contains('hidden');
-            if (dropdownOpen) {
-                const term = DOM.locationSearch.value;
-                filterAndRenderCities(term);
-            }
-        }
-
-        function setupCityListeners() {
-            const showCities = (e) => {
-                e.stopPropagation();
-                DOM.citiesDropdown.classList.remove('hidden');
-                DOM.citiesDropdown.style.display = 'block';
-                DOM.locationContainer.style.zIndex = '10000';
-                filterAndRenderCities(DOM.locationSearch.value);
-            };
-
-            // Open on Click AND Focus
-            DOM.locationSearch.addEventListener('click', showCities);
-            DOM.locationSearch.addEventListener('focus', showCities);
-
-            // Filter on Input
-            DOM.locationSearch.addEventListener('input', (e) => {
-                filterAndRenderCities(e.target.value);
-            });
-
-            // Close on Click Outside
-            document.addEventListener('click', (e) => {
-                if (!DOM.locationContainer.contains(e.target)) {
-                    DOM.citiesDropdown.classList.add('hidden');
-                    DOM.citiesDropdown.style.display = 'none';
-                    DOM.locationContainer.style.zIndex = '';
-                }
-            });
-        }
-
-        function filterAndRenderCities(term) {
-            let filtered = State.locations;
-
-            // 1. Filter by Region if selected
-            const selectedRegion = DOM.regionSelect.value;
-            if (selectedRegion) {
-                filtered = filtered.filter(l => l.region === selectedRegion);
-            }
-
-            // 2. Filter by Search Term
-            if (term) {
-                filtered = filtered.filter(l => l.city.toLowerCase().includes(term.toLowerCase()));
-            }
-
-            // Auto-show if we have results and not visible
-            if (DOM.citiesDropdown.classList.contains('hidden')) {
-                DOM.citiesDropdown.classList.remove('hidden');
-                DOM.citiesDropdown.style.display = 'block';
-                DOM.locationContainer.style.zIndex = '10000';
-            }
-
-            renderCitiesDropdown(filtered);
-        }
-
-        function renderCitiesDropdown(cities) {
-            DOM.citiesDropdown.innerHTML = '';
-
-            if (cities.length === 0) {
-                const li = document.createElement('li');
-                li.className = "px-4 py-3 text-sm text-gray-400 text-center";
-                li.textContent = "ლოკაცია არ მოიძებნა";
-                DOM.citiesDropdown.appendChild(li);
-                return;
-            }
-
-            cities.forEach(loc => {
-                const li = document.createElement('li');
-                li.className = "px-4 py-3 text-sm text-gray-700 hover:bg-amber-50 hover:text-amber-700 cursor-pointer transition-colors border-b border-gray-50 last:border-0 flex justify-between";
-                li.innerHTML = `<span>${loc.city}</span> <span class="text-xs text-gray-400 self-center">${loc.region}</span>`;
-                li.onclick = (e) => {
-                    e.stopPropagation(); // Prevent document click
-                    selectCity(loc);
-                };
-                DOM.citiesDropdown.appendChild(li);
-            });
-        }
-
-        function selectCity(loc) {
-            DOM.locationSearch.value = loc.city;
-            DOM.locationValue.value = loc.city;
-
-            // Auto-select region
-            if (loc.region) {
-                DOM.regionSelect.value = loc.region;
-            }
-
-            DOM.citiesDropdown.classList.add('hidden');
-            DOM.citiesDropdown.style.display = 'none';
-            DOM.locationContainer.style.zIndex = '';
-        }
-
-        // --- IMAGE PROCESSING & GRID ---
-        window.handleImageSelection = async function (input) {
-            const files = Array.from(input.files);
-            if (!files.length) return;
-
-            // Process each file
-            for (const file of files) {
-                if (State.pendingUploads.length >= 30) {
-                    alert("მაქსიმუმ 30 სურათი!");
-                    break;
-                }
-
-                try {
-                    const processed = await processImage(file);
-                    State.pendingUploads.push(processed);
-                } catch (error) {
-                    console.error("Image processing failed:", error);
-                    alert(`სურათი ${file.name} ვერ აიტვირთა: ${error.message}`);
-                }
-            }
-
-            input.value = ''; // Reset
-            renderUploadGrid();
+        // 3. ROOMS
+        window.addRoom = function () {
+            const roomId = "new_" + Date.now().toString();
+            GSTATE.rooms.push({ id: roomId, isNew: true, name: `Room ${GSTATE.rooms.length + 1}`, beds: 2, images: [], prices: Array(12).fill('') });
+            window.renderRooms();
+            window.renderSeasonalTable();
         };
 
-        function renderUploadGrid(clearExisting = true) {
-            const grid = document.getElementById('uploadGrid');
-            const addButton = document.getElementById('uploadAddBtn');
-            if (!grid || !addButton) return;
-
-            // If we are appending to existing, do NOT remove children that are "existing"
-            // Actually, simplified approach:
-            // remove all children except addBtn AND logical "existing" nodes? 
-            // Better: Just loop and remove nodes that don't have "existing" data attribute if logic gets complex.
-            // But let's stick to: renderExisting calls simple clear, then renders. renderUploadGrid calls and appends.
-
-            // Clean ONLY pending uploads from view?
-            // Easier: Clear all non-AddBtn, then re-render State.existingImages THEN State.pendingUploads
-
-            // Clear all except AddBtn
-            Array.from(grid.children).forEach(child => {
-                if (child.id !== 'uploadAddBtn') {
-                    child.remove();
-                }
-            });
-
-            // 1. Render Existing
-            if (State.existingImages && State.existingImages.length > 0) {
-                State.existingImages.forEach((url, index) => {
-                    const div = document.createElement('div');
-                    div.className = "relative aspect-square rounded-xl overflow-hidden group shadow-sm animate-fade-in";
-                    div.innerHTML = `
-                        <img src="${url}" class="w-full h-full object-cover">
-                        <button type="button" onclick="removeExistingImage(${index})" 
-                            class="absolute top-2 right-2 p-1 bg-white rounded-full shadow-md text-red-500 hover:text-red-600 hover:bg-red-50 transition-all opacity-0 group-hover:opacity-100 transform scale-90 group-hover:scale-100">
-                            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+        window.renderRooms = function () {
+            const container = document.getElementById('roomsContainer');
+            container.innerHTML = '';
+            GSTATE.rooms.forEach((room, index) => {
+                const div = document.createElement('div');
+                div.className = "bg-white border border-gray-200 rounded-2xl p-6 relative shadow-sm animate-fade-in mb-4";
+                const imageThumbnails = room.images.map((img, i) => {
+                    const src = (typeof img === 'string') ? img : URL.createObjectURL(img);
+                    return `
+                    <div class="relative aspect-square rounded-xl overflow-hidden bg-gray-100 border border-gray-200 group shadow-sm hover:shadow-md transition">
+                        <img src="${src}" class="w-full h-full object-cover">
+                        <button onclick="window.removeRoomImage('${room.id}', ${i})" class="absolute top-1 right-1 bg-white/90 text-red-500 rounded-full p-1 opacity-0 group-hover:opacity-100 shadow transition hover:bg-red-50 backdrop-blur-sm">
+                            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
                         </button>
-                        <div class="absolute bottom-2 left-2 bg-black/50 text-white text-[10px] px-2 py-0.5 rounded backdrop-blur-sm">
-                            არსებული
+                    </div>`;
+                }).join('');
+
+                const addBtn = room.images.length < 15 ? `
+                    <label class="aspect-square border-2 border-dashed border-gray-300 rounded-xl hover:border-amber-500 hover:bg-amber-50 cursor-pointer flex flex-col items-center justify-center transition group">
+                        <input type="file" multiple accept="image/*" class="hidden" onchange="window.handleRoomImages(this, '${room.id}')">
+                        <div class="w-10 h-10 bg-gray-100 text-gray-400 rounded-full flex items-center justify-center group-hover:bg-amber-100 group-hover:text-amber-500 transition">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v12m6-6H6" /></svg>
                         </div>
-                    `;
-                    grid.insertBefore(div, addButton);
+                    </label>` : '';
+
+                div.innerHTML = `
+                    <button onclick="window.removeRoom('${room.id}')" class="absolute top-4 right-4 text-gray-400 hover:text-red-500 bg-gray-50 p-2 rounded-full transition"><svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg></button>
+                    <div class="flex items-center gap-2 mb-4"><span class="bg-indigo-100 text-indigo-600 font-bold px-2 py-1 rounded text-xs">ოთახი #${index + 1}</span></div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                        <div><label class="block text-xs font-bold text-gray-500 uppercase mb-1">ოთახის სახელი</label><input type="text" value="${room.name}" oninput="window.updateRoom('${room.id}', 'name', this.value)" class="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl outline-none focus:border-indigo-500 transition"></div>
+                        <div><label class="block text-xs font-bold text-gray-500 uppercase mb-1">საწოლების რაოდენობა</label><input type="number" value="${room.beds}" min="1" oninput="window.updateRoom('${room.id}', 'beds', this.value)" class="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl outline-none focus:border-indigo-500 transition"></div>
+                    </div>
+                    <div class="border-t border-gray-100 pt-4"><div class="flex justify-between items-end mb-3"><label class="text-xs font-bold text-gray-500 uppercase">ფოტოები (მაქს. 15)</label><span class="text-xs font-bold ${room.images.length >= 15 ? 'text-red-500' : 'text-gray-400'}">${room.images.length} / 15</span></div><div class="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 gap-3">${imageThumbnails}${addBtn}</div></div>`;
+                container.appendChild(div);
+            });
+        };
+
+        window.updateRoom = (id, field, value) => {
+            const r = GSTATE.rooms.find(rm => rm.id === id);
+            if (r) { r[field] = value; if (field === 'name') window.renderSeasonalTable(); }
+        };
+
+        window.removeRoom = (id) => {
+            Swal.fire({ title: 'გსურთ წაშლა?', icon: 'warning', showCancelButton: true, confirmButtonText: 'წაშლა' }).then(res => {
+                if (res.isConfirmed) { GSTATE.rooms = GSTATE.rooms.filter(r => r.id !== id); window.renderRooms(); window.renderSeasonalTable(); }
+            });
+        };
+
+        window.handleRoomImages = (input, rid) => {
+            const r = GSTATE.rooms.find(rm => rm.id === rid);
+            if (!r) return;
+            const files = Array.from(input.files);
+            if (r.images.length + files.length > 15) { Swal.fire('შეცდომა', 'მაქსიმუმ 15 ფოტო', 'error'); return; }
+            r.images = [...r.images, ...files];
+            window.renderRooms();
+        };
+
+        window.removeRoomImage = (rid, i) => {
+            const r = GSTATE.rooms.find(rm => rm.id === rid);
+            if (r) { r.images.splice(i, 1); window.renderRooms(); }
+        };
+
+        // 4. SEASONAL TABLE
+        (function setupTableHeader() {
+            const headerRow = document.getElementById('seasonalHeader');
+            if (headerRow && headerRow.children.length < 3) {
+                MONTHS.forEach((m, i) => {
+                    const th = document.createElement('th');
+                    th.className = `p-3 min-w-[80px] text-center font-bold text-gray-500 border-b border-gray-100 uppercase text-[11px] tracking-wider ${i === CUR_MONTH_IDX ? 'current-month-header' : ''}`;
+                    th.innerText = m;
+                    headerRow.appendChild(th);
                 });
             }
+        })();
 
-            // 2. Render Pending
-            // Insert new based on State
-            State.pendingUploads.forEach((item, index) => {
-                const div = document.createElement('div');
-                div.className = "relative aspect-square rounded-xl overflow-hidden shadow-sm border border-gray-200 group animate-fade-in bg-white";
-
-                const img = document.createElement('img');
-                img.src = URL.createObjectURL(item.blob);
-                img.className = "w-full h-full object-cover transition-transform duration-500 group-hover:scale-110";
-
-                const delBtn = document.createElement('button');
-                delBtn.className = "absolute top-1 right-1 bg-red-500 text-white rounded-full p-1 shadow-md opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-600 focus:outline-none z-10";
-                delBtn.innerHTML = `<svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>`;
-                delBtn.type = "button";
-                delBtn.onclick = (e) => { e.stopPropagation(); removeImage(index); };
-
-                const sizeBadge = document.createElement('div');
-                sizeBadge.className = "absolute bottom-1 left-1 bg-black/50 backdrop-blur-sm text-white text-[10px] px-1.5 py-0.5 rounded opacity-0 group-hover:opacity-100 transition-opacity";
-                sizeBadge.textContent = `${(item.blob.size / 1024).toFixed(0)}KB`;
-
-                div.appendChild(img);
-                div.appendChild(delBtn);
-                div.appendChild(sizeBadge);
-
-                grid.insertBefore(div, addButton);
-            });
-
-            // Toggle Add Button
-            if (State.pendingUploads.length >= 30) {
-                addButton.classList.add('hidden');
-            } else {
-                addButton.classList.remove('hidden');
-            }
-        }
-
-        window.removeImage = function (index) {
-            State.pendingUploads.splice(index, 1);
-            renderUploadGrid();
-        };
-
-        function processImage(file) {
-            return new Promise((resolve, reject) => {
-                const MAX_WIDTH = 1920;
-                const MAX_SIZE_MB = 5;
-                const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
-
-                if (!ALLOWED_TYPES.includes(file.type)) { reject(new Error("მხოლოდ JPG, PNG, WEBP")); return; }
-
-                const img = new Image();
-                img.src = URL.createObjectURL(file);
-                img.onload = () => {
-                    URL.revokeObjectURL(img.src);
-                    let width = img.width;
-                    let height = img.height;
-
-                    if (width > MAX_WIDTH) {
-                        height = Math.round(height * (MAX_WIDTH / width));
-                        width = MAX_WIDTH;
-                    }
-
-                    const canvas = document.createElement('canvas');
-                    canvas.width = width; canvas.height = height;
-                    const ctx = canvas.getContext('2d');
-                    ctx.drawImage(img, 0, 0, width, height);
-
-                    canvas.toBlob((blob) => {
-                        if (!blob) { reject(new Error("კონვერტაცია ვერ მოხერხდა")); return; }
-                        const newFile = new File([blob], file.name.replace(/\.[^/.]+$/, "") + ".webp", { type: "image/webp", lastModified: Date.now() });
-                        resolve({ blob: newFile, original: file });
-                    }, 'image/webp', 0.8);
-                };
-                img.onerror = () => reject(new Error("ჩატვირთვის შეცდომა"));
-            });
-        }
-
-        // --- SEASONAL & PRICE LOGIC ---
-        // --- ROOM <-> PRICE SYNC ---
-        window.syncSeasonalRows = function () {
-            const tbody = document.getElementById('seasonalPricesBody');
-            const roomBlocks = document.querySelectorAll('.room-block');
-
-            // Map existing rows to preserve values using UID
-            const existingValues = {};
-            tbody.querySelectorAll('tr').forEach(tr => {
-                const uid = tr.dataset.roomUid;
-                if (uid) {
-                    const inputs = tr.querySelectorAll('input[type="number"]');
-                    existingValues[uid] = Array.from(inputs).map(i => i.value);
-                }
-            });
-
+        window.renderSeasonalTable = function () {
+            const tbody = document.getElementById('seasonalBody');
             tbody.innerHTML = '';
-
-            roomBlocks.forEach(block => {
-                const uid = block.dataset.uid;
-                const nameInput = block.querySelector(`input[name="room_name_${uid}"]`);
-                const roomName = nameInput && nameInput.value ? nameInput.value : 'ახალი ოთახი';
-
+            if (GSTATE.rooms.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="14" class="p-8 text-center text-gray-400 bg-gray-50/50 rounded-xl border border-dashed border-gray-200">ჯერ დაამატეთ ოთახები ზემოთ ⬆️</td></tr>`;
+                return;
+            }
+            GSTATE.rooms.forEach(room => {
                 const tr = document.createElement('tr');
-                tr.dataset.roomUid = uid;
-                tr.className = "hover:bg-gray-50 transition-colors group";
-
-                const prices = existingValues[uid] || Array(12).fill('');
-
-                tr.innerHTML = `
-                    <td class="p-2 sticky left-0 bg-white group-hover:bg-gray-50 border-r border-gray-100 z-10 font-medium text-xs text-gray-700 w-48 truncate" title="${roomName}">
-                        ${roomName}
-                    </td>
-                    <td class="p-1 min-w-[30px] text-center bg-white group-hover:bg-gray-50 border-r border-gray-100 z-10">
-                         <button type="button" onclick="fillSeasonalRow(this)" class="p-1 text-emerald-500 hover:bg-emerald-50 rounded transition-colors" title="იანვრის ფასის ყველგან გავრცელება">
-                            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 5l7 7-7 7M5 5l7 7-7 7" /></svg>
-                        </button>
-                    </td>
-                    ${Array(12).fill(0).map((_, i) => `
-                        <td class="p-1"><input type="number" min="0" value="${prices[i]}" class="w-full px-1 py-1.5 text-xs text-center border border-gray-200 rounded focus:border-emerald-500 outline-none" placeholder="-"></td>
-                    `).join('')}
-                     <td class="p-1 text-center border-l border-gray-100 sticky right-0 bg-white z-10">
-                        <button type="button" onclick="clearRowPrices(this)" class="p-1 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded transition-colors" title="ფასების გასუფთავება">
-                             <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                             </svg>
-                        </button>
-                    </td>
-                `;
+                tr.className = "hover:bg-amber-50/30 transition-colors";
+                let html = `<td class="p-3 border-b border-gray-100 font-bold text-gray-700 sticky left-0 bg-white group-hover:bg-amber-50/30 border-r text-xs truncate max-w-[160px]">${room.name}</td>`;
+                html += `<td class="p-2 border-b border-gray-100 text-center border-r"><button onclick="window.fillRow('${room.id}')" class="text-amber-500 hover:bg-amber-500 hover:text-white w-6 h-6 rounded-full transition flex items-center justify-center">⚡</button></td>`;
+                for (let i = 0; i < 12; i++) {
+                    const isCur = i === CUR_MONTH_IDX ? 'current-month-col' : '';
+                    html += `<td class="p-1 border-b border-gray-100 border-r ${isCur}"><input type="number" class="w-full bg-transparent text-center text-sm outline-none rounded-md py-1" value="${room.prices[i] || ''}" oninput="window.updatePriceState('${room.id}', ${i}, this.value)"></td>`;
+                }
+                tr.innerHTML = html;
                 tbody.appendChild(tr);
             });
-
-            if (roomBlocks.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="15" class="p-4 text-center text-gray-400 text-xs">ჯერ დაამატეთ ოთახი ზემოთ, რომ ფასები გაწეროთ.</td></tr>`;
-            }
-
-            calculatePriceRange();
         };
 
-        window.fillSeasonalRow = function (btn) {
-            const tr = btn.closest('tr');
-            const inputs = tr.querySelectorAll('input[type="number"]');
-            if (inputs.length === 0) return;
-
-            const firstVal = inputs[0].value;
-            if (!firstVal) {
-                alert("ჯერ მიუთითეთ იანვრის ფასი");
-                return;
-            }
-
-            inputs.forEach(input => input.value = firstVal);
-            calculatePriceRange();
+        window.updatePriceState = (rid, m, v) => {
+            const r = GSTATE.rooms.find(rm => rm.id === rid);
+            if (r) r.prices[m] = v;
         };
 
-        // Old functions to be removed or ignored
-
-
-        window.fillSeasonalRow = function (btn) {
-            const tr = btn.closest('tr');
-            const inputs = tr.querySelectorAll('input[type="number"]');
-            if (inputs.length === 0) return;
-
-            const firstVal = inputs[0].value;
-            if (!firstVal) {
-                if (typeof showError === 'function') {
-                    showError("ჯერ მიუთითეთ იანვრის ფასი");
-                } else {
-                    alert("ჯერ მიუთითეთ იანვრის ფასი");
-                }
-                return;
-            }
-
-            inputs.forEach(input => input.value = firstVal);
-            calculatePriceRange(); // Recalc
+        window.fillRow = (rid) => {
+            const r = GSTATE.rooms.find(rm => rm.id === rid);
+            if (r && r.prices[0]) { r.prices = Array(12).fill(r.prices[0]); window.renderSeasonalTable(); }
         };
 
+        window.clearSeasonalTable = () => {
+            GSTATE.rooms.forEach(r => r.prices = Array(12).fill(''));
+            window.renderSeasonalTable();
+        };
 
-
-        // --- AUTOMATED PRICE CALCULATION ---
-        // --- AUTOMATED PRICE CALCULATION ---
-        window.calculatePriceRange = function () {
-            const currentMonth = new Date().getMonth(); // 0 = Jan
-            let min = Infinity;
-            let max = -Infinity;
-            const rows = document.querySelectorAll('#seasonalPricesBody tr');
-
-            rows.forEach(row => {
-                const inputs = row.querySelectorAll('input[type="number"]');
-                // Iterate ALL inputs to find absolute min/max for the "From" price display
-                inputs.forEach(inp => {
-                    const val = parseInt(inp.value) || 0;
-                    if (val > 0) {
-                        if (val < min) min = val;
-                        if (val > max) max = val;
-                    }
+        // 5. LOCATION & SERVICES
+        const cityInp = document.getElementById('cityInput');
+        const cityList = document.getElementById('cityDropdown');
+        cityInp.addEventListener('input', e => {
+            const val = e.target.value.toLowerCase();
+            cityList.innerHTML = '';
+            if (val.length < 1) { cityList.classList.add('hidden'); return; }
+            const matches = LOCATIONS.filter(l => l.c.toLowerCase().includes(val));
+            if (matches.length > 0) {
+                cityList.classList.remove('hidden');
+                matches.forEach(m => {
+                    const li = document.createElement('li');
+                    li.className = "px-4 py-2 hover:bg-gray-50 cursor-pointer flex justify-between text-sm";
+                    li.innerHTML = `<span>${m.c}</span><span class="text-xs text-gray-400">${m.r}</span>`;
+                    li.onclick = () => { cityInp.value = m.c; document.getElementById('regionInput').value = m.r; cityList.classList.add('hidden'); };
+                    cityList.appendChild(li);
                 });
-            });
-
-            const priceInput = document.querySelector('input[name="price"]');
-            if (!priceInput) return;
-
-            if (min !== Infinity) {
-                if (min === max) {
-                    priceInput.value = `${min}`;
-                } else {
-                    priceInput.value = `${min} - ${max}`; // Display range
-                }
-            } else {
-                priceInput.value = "";
-            }
-        };
-
-        // Listen for ANY seasonal input change to recalc
-        document.addEventListener('input', function (e) {
-            if (e.target.closest('#seasonalPricesBody') && e.target.type === 'number') {
-                calculatePriceRange();
-            }
+            } else cityList.classList.add('hidden');
         });
 
-
-
-        // --- DYNAMIC ROOMS JS ---
-        window.State.roomFiles = {};
-
-        window.addRoomBlock = function (data = null) {
-            const container = document.getElementById('roomBlocksContainer');
-            // Use timestamp + random to ensure unique ID even if removed/added
-            const uniqueId = Date.now() + Math.random().toString(36).substr(2, 5);
-
-            const div = document.createElement('div');
-            div.className = "room-block bg-gray-50 p-4 rounded-xl border border-gray-200 relative animate-fade-in mb-4";
-            div.dataset.uid = uniqueId;
-            if (data && data.id) div.dataset.roomId = data.id;
-
-            const nameVal = data ? (data.name || '') : `ოთახი ${container.children.length + 1}`;
-            const bedsVal = data ? (data.beds || 1) : 1;
-
-            div.innerHTML = `
-                <button type="button" onclick="this.closest('.room-block').remove(); delete window.State.roomFiles['${uniqueId}']; window.syncSeasonalRows();" 
-                    class="absolute top-2 right-2 text-gray-400 hover:text-red-500 transition-colors p-1 bg-white rounded-full shadow-sm">
-                    <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
-                </button>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                    <div>
-                        <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">ოთახის სახელი</label>
-                        <input type="text" name="room_name_${uniqueId}" value="${nameVal}" required 
-                            class="w-full px-3 py-2 bg-white border border-gray-200 rounded-lg focus:outline-none focus:border-amber-500 font-medium">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">საწოლების რაოდენობა</label>
-                        <input type="number" name="room_beds_${uniqueId}" value="${bedsVal}" min="1" required 
-                            class="w-full px-3 py-2 bg-white border border-gray-200 rounded-lg focus:outline-none focus:border-amber-500 font-medium">
-                    </div>
-                </div>
-                <div>
-                    <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">ოთახის სურათები</label>
-                    <div class="flex flex-wrap gap-2" id="room_images_container_${uniqueId}">
-                        <div class="w-20 h-20 border-2 border-dashed border-gray-300 rounded-lg flex items-center justify-center cursor-pointer hover:border-amber-500 hover:bg-amber-50 transition-colors bg-white"
-                             onclick="document.getElementById('room_file_${uniqueId}').click()">
-                            <svg class="w-6 h-6 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" /></svg>
-                        </div>
-                    </div>
-                    <input type="file" id="room_file_${uniqueId}" multiple accept="image/*" class="hidden" onchange="window.handleRoomImageSelect(this, '${uniqueId}')">
-                </div>
-            `;
-            container.appendChild(div);
-
-            // Add Listener for Name Change to Sync Dropdowns
-            const nameInput = div.querySelector(`input[name="room_name_${uniqueId}"]`);
-            if (nameInput) {
-                nameInput.addEventListener('input', () => {
-                    window.syncSeasonalRows();
-                });
-            }
-            // Trigger update immediately
-            window.syncSeasonalRows();
-
-            // Existing room images (if any)
-            if (data && data.image_url) {
-                const imgsContainer = div.querySelector(`#room_images_container_${uniqueId}`);
-                if (data.images && Array.isArray(data.images)) {
-                    data.images.forEach(url => {
-                        const imgDiv = document.createElement('div');
-                        imgDiv.className = "w-20 h-20 relative rounded-lg overflow-hidden group border border-gray-100";
-                        imgDiv.innerHTML = `<img src="${url}" class="w-full h-full object-cover">`;
-                        imgsContainer.insertBefore(imgDiv, imgsContainer.firstElementChild);
-                    });
-                }
-            }
+        window.addCustomService = (val = "") => {
+            const container = document.getElementById('amenitiesContainer');
+            const wrap = document.createElement('div');
+            wrap.className = "flex items-center space-x-2";
+            wrap.innerHTML = `<div class="flex items-center space-x-2 p-2 border border-blue-200 bg-blue-50/50 rounded-lg w-full"><input type="checkbox" checked disabled><input type="text" class="custom-amenity bg-transparent text-sm outline-none w-full" value="${val}" placeholder="სერვისი..."><button onclick="this.parentElement.parentElement.remove()" class="text-red-400">x</button></div>`;
+            container.appendChild(wrap);
+            if (!val) wrap.querySelector('input[type="text"]').focus();
         };
 
-        window.handleRoomImageSelect = function (input, uid) {
-            const files = Array.from(input.files);
-            if (!files.length) return;
+        // 6. SUBMIT (CREATE / UPDATE)
+        window.submitProperty = async function () {
+            if (!GSTATE.user) { Swal.fire('შეცდომა', 'გთხოვთ გაიაროთ ავტორიზაცია', 'error'); return; }
+            if (GSTATE.mainImages.length === 0) { Swal.fire('ყურადღება', 'ატვირთეთ ფოტოები', 'warning'); return; }
 
-            if (!window.State.roomFiles[uid]) window.State.roomFiles[uid] = [];
-            window.State.roomFiles[uid].push(...files);
-
-            window.renderRoomImages(uid);
-            input.value = ''; // Reset
-        };
-
-        window.renderRoomImages = function (uid) {
-            const container = document.getElementById(`room_images_container_${uid}`);
-            const addBtn = container.querySelector('[onclick*="room_file_"]');
-
-            // Clear only image divs
-            Array.from(container.children).forEach(child => {
-                if (child !== addBtn) child.remove();
-            });
-
-            const files = window.State.roomFiles[uid] || [];
-            files.forEach((file, index) => {
-                const url = URL.createObjectURL(file);
-                const div = document.createElement('div');
-                div.className = "w-20 h-20 relative rounded-lg overflow-hidden group border border-gray-100";
-                div.innerHTML = `
-                    <img src="${url}" class="w-full h-full object-cover">
-                    <button type="button" onclick="window.removeRoomImage('${uid}', ${index})" class="absolute top-1 right-1 bg-white rounded-full p-0.5 shadow opacity-0 group-hover:opacity-100 transition-opacity text-red-500">
-                         <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
-                    </button>
-                `;
-                container.insertBefore(div, addBtn);
-            });
-        };
-
-        window.removeRoomImage = function (uid, index) {
-            window.State.roomFiles[uid].splice(index, 1);
-            window.renderRoomImages(uid);
-        };
-
-        window.addCustomAmenity = function (value = '') {
-            const container = document.getElementById('customAmenitiesContainer');
-            const div = document.createElement('div');
-            div.className = "flex items-center space-x-2 animate-fade-in";
-            div.innerHTML = `
-                <input type="text" value="${value}" placeholder="ჩაწერეთ სერვისი (მაგ: ცხენით გასეირნება)" 
-                    class="custom-amenity-input w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:border-amber-500 focus:ring-2 focus:ring-amber-500/10 outline-none transition-all font-medium text-gray-800 text-sm">
-                <button type="button" onclick="this.parentElement.remove()" 
-                    class="p-2 text-gray-400 hover:text-red-500 bg-white border border-gray-200 hover:border-red-200 rounded-xl transition-all shadow-sm">
-                    <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                    </svg>
-                </button>
-            `;
-            container.appendChild(div);
-        };
-
-        window.submitProperty = async function (e) {
-            e.preventDefault();
-            console.log("Submitting data..."); // Debugging
-
-            // Recalculate price range to ensure inputs are populated
-            calculatePriceRange();
-
-            // Validation: Ensure Rooms exists
-            const roomBlocks = document.querySelectorAll('.room-block');
-            if (roomBlocks.length === 0) {
-                showError("გთხოვთ დაამატოთ მინიმუმ 1 ოთახი.");
-                return;
-            }
-
-            // Validation: Ensure ALL rooms have prices
-            let allPricesFilled = true;
-            const priceRows = document.querySelectorAll('#seasonalPricesBody tr');
-
-            // Reset borders
-            priceRows.forEach(row => {
-                row.querySelectorAll('input').forEach(i => i.classList.remove('border-red-500'));
-            });
-
-            for (const row of priceRows) {
-                const inputs = row.querySelectorAll('input[type="number"]');
-                let hasValue = false;
-                inputs.forEach(i => { if (i.value && parseInt(i.value) > 0) hasValue = true; });
-                if (!hasValue) {
-                    allPricesFilled = false;
-                    inputs.forEach(i => i.classList.add('border-red-500'));
-                }
-            }
-
-            if (!allPricesFilled) {
-                showError("გთხოვთ მიუთითოთ ფასი ყველა ოთახისთვის სეზონურ ცხრილში (მინიმუმ ერთი თვე).");
-                return;
-            }
-
-            const btn = e.target.querySelector('button[type="submit"]');
+            const btn = document.getElementById('submitBtn');
             const origText = btn.innerHTML;
-            btn.innerHTML = `<svg class="animate-spin h-5 w-5 mr-3" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> ინახება...`;
+            btn.innerHTML = `⏳ ინახება...`;
             btn.disabled = true;
 
             try {
-                // 1. Upload Images
-                const userId = State.user.id;
-                const uploadedUrls = [];
-                for (let i = 0; i < State.pendingUploads.length; i++) {
-                    const item = State.pendingUploads[i];
-                    const fileName = `${Date.now()}_${i}_${Math.random().toString(36).substr(2, 9)}.webp`;
-                    const { data, error } = await State.supabase.storage
-                        .from('guesthouse statement')
-                        .upload(fileName, item.blob);
-
-                    if (error) throw error;
-
-                    const publicUrl = State.supabase.storage.from('guesthouse statement').getPublicUrl(fileName).data.publicUrl;
-                    uploadedUrls.push(publicUrl);
+                // Main Images
+                const finalMainUrls = [];
+                for (const item of GSTATE.mainImages) {
+                    if (typeof item === 'string') finalMainUrls.push(item);
+                    else {
+                        const fname = `prop_${GSTATE.user.id}_${Date.now()}_${Math.random().toString(36).substring(7)}.webp`;
+                        const { error } = await supabaseClient.storage.from('images').upload(fname, item);
+                        if (error) throw error;
+                        finalMainUrls.push(supabaseClient.storage.from('images').getPublicUrl(fname).data.publicUrl);
+                    }
                 }
 
-                // 2. Form Data Construction
-                const formData = new FormData(e.target);
-                let amenities = Array.from(formData.getAll('amenities'));
-
-                // Collect Custom Amenities
-                const customInputs = document.querySelectorAll('.custom-amenity-input');
-                customInputs.forEach(input => {
-                    const val = input.value.trim();
-                    if (val) amenities.push(val);
-                });
-
-                // Seasonal Prices Logic (Revised)
-                const seasonal_prices = [];
-                document.querySelectorAll('.room-block').forEach(block => {
-                    const uid = block.dataset.uid;
-                    const name = block.querySelector(`input[name="room_name_${uid}"]`).value;
-
-                    // matching row
-                    const row = document.querySelector(`#seasonalPricesBody tr[data-room-uid="${uid}"]`);
-                    if (row) {
-                        const prices = Array.from(row.querySelectorAll('input[type="number"]')).map(inp => parseInt(inp.value) || 0);
-                        seasonal_prices.push({ label: name, prices: prices });
-                    }
-                });
-
-                // Name concatenation
-                const propertyName = document.getElementById('propertyName').value.trim();
-                const firstName = document.getElementById('firstName').value.trim();
-                const lastName = document.getElementById('lastName').value.trim();
-                const hostName = `${firstName} ${lastName}`;
-
-                // Handle Price (Min value logic from seasonal prices if available)
-                let finalPrice = 0;
-                let priceDisplay = "";
-
-                // Calculate from seasonal table first
-                let minSeas = Infinity;
-                let maxSeas = -Infinity;
-                let hasSeasonal = false;
-
-                seasonal_prices.forEach(sp => {
-                    sp.prices.forEach(p => {
-                        if (p > 0) {
-                            if (p < minSeas) minSeas = p;
-                            if (p > maxSeas) maxSeas = p;
-                            hasSeasonal = true;
+                // Room Images
+                const processedRooms = [];
+                for (const r of GSTATE.rooms) {
+                    const roomUrls = [];
+                    for (const img of r.images) {
+                        if (typeof img === 'string') roomUrls.push(img);
+                        else {
+                            const fname = `room_${GSTATE.user.id}_${Date.now()}_${Math.random().toString(36).substring(7)}.webp`;
+                            const { error: rErr } = await supabaseClient.storage.from('images').upload(fname, img);
+                            if (!rErr) roomUrls.push(supabaseClient.storage.from('images').getPublicUrl(fname).data.publicUrl);
                         }
-                    });
-                });
-
-                if (hasSeasonal) {
-                    finalPrice = minSeas;
-                    if (minSeas === maxSeas) {
-                        priceDisplay = `${minSeas}`;
-                    } else {
-                        priceDisplay = `${minSeas} - ${maxSeas}`;
                     }
-                } else {
-                    // Fallback
-                    let priceRaw = formData.get('price');
-                    if (priceRaw && priceRaw.includes('-')) {
-                        const parts = priceRaw.split('-').map(p => parseInt(p.trim()));
-                        finalPrice = Math.min(...parts);
-                        priceDisplay = priceRaw;
-                    } else {
-                        finalPrice = parseInt(priceRaw) || 0;
-                        priceDisplay = finalPrice.toString();
-                    }
+                    processedRooms.push({ ...r, finalImages: roomUrls });
                 }
 
-                if (isNaN(finalPrice)) finalPrice = 0;
+                const seasonalData = processedRooms.map(r => ({ label: r.name, prices: r.prices.map(p => parseInt(p) || 0) }));
+                const amens = [];
+                document.querySelectorAll('#amenitiesContainer input[type="checkbox"]:checked').forEach(cb => amens.push(cb.value));
+                document.querySelectorAll('.custom-amenity').forEach(inpt => { if (inpt.value.trim()) amens.push(inpt.value.trim()); });
 
-                const finalImages = [...(State.existingImages || []), ...uploadedUrls];
+                // Prices display
+                const allP = seasonalData.flatMap(s => s.prices).filter(p => p > 0);
+                const minP = allP.length ? Math.min(...allP) : 0;
+                const maxP = allP.length ? Math.max(...allP) : 0;
+                const priceDisp = minP === 0 ? "შეთანხმებით" : (minP === maxP ? `${minP}₾` : `${minP}₾ - ${maxP}₾`);
 
-                const newProp = {
-                    user_id: userId,
-                    name: propertyName,
-                    // REMOVED host_name, host_surname, property_name based on user request to fix DB error
-                    location: formData.get('location'),
-                    region: document.getElementById('regionSelect').value,
-                    price: finalPrice,
-                    price_display: priceDisplay,
-                    type: formData.get('type'),
-                    tier: formData.get('tier'),
-                    description: formData.get('description'),
-                    amenities: amenities,
-                    images: finalImages,
-                    image_url: finalImages[0] || '',
-                    phone: formData.get('phone'),
-                    seasonal_prices: seasonal_prices,
+                const payload = {
+                    user_id: GSTATE.user.id,
+                    name: document.getElementById('propName').value,
+                    host_name: `${document.getElementById('hostName').value} ${document.getElementById('hostSurname').value}`,
+                    phone: document.getElementById('hostPhone').value,
+                    location: document.getElementById('cityInput').value,
+                    type: document.getElementById('propType').value,
+                    description: document.getElementById('propDesc').value,
+                    amenities: amens,
+                    images: finalMainUrls,
+                    image_url: finalMainUrls[0],
+                    seasonal_prices: seasonalData,
+                    price_display: priceDisp
                 };
 
-                // 3. Save Property FIRST
-                let propertyId = State.editId;
-                let error = null;
-
-                if (State.editMode && State.editId) {
-                    const { error: updateError } = await State.supabase
-                        .from('guesthouse ge')
-                        .update(newProp)
-                        .eq('id', State.editId)
-                        .eq('user_id', State.user.id);
-                    error = updateError;
+                let pId = GSTATE.editId;
+                if (GSTATE.editId) {
+                    const { error } = await supabaseClient.from('guesthouse_ge').update(payload).eq('id', GSTATE.editId);
+                    if (error) throw error;
                 } else {
-                    const { data, error: insertError } = await State.supabase
-                        .from('guesthouse ge')
-                        .insert([newProp])
-                        .select();
-
-                    if (data && data.length > 0) propertyId = data[0].id; // CAPTURE ID
-                    error = insertError;
+                    const { data, error } = await supabaseClient.from('guesthouse_ge').insert([payload]).select();
+                    if (error) throw error;
+                    pId = data[0].id;
                 }
 
-                if (error) throw error;
-                if (!propertyId) throw new Error("Property ID not found.");
+                // Sync Rooms
+                const currentRoomIds = GSTATE.rooms.filter(r => !r.isNew).map(r => r.id);
+                const toDelete = GSTATE.originalRoomIds.filter(id => !currentRoomIds.includes(id));
+                if (toDelete.length > 0) await supabaseClient.from('rooms').delete().in('id', toDelete);
 
-                // 4. Save Rooms SEQUENTIALLY using propertyId
-
-                // First delete removed rooms if in edit mode
-                const currentBlocks = document.querySelectorAll('.room-block');
-                const keptRoomIds = [];
-                currentBlocks.forEach(b => {
-                    if (b.dataset.roomId) keptRoomIds.push(parseInt(b.dataset.roomId));
-                });
-
-                if (State.originalRoomIds && State.originalRoomIds.length > 0) {
-                    const toDelete = State.originalRoomIds.filter(id => !keptRoomIds.includes(id));
-                    if (toDelete.length > 0) {
-                        await State.supabase.from('rooms').delete().in('id', toDelete);
-                    }
+                for (const pr of processedRooms) {
+                    const rData = { property_id: pId, name: pr.name, beds: parseInt(pr.beds), images: pr.finalImages };
+                    if (pr.isNew) await supabaseClient.from('rooms').insert([rData]);
+                    else await supabaseClient.from('rooms').update(rData).eq('id', pr.id);
                 }
 
-                for (let block of currentBlocks) {
-                    const uid = block.dataset.uid;
-                    const existingId = block.dataset.roomId ? parseInt(block.dataset.roomId) : null;
-                    const name = block.querySelector(`input[name="room_name_${uid}"]`).value;
-                    const beds = block.querySelector(`input[name="room_beds_${uid}"]`).value;
-
-                    // Collect Existing Images for THIS room
-                    const imgContainer = block.querySelector(`#room_images_container_${uid}`);
-                    const livingImages = [];
-                    if (imgContainer) {
-                        imgContainer.querySelectorAll('img').forEach(img => {
-                            if (!img.src.startsWith('blob:')) {
-                                livingImages.push(img.src);
-                            }
-                        });
-                    }
-
-                    // Upload New Files for THIS room
-                    const files = window.State.roomFiles[uid] || [];
-                    const newImageUrls = [];
-
-                    for (let file of files) {
-                        const fileName = `room_${propertyId}_${Date.now()}_${Math.random().toString(36).substr(2)}.webp`;
-                        const { error: uploadError } = await State.supabase.storage
-                            .from('guesthouse statement')
-                            .upload(fileName, file);
-
-                        if (uploadError) {
-                            console.error("Room image upload failed", uploadError);
-                            continue;
-                        }
-
-                        const publicUrl = State.supabase.storage.from('guesthouse statement').getPublicUrl(fileName).data.publicUrl;
-                        newImageUrls.push(publicUrl);
-                    }
-
-                    const finalRoomImages = [...livingImages, ...newImageUrls];
-                    const roomPayload = {
-                        property_id: propertyId, // USE CONFIRMED ID
-                        name: name,
-                        beds: parseInt(beds) || 1,
-                        images: finalRoomImages,
-                        image_url: finalRoomImages[0] || ''
-                    };
-
-                    if (existingId) {
-                        await State.supabase.from('rooms').update(roomPayload).eq('id', existingId);
-                    } else {
-                        await State.supabase.from('rooms').insert([roomPayload]);
-                    }
-                }
-
-                if (typeof Swal !== 'undefined') {
-                    Swal.fire({
-                        icon: 'success',
-                        title: 'წარმატება!',
-                        text: 'განცხადება წარმატებით გამოქვეყნდა!',
-                        confirmButtonColor: '#10b981'
-                    }).then(() => {
-                        window.location.href = "profile.html";
-                    });
-                } else {
-                    alert("განცხადება წარმატებით გამოქვეყნდა!");
-                    window.location.href = "profile.html";
-                }
+                await Swal.fire({ title: 'წარმატება!', text: 'მონაცემები შენახულია', icon: 'success', timer: 1500, showConfirmButton: false });
+                window.location.href = 'index.html';
 
             } catch (err) {
-                console.error("Submission Error:", err);
-                showError("სისტემური შეცდომა: " + (err.message || JSON.stringify(err))); // Show exact error
+                console.error(err);
+                Swal.fire('შეცდომა', err.message, 'error');
                 btn.innerHTML = origText;
                 btn.disabled = false;
             }
         };
 
-        window.clearSeasonalPrices = function () {
-            if (!confirm("ნამდვილად გსურთ ყველა ფასის წაშლა?")) return;
-            document.querySelectorAll('#seasonalPricesBody input[type="number"]').forEach(inpt => inpt.value = '');
-            calculatePriceRange();
-        };
-
-        window.clearRowPrices = function (btn) {
-            const tr = btn.closest('tr');
-            tr.querySelectorAll('input[type="number"]').forEach(inp => inp.value = '');
-            calculatePriceRange();
-        };
-
-        // --- ERROR UTILS ---
-        function showError(msg) {
-            // Fallback if Swal not loaded (though we should add CDN)
-            if (typeof Swal !== 'undefined') {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'შეცდომა',
-                    text: msg,
-                    confirmButtonColor: '#f59e0b'
-                });
-            } else {
-                alert(msg);
-            }
-        }
-
-        init();
+        window.onload = () => window.checkAuth();
     </script>
+</body>
+
+</html>
+</script>
 </body>
 
 </html>

@@ -421,46 +421,28 @@
 
         // --- AUTH UI ---
         async function updateAuthUI() {
-            let navBtn = document.getElementById('navAuthBtn');
-            if (!navBtn) {
-                const container = document.getElementById('navAuthBtnContainer');
-                if (container) navBtn = container.firstElementChild;
-            }
-            if (!navBtn && document.getElementById('navAuthBtnContainer')) {
-                navBtn = document.createElement('button');
-                navBtn.id = 'navAuthBtn';
-                document.getElementById('navAuthBtnContainer').appendChild(navBtn);
-            }
-            if (!navBtn) return;
+            let container = document.getElementById('navAuthBtnContainer');
+            if (!container) return;
 
             if (State.user) {
                 const name = State.user.user_metadata.full_name || State.user.email;
                 const avatar = State.user.user_metadata.avatar_url || 'https://www.gravatar.com/avatar/?d=mp';
 
-                // Fetch Profile Tier
                 let tier = 'Free';
                 try {
-                    const { data, error } = await State.supabase
-                        .from('profiles')
-                        .select('subscription_tier')
-                        .eq('id', State.user.id)
-                        .single();
+                    const { data } = await State.supabase.from('profiles').select('subscription_tier').eq('id', State.user.id).single();
+                    if (data) tier = data.subscription_tier || 'Free';
+                } catch (e) { }
 
-                    if (data && data.subscription_tier) {
-                        tier = data.subscription_tier;
-                    }
-                } catch (e) {
-                    console.error("Error fetching profile tier:", e);
-                }
+                let tierDisplay = '';
+                if (tier === 'super_vip') tierDisplay = `<span class="super-vip-text ml-1">✨ Super VIP</span>`;
+                else if (tier === 'vip') tierDisplay = `<span style="color: #4F46E5; font-weight: 800; text-transform: uppercase;" class="ml-1">💎 VIP</span>`;
+                else if (tier === 'regular') tierDisplay = `<span style="color: #10B981; font-weight: bold;" class="ml-1">Standard</span>`;
+                else tierDisplay = `<span style="color: #6B7280;" class="ml-1">Free Plan</span><a href="pricing.html" class="ml-2 text-[10px] bg-amber-500 text-white px-2 py-0.5 rounded-full hover:bg-amber-600 transition-colors uppercase font-bold tracking-wide shadow-sm">Upgrade</a>`;
 
-                let tierDisplay = `<span class="font-bold text-gray-700 ml-1">${tier}</span>`;
-                if (tier === 'Free') {
-                    tierDisplay += `<a href="pricing.html" class="ml-2 text-[10px] bg-amber-500 text-white px-2 py-0.5 rounded-full hover:bg-amber-600 transition-colors uppercase font-bold tracking-wide shadow-sm">Upgrade</a>`;
-                }
-
-                const newHTML = `
-                    <div id="navAuthBtnContainer" class="relative ml-2">
-                         <button id="profileTrigger" class="flex items-center space-x-2 focus:outline-none bg-white hover:bg-gray-50 rounded-full pl-1 pr-3 py-1 transition-colors border border-gray-200 shadow-sm">
+                container.innerHTML = `
+                    <div class="relative ml-2">
+                        <button id="profileTrigger" onclick="toggleProfileDropdown(event)" class="flex items-center space-x-2 focus:outline-none bg-white hover:bg-gray-50 rounded-full pl-1 pr-3 py-1 transition-colors border border-gray-200 shadow-sm">
                             <img src="${avatar}" class="w-8 h-8 rounded-full border border-emerald-400 object-cover">
                             <span class="hidden sm:inline text-sm font-bold text-gray-700 max-w-[100px] truncate">${name.split(' ')[0]}</span>
                             <svg class="w-4 h-4 text-gray-500 opacity-80" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>
@@ -469,75 +451,64 @@
                              <div class="px-5 py-3 border-b border-gray-100 mb-1">
                                 <p class="text-xs text-gray-400 font-medium uppercase tracking-wider">ანგარიში</p>
                                 <p class="text-sm font-bold text-gray-900 truncate mt-0.5">${name}</p>
-                                <div class="text-xs text-gray-500 mt-1 flex items-center">
-                                    პაკეტი: ${tierDisplay}
-                                </div>
+                                <div class="text-xs text-gray-500 mt-1 flex items-center">პაკეტი: ${tierDisplay}</div>
+                            </div>
+                            <div class="py-1">
+                                <a href="profile.html" class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-amber-50 hover:text-amber-600 transition-colors">
+                                    <svg class="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
+                                    ჩემი განცხადებები
+                                </a>
+                                <a href="bookings.html" class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-indigo-50 hover:text-indigo-600 transition-colors">
+                                    <svg class="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                                    ჯავშნები / კალენდარი
+                                </a>
+                            </div>
+                            <div class="border-t border-gray-100 py-1">
+                                <button onclick="handleLogout()" class="flex w-full items-center px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors">
+                                    <svg class="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"/></svg>
+                                    გასვლა
+                                </button>
+                            </div>
                         </div>
-                        <div class="py-1">
-                            <a href="profile.html" class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-amber-50 hover:text-amber-600 transition-colors">
-                                <svg class="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
-                                ჩემი განცხადებები
-                            </a>
-                            <a href="bookings.html" class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-indigo-50 hover:text-indigo-600 transition-colors">
-                                <svg class="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
-                                ჯავშნები / კალენდარი
-                            </a>
-                        </div>
-                        <div class="border-t border-gray-100 py-1">
-                            <button onclick="handleLogout()" class="flex w-full items-center px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors">
-                                <svg class="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"/></svg>
-                                გასვლა
-                            </button>
-                        </div>
-                    </div>
-                </div>`;
-
-                if (document.getElementById('navAuthBtnContainer')) {
-                    document.getElementById('navAuthBtnContainer').outerHTML = newHTML;
-                } else {
-                    navBtn.outerHTML = newHTML;
-                }
-
-                setTimeout(() => {
-                    const trigger = document.getElementById('profileTrigger');
-                    const dropdown = document.getElementById('profileDropdown');
-                    if (trigger && dropdown) {
-                        trigger.onclick = (e) => {
-                            e.stopPropagation();
-                            if (dropdown.classList.contains('hidden')) {
-                                dropdown.classList.remove('hidden');
-                                setTimeout(() => dropdown.classList.remove('opacity-0', 'scale-95'), 10);
-                            } else {
-                                dropdown.classList.add('opacity-0', 'scale-95');
-                                setTimeout(() => dropdown.classList.add('hidden'), 200);
-                            }
-                        };
-                        document.addEventListener('click', (e) => {
-                            if (!dropdown.contains(e.target) && !trigger.contains(e.target)) {
-                                dropdown.classList.add('opacity-0', 'scale-95');
-                                setTimeout(() => dropdown.classList.add('hidden'), 200);
-                            }
-                        });
-                    }
-                }, 0);
+                    </div>`;
 
             } else {
-                const loginBtnHTML = `
-                <div id="navAuthBtnContainer">
-                    <button id="navAuthBtn" onclick="window.location.href='index.html'"
+                container.innerHTML = `
+                    <button id="navAuthBtn" onclick="window.location.href='index.html?auth=register'"
                         class="bg-[#2d78b1] hover:bg-[#236a9e] text-white font-bold py-2 px-6 rounded-full transition-all shadow-sm">
-                        მთავარი
-                    </button>
-                </div>`;
-
-                const container = document.getElementById('navAuthBtnContainer');
-                if (container) {
-                    container.outerHTML = loginBtnHTML;
-                } else {
-                    navBtn.outerHTML = loginBtnHTML;
-                }
+                        შესვლა
+                    </button>`;
             }
         }
+
+        window.toggleProfileDropdown = function (e) {
+            e.stopPropagation();
+            const d = document.getElementById('profileDropdown');
+            if (d) {
+                if (d.classList.contains('hidden')) {
+                    d.classList.remove('hidden');
+                    setTimeout(() => d.classList.remove('opacity-0', 'scale-95'), 10);
+                } else {
+                    d.classList.add('opacity-0', 'scale-95');
+                    setTimeout(() => d.classList.add('hidden'), 200);
+                }
+            }
+        };
+
+        // window.handleLogout already exists but ensuring it redirects to index.html is good (it does)
+        window.handleLogout = async function () {
+            await State.supabase.auth.signOut();
+            window.location.href = 'index.html';
+        };
+
+        document.addEventListener('click', e => {
+            const d = document.getElementById('profileDropdown');
+            const t = document.getElementById('profileTrigger');
+            if (d && !d.classList.contains('hidden') && !d.contains(e.target) && (!t || !t.contains(e.target))) {
+                d.classList.add('opacity-0', 'scale-95');
+                setTimeout(() => d.classList.add('hidden'), 200);
+            }
+        });
 
         window.handleLogout = async function () {
             await State.supabase.auth.signOut();
