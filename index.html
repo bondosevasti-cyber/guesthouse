@@ -926,8 +926,10 @@
                 return;
             }
             try {
-                // CHANGED: From 'guesthouse' to 'guesthouse_ge'
-                const { data, error } = await State.supabase.from('guesthouse_ge').select('*, tier');
+                const { data, error } = await State.supabase
+                    .from('guesthouse_ge')
+                    .select('*, tier')
+                    .eq('status', 'active');
                 if (error) throw error;
 
                 if (data) {

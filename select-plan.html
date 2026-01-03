@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="ka">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ტარიფის არჩევა | GuesthouseGE</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Georgian:wght@400;500;600;700&display=swap"
+        rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <style>
+        body {
+            font-family: 'Noto Sans Georgian', sans-serif;
+        }
+
+        .premium-card {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .premium-card:hover:not(.disabled-card) {
+            transform: translateY(-8px);
+            box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+        }
+
+        .super-vip-text {
+            background: linear-gradient(to right, #BF953F 0%, #FCF6BA 25%, #B38728 50%, #FBF5B7 75%, #AA771C 100%);
+            background-size: 200% auto;
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: shine 3s linear infinite;
+        }
+
+        @keyframes shine {
+            to {
+                background-position: 200% center;
+            }
+        }
+
+        .disabled-card {
+            filter: grayscale(1);
+            opacity: 0.5;
+            pointer-events: none;
+            position: relative;
+        }
+
+        .disabled-overlay {
+            position: absolute;
+            inset: 0;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(2px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 20;
+        }
+
+        .model-card {
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border-width: 2px;
+        }
+
+        .model-card.active {
+            border-color: #f59e0b;
+            background-color: #fffbeb;
+            transform: scale(1.02);
+            box-shadow: 0 10px 15px -3px rgba(245, 158, 11, 0.1);
+        }
+
+        .fade-in {
+            animation: fadeIn 0.4s ease-out forwards;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
+</head>
+
+<body class="bg-gray-50 pb-20">
+
+    <!-- Navbar -->
+    <nav class="fixed top-0 left-0 w-full z-50 bg-white shadow-md py-3">
+        <div class="max-w-7xl mx-auto px-4 flex justify-between items-center">
+            <a href="index.html">
+                <img src="images/gh_logo.webp" alt="GuesthouseGE" class="h-10">
+            </a>
+            <div class="flex items-center space-x-3">
+                <button onclick="window.location.href=`add-property.html?id=${propertyId}`"
+                    class="flex items-center text-gray-500 hover:text-amber-600 font-bold py-2 px-4 transition-all text-sm group">
+                    <svg class="w-4 h-4 mr-2 transform group-hover:-translate-x-1 transition-transform" fill="none"
+                        stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                    </svg>
+                    უკან დაბრუნება
+                </button>
+                <button onclick="window.location.href='profile.html'"
+                    class="bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold py-2 px-6 rounded-full transition-all text-sm">
+                    მოგვიანებით
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <div class="h-24"></div>
+
+    <main class="max-w-7xl mx-auto px-4 py-8">
+        <div class="text-center mb-10">
+            <h1 class="text-3xl md:text-5xl font-black text-gray-900 mb-4">გამოქვეყნების პაკეტი</h1>
+            <p class="text-gray-500 text-lg" id="propTitle">იტვირთება...</p>
+            <div id="cityBadge"
+                class="mt-4 inline-block bg-white text-amber-700 px-4 py-1.5 rounded-full text-sm font-bold border border-amber-100 shadow-sm">
+                📍 ქალაქი: ...
+            </div>
+        </div>
+
+        <!-- STEP 1: MODEL SELECTION -->
+        <div class="max-w-4xl mx-auto mb-16">
+            <h2 class="text-center text-xs font-black text-gray-400 uppercase tracking-widest mb-6">ნაბიჯი 1: აირჩიეთ
+                მოდელი</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Commission Card -->
+                <div id="modelCommission" onclick="selectModel('commission')"
+                    class="model-card bg-white border-gray-100 rounded-[2rem] p-8 flex flex-col items-center text-center shadow-sm group hover:border-emerald-200 hover:bg-emerald-50/30">
+                    <div
+                        class="w-16 h-16 bg-emerald-50 text-emerald-600 rounded-2xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                        <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                    </div>
+                    <h3 class="text-2xl font-black text-gray-900 mb-2">საკომისიო</h3>
+                    <p class="text-gray-500 text-sm leading-relaxed">გადაიხადეთ მხოლოდ რეალური ჯავშნის მიღებისას
+                        <br><span class="font-bold text-emerald-600">0₾ წინასწარ</span>
+                    </p>
+                </div>
+
+                <!-- Monthly Card -->
+                <div id="modelMonthly" onclick="selectModel('monthly')"
+                    class="model-card bg-white border-gray-100 rounded-[2rem] p-8 flex flex-col items-center text-center shadow-sm group hover:border-indigo-200 hover:bg-indigo-50/30">
+                    <div
+                        class="w-16 h-16 bg-indigo-50 text-indigo-600 rounded-2xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                        <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                        </svg>
+                    </div>
+                    <h3 class="text-2xl font-black text-gray-900 mb-2">თვიური</h3>
+                    <p class="text-gray-500 text-sm leading-relaxed">ფიქსირებული თვიური გადასახადი <br><span
+                            class="font-bold text-indigo-600">0% საკომისიო</span></p>
+                </div>
+            </div>
+        </div>
+
+        <!-- STEP 2: PLAN CARDS -->
+        <div id="plansSection" class="hidden fade-in">
+            <h2 class="text-center text-xs font-black text-gray-400 uppercase tracking-widest mb-10" id="step2Title">
+                ნაბიჯი 2: აირჩიეთ ტარიფი</h2>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto" id="plansGrid">
+                <!-- Regular -->
+                <div
+                    class="premium-card bg-white border border-gray-100 rounded-[2.5rem] p-8 flex flex-col shadow-sm text-center">
+                    <div class="mb-4">
+                        <span id="regBadge" class="text-[10px] font-black uppercase px-3 py-1 rounded-full">Basic</span>
+                    </div>
+                    <h3 class="text-2xl font-black text-gray-800 mb-2">Regular</h3>
+                    <div class="text-5xl font-black text-gray-900 mb-3" id="regPrice">...</div>
+                    <p class="text-gray-400 text-sm mb-8" id="regDesc">სტანდარტული განთავსება</p>
+
+                    <ul class="space-y-4 mb-10 flex-grow text-left text-gray-500 text-xs font-medium">
+                        <li class="flex items-center"><svg class="w-4 h-4 mr-3 text-green-500" fill="none"
+                                stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3"
+                                    d="M5 13l4 4L19 7" />
+                            </svg> გამოჩენა ძიებისას</li>
+                        <li class="flex items-center"><svg class="w-4 h-4 mr-3 text-green-500" fill="none"
+                                stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3"
+                                    d="M5 13l4 4L19 7" />
+                            </svg> სრულყოფილი პროფილი</li>
+                    </ul>
+
+                    <button onclick="confirmSelection('regular')"
+                        class="w-full py-4 rounded-2xl font-bold transition-all active:scale-95 text-white"
+                        id="regBtn">არჩევა</button>
+                </div>
+
+                <!-- VIP -->
+                <div id="vipCard"
+                    class="premium-card bg-white border-2 rounded-[2.5rem] p-8 flex flex-col shadow-lg text-center relative overflow-hidden">
+                    <div
+                        class="absolute -top-4 left-1/2 -translate-x-1/2 bg-amber-500 text-white text-[10px] font-black px-4 py-1.5 rounded-full shadow-lg">
+                        POPULAR</div>
+                    <div class="mb-4">
+                        <span id="vipBadge"
+                            class="text-[10px] font-black uppercase px-3 py-1 rounded-full">Priority</span>
+                    </div>
+                    <h3 class="text-2xl font-black text-gray-800 mb-2">VIP</h3>
+                    <div class="text-5xl font-black text-gray-900 mb-3" id="vipPrice">...</div>
+                    <p class="text-gray-400 text-sm mb-8" id="vipDesc">გაუმჯობესებული ხილვადობა</p>
+
+                    <ul class="space-y-4 mb-10 flex-grow text-left text-gray-600 text-xs font-bold">
+                        <li class="flex items-center"><svg class="w-4 h-4 mr-3 text-amber-500" fill="none"
+                                stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3"
+                                    d="M5 13l4 4L19 7" />
+                            </svg> მაღალი პოზიციები</li>
+                        <li class="flex items-center"><svg class="w-4 h-4 mr-3 text-amber-500" fill="none"
+                                stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3"
+                                    d="M5 13l4 4L19 7" />
+                            </svg> VIP ნიშანი განცხადებაზე</li>
+                    </ul>
+
+                    <button onclick="confirmSelection('vip')"
+                        class="w-full py-4 rounded-2xl font-bold transition-all active:scale-95 text-white shadow-lg"
+                        id="vipBtn">არჩევა</button>
+                </div>
+
+                <!-- Super VIP -->
+                <div id="superVipCard"
+                    class="premium-card bg-gray-900 text-white rounded-[2.5rem] p-8 flex flex-col shadow-2xl relative overflow-hidden text-center">
+                    <div
+                        class="absolute -right-12 top-8 rotate-45 bg-amber-500 text-gray-900 text-[10px] font-black px-12 py-1 uppercase tracking-widest">
+                        Limited</div>
+                    <div class="mb-4">
+                        <span id="svBadge"
+                            class="bg-gray-800 text-amber-500 text-[10px] font-black uppercase px-3 py-1 rounded-full border border-amber-500/20">Exclusive</span>
+                    </div>
+                    <h3 class="text-2xl font-black mb-2 super-vip-text">Super VIP</h3>
+                    <div class="text-5xl font-black mb-3" id="superVipPrice">...</div>
+                    <p class="text-gray-400 text-sm mb-8" id="superVipDesc">ქალაქის ლიდერი</p>
+
+                    <ul class="space-y-4 mb-10 flex-grow text-left text-amber-100 text-xs font-bold">
+                        <li class="flex items-center"><svg class="w-4 h-4 mr-3 text-amber-500" fill="none"
+                                stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3"
+                                    d="M5 13l4 4L19 7" />
+                            </svg> ერთადერთი ქალაქში</li>
+                        <li class="flex items-center"><svg class="w-4 h-4 mr-3 text-amber-500" fill="none"
+                                stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3"
+                                    d="M5 13l4 4L19 7" />
+                            </svg> პირველი სლოტი მუდმივად</li>
+                    </ul>
+
+                    <button onclick="confirmSelection('super_vip')"
+                        class="w-full bg-gradient-to-r from-amber-400 to-amber-600 text-gray-900 font-bold py-4 rounded-2xl mt-auto transition-all active:scale-95 shadow-xl shadow-amber-900/40"
+                        id="superVipBtn">
+                        არჩევა
+                    </button>
+
+                    <div id="superVipDisabledOverlay" class="hidden disabled-overlay flex-col text-center">
+                        <div
+                            class="absolute top-4 left-1/2 -translate-x-1/2 bg-red-500 text-white text-[10px] font-black px-3 py-1 rounded-full animate-pulse">
+                            ლიმიტი ამოწურულია</div>
+                        <div
+                            class="bg-gray-900/90 text-amber-500 border border-amber-500/30 px-6 py-3 rounded-2xl font-black text-sm uppercase tracking-wider backdrop-blur-md shadow-2xl">
+                            დაკავებულია</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        const SUPABASE_URL = 'https://akmbyvovhubccznrzotv.supabase.co';
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFrbWJ5dm92aHViY2N6bnJ6b3R2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjY3NTgwMTAsImV4cCI6MjA4MjMzNDAxMH0.oHLvbx5_4hYATF-hQkJvp0oxZ6ljUfGKYP-Mf7_CVtM';
+        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+        const urlParams = new URLSearchParams(window.location.search);
+        const propertyId = urlParams.get('id');
+
+        let currentProperty = null;
+        let selectedModel = null;
+        let isSuperVipTaken = false;
+
+        async function init() {
+            if (!propertyId) {
+                window.location.href = 'profile.html';
+                return;
+            }
+
+            try {
+                // Fetch property details
+                const { data: prop, error } = await supabaseClient
+                    .from('guesthouse_ge')
+                    .select('*')
+                    .eq('id', propertyId)
+                    .single();
+
+                if (error || !prop) throw new Error('განცხადება ვერ მოიძებნა');
+                currentProperty = prop;
+
+                document.getElementById('propTitle').innerText = `თქვენი განცხადებისთვის: ${prop.name}`;
+                document.getElementById('cityBadge').innerText = `📍 ქალაქი: ${prop.location}`;
+
+                // Check City Exclusivity for Super VIP
+                // SELECT id FROM guesthouse_ge WHERE location = [current_city] AND tier = 'super_vip' AND id != [current_property_id]
+                const { data: existingVip } = await supabaseClient
+                    .from('guesthouse_ge')
+                    .select('id')
+                    .eq('location', prop.location)
+                    .eq('tier', 'super_vip')
+                    .neq('id', propertyId)
+                    .limit(1);
+
+                if (existingVip && existingVip.length > 0) {
+                    isSuperVipTaken = true;
+                }
+
+            } catch (err) {
+                console.error(err);
+                Swal.fire('შეცდომა', err.message, 'error').then(() => {
+                    window.location.href = 'profile.html';
+                });
+            }
+        }
+
+        function selectModel(model) {
+            selectedModel = model;
+
+            // Highlight active model
+            document.getElementById('modelCommission').classList.remove('active');
+            document.getElementById('modelMonthly').classList.remove('active');
+            document.getElementById(`model${model.charAt(0).toUpperCase() + model.slice(1)}`).classList.add('active');
+
+            renderPlans();
+
+            const plansSection = document.getElementById('plansSection');
+            plansSection.classList.remove('hidden');
+            plansSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+
+        function renderPlans() {
+            const isComm = selectedModel === 'commission';
+
+            const rPrice = document.getElementById('regPrice');
+            const rDesc = document.getElementById('regDesc');
+            const rBadge = document.getElementById('regBadge');
+            const rBtn = document.getElementById('regBtn');
+
+            const vCard = document.getElementById('vipCard');
+            const vPrice = document.getElementById('vipPrice');
+            const vDesc = document.getElementById('vipDesc');
+            const vBadge = document.getElementById('vipBadge');
+            const vBtn = document.getElementById('vipBtn');
+
+            const svPrice = document.getElementById('superVipPrice');
+            const svDesc = document.getElementById('superVipDesc');
+            const svBtn = document.getElementById('superVipBtn');
+
+            if (isComm) {
+                rPrice.innerText = "10%";
+                rDesc.innerText = "გადაიხადეთ ჯავშნიდან";
+                rBadge.className = "bg-emerald-50 text-emerald-600 text-[10px] font-black uppercase px-3 py-1 rounded-full";
+                rBtn.className = "w-full py-4 rounded-2xl font-bold transition-all active:scale-95 text-white bg-emerald-500 hover:bg-emerald-600";
+
+                vCard.style.borderColor = "#10b981"; // emerald-500
+                vPrice.innerText = "12%";
+                vDesc.innerText = "მეტი ხილვადობა";
+                vBadge.className = "bg-emerald-50 text-emerald-600 text-[10px] font-black uppercase px-3 py-1 rounded-full";
+                vBtn.className = "w-full py-4 rounded-2xl font-bold transition-all active:scale-95 text-white shadow-lg bg-emerald-600 hover:bg-emerald-700";
+
+                svPrice.innerText = "15%";
+                svDesc.innerText = "ტოპ პოზიციები";
+            } else {
+                rPrice.innerHTML = '29₾ <span class="text-sm text-gray-400 font-bold">/თვე</span>';
+                rDesc.innerText = "სტანდარტული განთავსება";
+                rBadge.className = "bg-indigo-50 text-indigo-600 text-[10px] font-black uppercase px-3 py-1 rounded-full";
+                rBtn.className = "w-full py-4 rounded-2xl font-bold transition-all active:scale-95 text-white bg-indigo-500 hover:bg-indigo-600";
+
+                vCard.style.borderColor = "#6366f1"; // indigo-500
+                vPrice.innerHTML = '59₾ <span class="text-sm text-gray-400 font-bold">/თვე</span>';
+                vDesc.innerText = "გაუმჯობესებული ხილვადობა";
+                vBadge.className = "bg-indigo-50 text-indigo-600 text-[10px] font-black uppercase px-3 py-1 rounded-full";
+                vBtn.className = "w-full py-4 rounded-2xl font-bold transition-all active:scale-95 text-white shadow-lg bg-indigo-600 hover:bg-indigo-700";
+
+                svPrice.innerHTML = '99₾ <span class="text-sm text-gray-400 font-bold">/თვე</span>';
+                svDesc.innerText = "ქალაქის ლიდერი";
+            }
+
+            // Super VIP Exclusivity Visuals
+            if (isSuperVipTaken) {
+                const svCard = document.getElementById('superVipCard');
+                const svOverlay = document.getElementById('superVipDisabledOverlay');
+                svCard.classList.add('disabled-card');
+                svOverlay.classList.remove('hidden');
+                svBtn.innerText = "დაკავებულია ქალაქში";
+                svBtn.classList.add('bg-gray-600', 'from-gray-600', 'to-gray-700', 'cursor-not-allowed');
+                svBtn.onclick = null;
+            } else {
+                const svCard = document.getElementById('superVipCard');
+                const svOverlay = document.getElementById('superVipDisabledOverlay');
+                svCard.classList.remove('disabled-card');
+                svOverlay.classList.add('hidden');
+                svBtn.innerText = "არჩევა";
+                svBtn.className = "w-full bg-gradient-to-r from-amber-400 to-amber-600 text-gray-900 font-bold py-4 rounded-2xl mt-auto transition-all active:scale-95 shadow-xl shadow-amber-900/40";
+                svBtn.onclick = () => confirmSelection('super_vip');
+            }
+        }
+
+        async function confirmSelection(tier) {
+            try {
+                const { error } = await supabaseClient
+                    .from('guesthouse_ge')
+                    .update({
+                        tier: tier,
+                        plan_type: selectedModel,
+                        status: 'active'
+                    })
+                    .eq('id', propertyId);
+
+                if (error) throw error;
+
+                await Swal.fire({
+                    title: 'გილოცავთ!',
+                    text: 'პაკეტი წარმატებით შეირჩა. თქვენი განცხადება ახლა აქტიურია!',
+                    icon: 'success',
+                    timer: 2500,
+                    showConfirmButton: false
+                });
+
+                window.location.href = 'profile.html';
+
+            } catch (err) {
+                console.error(err);
+                Swal.fire('შეცდომა', 'პროცესი ვერ დასრულდა', 'error');
+            }
+        }
+
+        init();
+    </script>
+</body>
+
+</html>

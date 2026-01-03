@@ -300,6 +300,18 @@
             if (prop.tier === 'vip-plus') glowClass = 'ring-4 ring-indigo-100 border-2 border-indigo-200 shadow-lg';
             else if (prop.tier === 'vip') glowClass = 'border border-amber-200 shadow-md';
 
+            // Status Check (Pending/Draft)
+            let statusBadge = '';
+            let setupButton = '';
+            if (prop.status === 'pending') {
+                statusBadge = '<span class="bg-gray-100 text-gray-500 text-[10px] font-bold px-2 py-1 rounded border border-gray-200 uppercase tracking-wider ml-2">Draft</span>';
+                setupButton = `
+                    <a href="select-plan.html?id=${prop.id}" class="w-full flex items-center justify-center px-4 py-2.5 bg-emerald-500 text-white rounded-lg text-sm font-bold shadow-lg shadow-emerald-100 hover:bg-emerald-600 transition-all mb-3" onclick="event.stopPropagation();">
+                        <svg class="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                        დასრულება და გამოქვეყნება
+                    </a>`;
+            }
+
             // Actions HTML (Edit / Delete)
             const actionsHTML = `
                 <div class="grid grid-cols-2 gap-3 mt-4 z-20 relative">
@@ -325,6 +337,7 @@
                         <div class="absolute top-4 left-4 flex items-center">
                             <span class="bg-white/90 backdrop-blur-md px-3 py-1 rounded-lg text-sm font-bold text-gray-800 shadow-sm uppercase">${prop.type}</span>
                             ${badge}
+                            ${statusBadge}
                         </div>
                     </div>
                     <div class="md:w-1/3 p-8 flex flex-col justify-center bg-gradient-to-br from-white to-amber-50">
@@ -334,6 +347,7 @@
                             <span class="truncate">${prop.location}</span>
                         </p>
                         <div class="text-amber-600 font-bold text-3xl mt-auto mb-4">${currentPriceDisplay}</div>
+                        ${setupButton}
                         ${actionsHTML}
                     </div>
                 </div>
@@ -348,6 +362,7 @@
                 <div class="absolute top-3 left-3 flex items-center">
                     <span class="bg-white/90 backdrop-blur-sm px-2 py-1 rounded-md text-xs font-bold text-gray-800 shadow-sm uppercase tracking-wide">${prop.type}</span>
                     ${badge}
+                    ${statusBadge}
                 </div>
                 <div class="absolute bottom-3 right-3 bg-gray-900/80 backdrop-blur-sm text-white px-2 py-1 rounded-md text-sm font-bold flex items-center shadow-sm">
                     <span class="text-yellow-400 mr-1">★</span> ${prop.rating || 5.0}
@@ -362,6 +377,7 @@
                 <div class="flex justify-between items-center pt-3 border-t border-gray-100 mt-auto">
                    <div class="text-amber-600 font-bold text-xl">${currentPriceDisplay}</div>
                 </div>
+                ${setupButton}
                 ${actionsHTML}
             </div>
         </div>`;

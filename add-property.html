@@ -390,7 +390,8 @@
             mainImages: [],
             rooms: [],
             user: null,
-            originalRoomIds: []
+            originalRoomIds: [],
+            status: 'pending' // Default status
         };
 
         // 1. AUTH & INIT
@@ -405,6 +406,8 @@
             try {
                 const { data: prop, error } = await supabaseClient.from('guesthouse_ge').select('*').eq('id', GSTATE.editId).single();
                 if (error || !prop) throw new Error('განცხადება ვერ მოიძებნა');
+
+                GSTATE.status = prop.status; // Preserve current status
 
                 // Populate Fields
                 document.getElementById('propName').value = prop.name;
@@ -838,8 +841,12 @@
                     images: finalMainUrls,
                     image_url: finalMainUrls[0],
                     seasonal_prices: seasonalData,
-                    price_display: priceDisp
+                    price_display: priceDisp,
+                    tier: GSTATE.editId ? undefined : 'free', // Set 'free' only on new insertions
+                    status: GSTATE.editId ? undefined : 'pending' // Set 'pending' only on new insertions
                 };
+                if (!payload.tier) delete payload.tier;
+                if (!payload.status) delete payload.status;
 
                 let pId = GSTATE.editId;
                 if (GSTATE.editId) {
@@ -863,7 +870,15 @@
                 }
 
                 await Swal.fire({ title: 'წარმატება!', text: 'მონაცემები შენახულია', icon: 'success', timer: 1500, showConfirmButton: false });
-                window.location.href = 'index.html';
+
+                // If the property is still pending, it means they are in the initial setup flow.
+                // Redirect back to plan selection so they can publish.
+                // If it's active, go back to profile.
+                if (GSTATE.status === 'active') {
+                    window.location.href = 'profile.html';
+                } else {
+                    window.location.href = `select-plan.html?id=${pId}`;
+                }
 
             } catch (err) {
                 console.error(err);
