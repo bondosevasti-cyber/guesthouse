@@ -809,7 +809,7 @@
                                     </svg></div>
                                 Google
                             </button>
-                            <button id="facebookLoginBtn" type="button" onclick="signInWithFacebook()"
+                            <button id="btn-facebook-auth" type="button"
                                 class="w-full bg-[#1877F2] text-white font-bold py-3 px-2 rounded-xl flex items-center justify-center hover:bg-[#166fe5] transition shadow-sm text-sm">
                                 <div class="w-5 h-5 mr-2 fill-current"><svg viewBox="0 0 24 24">
                                         <path
@@ -937,23 +937,7 @@
             }
         };
 
-        window.signInWithFacebook = async function () {
-            console.log("🔵 Facebook button clicked! Starting OAuth...");
-            try {
-                const sb = (typeof State !== 'undefined' && State.supabase) ? State.supabase : window.supabase;
-                if (!sb) throw new Error("Supabase client not found");
 
-                const { data, error } = await sb.auth.signInWithOAuth({
-                    provider: 'facebook',
-                    options: { redirectTo: window.location.origin }
-                });
-                if (error) throw error;
-                console.log("🟢 Redirecting to Facebook...");
-            } catch (err) {
-                console.error("🔴 Facebook Login Error:", err);
-                alert("Facebook Login Error: " + err.message);
-            }
-        };
 
         window.handleLogout = async function () {
             try {
@@ -1072,6 +1056,26 @@
                 State.user = session ? session.user : null;
                 updateNavigation();
 
+                const fbBtn = document.getElementById('btn-facebook-auth');
+                if (fbBtn) {
+                    fbBtn.addEventListener('click', async function () {
+                        console.log('🔵 Facebook Button Clicked (Event Listener)');
+                        const sbUrl = 'https://akmbyvovhubccznrzotv.supabase.co';
+                        const sbKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFrbWJ5dm92aHViY2N6bnJ6b3R2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjY3NTgwMTAsImV4cCI6MjA4MjMzNDAxMH0.oHLvbx5_4hYATF-hQkJvp0oxZ6ljUfGKYP-Mf7_CVtM';
+                        try {
+                            const authClient = supabase.createClient(sbUrl, sbKey);
+                            const { data, error } = await authClient.auth.signInWithOAuth({
+                                provider: 'facebook',
+                                options: { redirectTo: window.location.origin }
+                            });
+                            if (error) throw error;
+                            console.log('🟢 Redirecting to Facebook...');
+                        } catch (err) {
+                            console.error('🔴 FB Login Failed:', err);
+                            alert('Facebook შესვლა ვერ მოხერხდა: ' + err.message);
+                        }
+                    });
+                }
             } catch (e) {
                 console.error("Init Error:", e);
             }
