@@ -357,133 +357,7 @@
         </div>
     </main>
 
-    <!-- AUTH MODAL -->
-    <!-- AUTH MODAL -->
-    <div id="authModal" class="fixed inset-0 z-[60] hidden" role="dialog" aria-modal="true">
-        <!-- Backdrop -->
-        <div id="authBackdrop"
-            class="absolute inset-0 bg-black/50 backdrop-blur-md opacity-0 transition-opacity duration-300"></div>
 
-        <!-- Modal Content Container -->
-        <div class="absolute inset-0 flex justify-center items-center p-4 pointer-events-none">
-            <!-- Content Container -->
-            <!-- Content Container -->
-            <div id="authContent"
-                class="bg-white w-full max-w-md rounded-[2rem] shadow-2xl overflow-hidden relative opacity-0 transform scale-95 transition-all duration-300 pointer-events-auto min-h-[500px]">
-
-                <!-- Close Button -->
-                <button onclick="closeAuthModal()"
-                    class="absolute top-4 right-4 z-40 text-gray-400 hover:text-gray-600 transition-colors p-2 bg-white/50 rounded-full backdrop-blur-sm hover:bg-white">
-                    <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M6 18L18 6M6 6l12 12" />
-                    </svg>
-                </button>
-
-                <!-- Forms -->
-                <div id="authFormCol" class="p-8 md:p-10 flex flex-col justify-center bg-white fade-in">
-                    <!-- Header / Tabs -->
-                    <div class="mb-8 text-center">
-                        <h2 class="text-3xl font-bold text-gray-900 mb-6">ანგარიში</h2>
-
-                        <!-- Pricing Link (Mobile Optimized) -->
-                        <div class="mb-6">
-                            <a href="pricing.html"
-                                class="inline-flex items-center justify-center w-full bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white font-bold py-3.5 px-4 rounded-xl transition-all shadow-md hover:shadow-lg transform hover:-translate-y-0.5 group">
-                                <svg class="w-6 h-6 mr-2 text-white group-hover:rotate-12 transition-transform"
-                                    fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                </svg>
-                                პაკეტების და ფასების ნახვა
-                            </a>
-                        </div>
-
-                        <div class="flex border-b border-gray-100">
-                            <button id="tabLogin" onclick="switchAuthTab('login')"
-                                class="flex-1 pb-3 text-center font-bold text-lg border-b-2 transition-colors auth-tab-active">
-                                შესვლა
-                            </button>
-                            <button id="tabRegister" onclick="switchAuthTab('register')"
-                                class="flex-1 pb-3 text-center font-bold text-lg border-b-2 transition-colors auth-tab-inactive">
-                                რეგისტრაცია
-                            </button>
-                        </div>
-                    </div>
-
-                    <!-- Forms Container -->
-                    <div class="space-y-5">
-
-                        <!-- Social Buttons -->
-                        <div class="grid grid-cols-2 gap-3">
-                            <button onclick="signInWithGoogle()"
-                                class="w-full bg-white border border-gray-300 text-gray-700 font-bold py-3 px-2 rounded-xl flex items-center justify-center hover:bg-gray-50 transition shadow-sm text-sm">
-                                <div class="w-5 h-5 mr-2"><svg viewBox="0 0 24 24">
-                                        <path
-                                            d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
-                                            fill="#4285F4" />
-                                        <path
-                                            d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
-                                            fill="#34A853" />
-                                        <path
-                                            d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"
-                                            fill="#FBBC05" />
-                                        <path
-                                            d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
-                                            fill="#EA4335" />
-                                    </svg></div>
-                                Google
-                            </button>
-                            <button id="btn-facebook-auth" type="button"
-                                class="w-full bg-[#1877F2] text-white font-bold py-3 px-2 rounded-xl flex items-center justify-center hover:bg-[#166fe5] transition shadow-sm text-sm">
-                                <div class="w-5 h-5 mr-2 fill-current"><svg viewBox="0 0 24 24">
-                                        <path
-                                            d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
-                                    </svg></div>
-                                Facebook
-                            </button>
-                        </div>
-
-                        <div class="relative flex items-center py-2">
-                            <div class="flex-grow border-t border-gray-200"></div>
-                            <span class="flex-shrink-0 mx-4 text-gray-400 text-sm font-medium">ან ელ-ფოსტით</span>
-                            <div class="flex-grow border-t border-gray-200"></div>
-                        </div>
-
-                        <!-- Input Forms -->
-                        <form id="authForm" class="space-y-4" onsubmit="event.preventDefault();">
-                            <div id="nameFieldContainer" class="hidden fade-in">
-                                <input type="text" placeholder="სახელი და გვარი"
-                                    class="w-full px-5 py-3 rounded-xl border border-gray-200 focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500 transition-colors bg-gray-50 focus:bg-white"
-                                    required>
-                            </div>
-                            <div>
-                                <input type="email" placeholder="ელ-ფოსტა"
-                                    class="w-full px-5 py-3 rounded-xl border border-gray-200 focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500 transition-colors bg-gray-50 focus:bg-white"
-                                    required>
-                            </div>
-                            <div>
-                                <input type="password" placeholder="პაროლი"
-                                    class="w-full px-5 py-3 rounded-xl border border-gray-200 focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500 transition-colors bg-gray-50 focus:bg-white"
-                                    required>
-                            </div>
-
-                            <button type="submit"
-                                class="w-full bg-amber-500 hover:bg-amber-600 text-white font-bold py-3.5 rounded-xl shadow-lg shadow-amber-100 transition transform hover:-translate-y-0.5 mt-2">
-                                <span id="authSubmitText">შესვლა</span>
-                            </button>
-                        </form>
-
-                        <p class="text-center text-sm text-gray-500 mt-4 cursor-pointer hover:underline"
-                            id="authFooterText">
-                            დაგავიწყდათ პაროლი?
-                        </p>
-                    </div>
-                </div>
-
-            </div>
-        </div>
-    </div>
 
     <!-- PROPERTY DETAIL MODAL -->
     <div id="propertyModal" class="fixed inset-0 z-50 hidden" role="dialog" aria-modal="true">
@@ -1353,7 +1227,7 @@
 
             // 1. Auth Check
             if (!State.user) {
-                openAuthModal('login');
+                window.location.href = 'auth.html';
                 return;
             }
 
@@ -2267,7 +2141,7 @@
                 </div>`;
             } else {
                 container.innerHTML = `
-                <button onclick="window.location.href='index.html?auth=register'" class="bg-[#2d78b1] hover:bg-[#236a9e] text-white font-bold py-2 px-6 rounded-full transition-all shadow-sm">
+                <button onclick="window.location.href='auth.html'" class="bg-[#2d78b1] hover:bg-[#236a9e] text-white font-bold py-2 px-6 rounded-full transition-all shadow-sm">
                     შესვლა
                 </button>`;
             }
@@ -2393,36 +2267,6 @@
                     window.closeAddModal();
                 }
             });
-            // Safe Facebook Login Handler
-            const fbLoginBtn = document.getElementById('btn-facebook-auth');
-            if (fbLoginBtn) {
-                fbLoginBtn.addEventListener('click', async function () {
-                    console.log('🔵 Facebook Button Clicked (Event Listener)');
-
-                    // Hardcoded credentials to bypass any State/Scope issues
-                    const sbUrl = 'https://akmbyvovhubccznrzotv.supabase.co';
-                    const sbKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFrbWJ5dm92aHViY2N6bnJ6b3R2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjY3NTgwMTAsImV4cCI6MjA4MjMzNDAxMH0.oHLvbx5_4hYATF-hQkJvp0oxZ6ljUfGKYP-Mf7_CVtM';
-
-                    try {
-                        // Create a fresh instance just for this action
-                        const authClient = supabase.createClient(sbUrl, sbKey);
-
-                        const { data, error } = await authClient.auth.signInWithOAuth({
-                            provider: 'facebook',
-                            options: {
-                                redirectTo: window.location.origin
-                            }
-                        });
-
-                        if (error) throw error;
-                        console.log('🟢 Redirecting to Facebook...');
-
-                    } catch (err) {
-                        console.error('🔴 FB Login Failed:', err);
-                        alert('Facebook შესვლა ვერ მოხერხდა: ' + err.message);
-                    }
-                });
-            }
         }
 
         // --- INITIALIZATION ---
@@ -2434,7 +2278,6 @@
                 State.supabase.auth.onAuthStateChange((event, session) => {
                     State.user = session ? session.user : null;
                     updateAuthUI();
-                    if (event === 'SIGNED_IN') closeAuthModal();
                 });
 
                 // Check Session
@@ -2449,8 +2292,7 @@
                 if (typeof fetchProperties === 'function') await fetchProperties();
 
                 const params = new URLSearchParams(window.location.search);
-                if (params.get('auth') === 'login') openAuthModal('login');
-                if (params.get('auth') === 'register') openAuthModal('register');
+                if (params.get('auth')) window.location.href = 'auth.html';
                 if (typeof populateAddModalAmenities === 'function') populateAddModalAmenities();
 
                 // Attach Interactions
@@ -2490,7 +2332,7 @@
                     </p>
 
                     <!-- Action Buttons -->
-                    <button onclick="openAuthFromPre()"
+                    <button onclick="window.location.href='auth.html'"
                         class="w-full bg-amber-500 hover:bg-amber-600 text-white font-bold py-3.5 px-6 rounded-xl shadow-lg hover:shadow-xl transition-all transform hover:-translate-y-0.5 mb-3 flex items-center justify-center">
                         <svg class="w-5 h-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"

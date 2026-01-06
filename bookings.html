@@ -329,7 +329,7 @@
                 // 1. Get User
                 const { data: { user }, error: authError } = await supabaseClient.auth.getUser();
                 if (authError || !user) {
-                    window.location.href = 'index.html?auth=login';
+                    window.location.href = 'auth.html';
                     return;
                 }
                 STATE.user = user;

@@ -467,7 +467,7 @@
                 </div>`;
             } else {
                 container.innerHTML = `
-                    <button id="navAuthBtn" onclick="openAuthModal('register')"
+                    <button id="navAuthBtn" onclick="window.location.href='auth.html'"
                         class="bg-[#2d78b1] hover:bg-[#236a9e] text-white font-bold py-2 px-6 rounded-full transition-all shadow-sm">
                         შესვლა
                     </button>`;
@@ -496,13 +496,11 @@
             if (State.user) {
                 window.location.href = 'add-property.html';
             } else {
-                window.location.href = 'index.html?auth=register';
+                window.location.href = 'auth.html';
             }
         };
 
-        window.openAuthModal = (type) => {
-            window.location.href = `index.html?auth=${type}`;
-        };
+
 
 
 
