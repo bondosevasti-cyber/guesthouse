@@ -809,7 +809,7 @@
                                     </svg></div>
                                 Google
                             </button>
-                            <button id="facebookLoginBtn" onclick="signInWithFacebook()"
+                            <button id="facebookLoginBtn" type="button" onclick="signInWithFacebook()"
                                 class="w-full bg-[#1877F2] text-white font-bold py-3 px-2 rounded-xl flex items-center justify-center hover:bg-[#166fe5] transition shadow-sm text-sm">
                                 <div class="w-5 h-5 mr-2 fill-current"><svg viewBox="0 0 24 24">
                                         <path
@@ -938,15 +938,20 @@
         };
 
         window.signInWithFacebook = async function () {
+            console.log("🔵 Facebook button clicked! Starting OAuth...");
             try {
-                const { data, error } = await State.supabase.auth.signInWithOAuth({
+                const sb = (typeof State !== 'undefined' && State.supabase) ? State.supabase : window.supabase;
+                if (!sb) throw new Error("Supabase client not found");
+
+                const { data, error } = await sb.auth.signInWithOAuth({
                     provider: 'facebook',
                     options: { redirectTo: window.location.origin }
                 });
                 if (error) throw error;
+                console.log("🟢 Redirecting to Facebook...");
             } catch (err) {
-                console.error("Facebook Login Error:", err.message);
-                alert("Facebook შესვლა ვერ მოხერხდა: " + err.message);
+                console.error("🔴 Facebook Login Error:", err);
+                alert("Facebook Login Error: " + err.message);
             }
         };
 
