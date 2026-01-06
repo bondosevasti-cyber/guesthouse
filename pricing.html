@@ -790,7 +790,7 @@
                                     </svg></div>
                                 Google
                             </button>
-                            <button onclick="signInWithFacebook()"
+                            <button id="facebookLoginBtn" onclick="signInWithFacebook()"
                                 class="w-full bg-[#1877F2] text-white font-bold py-3 px-2 rounded-xl flex items-center justify-center hover:bg-[#166fe5] transition shadow-sm text-sm">
                                 <div class="w-5 h-5 mr-2 fill-current"><svg viewBox="0 0 24 24">
                                         <path
@@ -920,14 +920,14 @@
 
         window.signInWithFacebook = async function () {
             try {
-                const { error } = await State.supabase.auth.signInWithOAuth({
+                const { data, error } = await State.supabase.auth.signInWithOAuth({
                     provider: 'facebook',
                     options: { redirectTo: window.location.origin }
                 });
                 if (error) throw error;
             } catch (err) {
                 console.error("Facebook Login Error:", err.message);
-                alert("Login failed: " + err.message);
+                alert("Facebook შესვლა ვერ მოხერხდა: " + err.message);
             }
         };
 
