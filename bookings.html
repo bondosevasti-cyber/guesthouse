@@ -4,618 +4,575 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ჯავშნები - GeorgiaTravel</title>
+    <title>მასპინძლის პანელი | GuesthouseGE</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Georgian:wght@400;500;600;700&display=swap"
         rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <!-- FullCalendar -->
-    <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js'></script>
-    <!-- Tippy.js -->
-    <script src="https://unpkg.com/@popperjs/core@2"></script>
-    <script src="https://unpkg.com/tippy.js@6"></script>
-    <link rel="stylesheet" href="https://unpkg.com/tippy.js@6/themes/light.css" />
-    <!-- Flatpickr -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
-    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <style>
         body {
             font-family: 'Noto Sans Georgian', sans-serif;
+            background-color: #f3f4f6;
         }
 
-        .fc-toolbar-title {
-            font-size: 1.25rem !important;
-            font-weight: 700 !important;
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 5px;
+            height: 5px;
         }
 
-        .fc-event {
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #e2e8f0;
+            border-radius: 20px;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: #cbd5e1;
+        }
+
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 8px;
+        }
+
+        .calendar-day {
+            aspect-ratio: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.95rem;
+            font-weight: 500;
+            border-radius: 9999px;
+            /* Perfectly circular */
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
             cursor: pointer;
+        }
+
+        .calendar-day:hover:not(.booked):not(.selected) {
+            background-color: #f1f5f9;
+        }
+
+        .calendar-day.booked {
+            background-color: #ef4444;
+            color: white !important;
+            font-weight: 600;
+        }
+
+        .calendar-day.selected {
+            background-color: #10b981;
+            /* Emerald-500 */
+            color: white !important;
+            font-weight: 700;
+            box-shadow: 0 0 15px rgba(16, 185, 129, 0.4);
+        }
+
+        .calendar-day.today {
+            border: 2px solid #f97316;
+            /* Orange-500 */
+            color: #f97316;
+            font-weight: 700;
+        }
+
+        .room-card {
+            transition: all 0.3s ease;
+        }
+
+        .room-card.active {
+            background-color: #ecfdf5;
+            /* Emerald-50 */
+            border-left: 4px solid #10b981;
+            /* Emerald-500 */
+        }
+
+        .material-card {
+            background-color: white;
+            border-radius: 1.5rem;
+            /* 24px - rounded-3xl */
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.05);
+        }
+
+        @keyframes fadeInScale {
+            from {
+                opacity: 0;
+                transform: scale(0.95);
+            }
+
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        .animate-fade-in {
+            animation: fadeInScale 0.4s ease-out forwards;
         }
     </style>
 </head>
 
-<body class="bg-gray-50 min-h-screen">
+<body class="min-h-screen flex flex-col">
 
     <!-- Navbar -->
-    <nav class="fixed top-0 left-0 w-full z-40 bg-white shadow-md py-3 transition-all duration-300" id="navbar">
+    <nav class="fixed top-0 left-0 w-full z-[999] bg-white shadow-sm py-3 transition-all duration-300" id="navbar">
         <div class="max-w-7xl mx-auto px-4 flex justify-between items-center">
             <a href="index.html">
-                <img src="images/gh_logo.webp" alt="GeorgiaTravel"
-                    class="h-10 max-h-[40px] w-auto drop-shadow-md object-contain cursor-pointer transition-transform hover:scale-105 active:scale-95">
+                <img src="images/gh_logo.webp" alt="GuesthouseGE"
+                    class="h-9 w-auto drop-shadow-sm transition-transform hover:scale-105">
             </a>
-            <div class="flex items-center space-x-3">
-                <a href="pricing.html"
-                    class="hidden md:flex items-center bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-lg shadow-md transition-all animate-flag">
-                    <svg class="w-5 h-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0-2.08-.402-2.599-1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                    ფასების ნახვა
-                </a>
-                <button onclick="window.location.href='add-property.html'"
-                    class="bg-amber-500 hover:bg-amber-600 text-white font-bold p-2.5 rounded-full transition-all shadow-md hover:shadow-lg flex items-center justify-center transform hover:-translate-y-0.5"
-                    title="დამატება">
-                    <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-                    </svg>
-                </button>
-                <div id="navAuthBtnContainer">
-                    <button id="navAuthBtn" onclick="window.location.href='index.html'"
-                        class="bg-[#2d78b1] hover:bg-[#236a9e] text-white font-bold py-2 px-6 rounded-full transition-all shadow-sm">
-                        შესვლა
-                    </button>
-                </div>
+            <div id="navAuthBtnContainer">
+                <!-- User dynamic content -->
             </div>
         </div>
     </nav>
-    <div class="h-20"></div>
 
-    <!-- Main Content -->
-    <main class="max-w-7xl mx-auto px-4 pb-20 mt-8">
-
-        <div class="flex justify-between items-center mb-8">
-            <h1 class="text-3xl font-bold text-gray-900">ჯავშნები და კალენდარი</h1>
-            <button onclick="openBookingModal()" id="addBookingBtn"
-                class="hidden bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded-xl shadow-md transition-colors flex items-center">
-                <svg class="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-                </svg>
-                ჯავშნის დამატება
-            </button>
-        </div>
-
-        <!-- HOST VIEW (Calendar) -->
-        <div id="hostView" class="hidden flex flex-col h-full">
-            <!-- Property Tabs -->
-            <div id="propertyTabs" class="flex flex-nowrap overflow-x-auto gap-2 mb-6 pb-2 scrollbar-none snap-x">
-                <!-- Tabs injected here -->
-            </div>
-
-            <div class="bg-white rounded-3xl shadow-sm border border-gray-100 p-4 md:p-6 flex-grow flex flex-col">
-                <div id='calendar' class="w-full flex-grow"></div>
-            </div>
-        </div>
-
-        <!-- GUEST VIEW (List) -->
-        <div id="guestView" class="hidden">
-            <div id="guestBookingsGrid" class="grid grid-cols-1 gap-6">
-                <!-- Bookings injected here -->
-            </div>
-            <div id="guestEmptyState"
-                class="hidden flex-col items-center justify-center py-20 bg-white rounded-3xl border-2 border-dashed border-gray-200">
-                <h3 class="text-xl font-bold text-gray-900 mb-2">ჯავშნები არ არის</h3>
-                <p class="text-gray-500 mb-6 max-w-sm text-center">თქვენ ჯერ არ გაქვთ აქტიური ჯავშნები.</p>
-                <a href="index.html" class="text-amber-600 font-bold hover:underline">განცხადებების ნახვა</a>
-            </div>
-        </div>
-
-    </main>
-
-    <!-- BOOKING MODAL (Host Only) -->
-    <div id="bookingModal" class="fixed inset-0 z-50 hidden flex items-center justify-center p-4">
-        <div class="absolute inset-0 bg-black/50 backdrop-blur-sm" onclick="closeBookingModal()"></div>
-        <div class="bg-white w-full max-w-md rounded-2xl shadow-2xl relative z-10 p-6">
-            <h3 class="text-xl font-bold text-gray-900 mb-4">ჯავშნის დამატება (მექანიკური)</h3>
-            <form id="bookingForm" onsubmit="handleBookingSubmit(event)">
-                <div class="space-y-4">
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">სტუმრის სახელი</label>
-                        <input type="text" id="guestName" required
-                            class="w-full px-4 py-2 border rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none">
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">ობიექტი</label>
-                        <select id="bookingProperty" required
-                            class="w-full px-4 py-2 border rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none bg-white">
-                            <!-- Populated via JS -->
-                        </select>
-                    </div>
-                    <!-- Calendar Container -->
-                    <div class="mb-4">
-                        <label class="block text-sm font-medium text-gray-700 mb-2">თარიღები</label>
-                        <div id="profileBookingCalendar"
-                            class="w-full justify-center flex bg-gray-50 rounded-xl p-2 border border-gray-100">
-                        </div>
-                        <div class="flex justify-between items-center mt-2 px-2">
-                            <p class="text-xs font-bold text-gray-400 uppercase tracking-wider">არჩეული დღეები</p>
-                            <p id="profileSelectedDaysText" class="text-indigo-600 font-bold">0 ღამე</p>
-                        </div>
-                    </div>
+    <main class="mt-24 flex-grow p-4 md:p-8 max-w-[1400px] mx-auto w-full">
+        <!-- Main Dashboard Content (Hidden by default, shown after load) -->
+        <div id="dashboardContent" class="hidden">
+            <div class="mb-10 flex flex-col md:flex-row md:items-end justify-between gap-4">
+                <div>
+                    <h1 class="text-4xl font-bold text-gray-900 tracking-tight">მართვის პანელი</h1>
+                    <p class="text-gray-500 font-medium mt-1">აკონტროლეთ თქვენი განცხადებები და ჯავშნები მარტივად</p>
                 </div>
-                <div class="flex justify-end space-x-3 mt-6">
-                    <button type="button" onclick="closeBookingModal()"
-                        class="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg">გაუქმება</button>
-                    <button type="submit"
-                        class="px-4 py-2 bg-indigo-600 text-white font-bold rounded-lg hover:bg-indigo-700 shadow-md">შენახვა</button>
+                <div class="flex gap-3">
+                    <button onclick="window.location.href='add-property.html'"
+                        class="bg-emerald-500 hover:bg-emerald-600 text-white font-bold py-3 px-6 rounded-2xl shadow-lg shadow-emerald-200 transition-all flex items-center">
+                        <svg class="w-5 h-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                        </svg>
+                        დამატება
+                    </button>
                 </div>
-            </form>
-        </div>
-    </div>
+            </div>
 
-
-    <script>
-        const CONFIG = {
-            SUPABASE_URL: 'https://akmbyvovhubccznrzotv.supabase.co',
-            SUPABASE_KEY: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFrbWJ5dm92aHViY2N6bnJ6b3R2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjY3NTgwMTAsImV4cCI6MjA4MjMzNDAxMH0.oHLvbx5_4hYATF-hQkJvp0oxZ6ljUfGKYP-Mf7_CVtM',
-            DEFAULT_IMAGE: "https://images.unsplash.com/photo-1566073771259-6a8506099945?w=500&q=80"
-        };
-
-        const State = {
-            supabase: supabase.createClient(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_KEY),
-            user: null
-        };
-
-        let myProperties = [];
-        let myBookings = [];
-        let calendar = null;
-        let isHost = false;
-        let selectedPropertyId = 'all';
-
-        async function init() {
-            const { data: { session } } = await State.supabase.auth.getSession();
-            if (!session) {
-                window.location.href = 'index.html';
-                return;
-            }
-            State.user = session.user;
-            updateAuthUI();
-
-            // Check if Host
-            const { data: props } = await State.supabase.from('guesthouse ge').select('id, name').eq('user_id', State.user.id);
-            myProperties = props || [];
-            isHost = myProperties.length > 0;
-
-            if (isHost) {
-                document.getElementById('hostView').classList.remove('hidden');
-                document.getElementById('addBookingBtn').classList.remove('hidden');
-
-                // Populate Select
-                const select = document.getElementById('bookingProperty');
-                if (select) select.innerHTML = myProperties.map(p => `<option value="${p.id}">${p.name}</option>`).join('');
-
-                renderTabs();
-                await loadBookings();
-                subscribeToBookings();
-            } else {
-                document.getElementById('guestView').classList.remove('hidden');
-                await loadBookings();
-            }
-        }
-
-        function renderTabs() {
-            const container = document.getElementById('propertyTabs');
-            if (!container) return;
-
-            const makeTab = (id, name, active) => {
-                const btn = document.createElement('button');
-                btn.className = `px-5 py-2.5 rounded-xl font-bold text-sm whitespace-nowrap transition-all shadow-sm snap-start ${active
-                    ? 'bg-indigo-600 text-white shadow-indigo-200'
-                    : 'bg-white text-gray-600 border border-gray-200 hover:bg-gray-50'}`;
-                btn.textContent = name;
-                btn.onclick = () => {
-                    selectedPropertyId = id;
-                    renderTabs();
-                    updateCalendarEvents();
-                };
-                return btn;
-            };
-
-            container.innerHTML = '';
-
-            // All Tab
-            container.appendChild(makeTab('all', 'ყველა', selectedPropertyId === 'all'));
-
-            // Property Tabs
-            myProperties.forEach(p => {
-                container.appendChild(makeTab(p.id, p.name, selectedPropertyId === p.id));
-            });
-        }
-
-        async function loadBookings() {
-            try {
-                let query = State.supabase.from('bookings').select('*, property:property_id(name, image_url, images), room:room_id(name)');
-
-                if (isHost) {
-                    // Host: Get bookings for my properties
-                    const propIds = myProperties.map(p => p.id);
-                    if (propIds.length === 0) return;
-                    query = query.in('property_id', propIds);
-                } else {
-                    // Guest: Get bookings I made
-                    query = query.eq('user_id', State.user.id);
-                }
-
-                const { data, error } = await query;
-                if (error) throw error;
-                myBookings = data || [];
-
-                if (isHost) {
-                    initCalendar();
-                } else {
-                    renderGuestBookings();
-                }
-
-            } catch (e) {
-                console.error("Booking Load Error", e);
-            }
-        }
-
-        function getFilteredBookings() {
-            if (selectedPropertyId === 'all') return myBookings;
-            return myBookings.filter(b => b.property_id == selectedPropertyId);
-        }
-
-        function updateCalendarEvents() {
-            if (!calendar) return;
-            const events = mapBookingsToEvents(getFilteredBookings());
-            calendar.removeAllEvents();
-            calendar.addEventSource(events);
-        }
-
-        function mapBookingsToEvents(bookings) {
-            return bookings.map(b => ({
-                title: b.guest_name || 'Guest',
-                start: b.check_in,
-                end: new Date(new Date(b.check_out).getTime() + 86400000).toISOString().split('T')[0], // Add 1 day for inclusive end
-                backgroundColor: getRandomColor(),
-                borderColor: 'transparent',
-                extendedProps: {
-                    guestName: b.guest_name,
-                    phone: b.guest_phone,
-                    bookingCode: b.booking_code,
-                    propName: b.property?.name,
-                    roomName: b.room?.name
-                }
-            }));
-        }
-
-        function initCalendar() {
-            // If calendar already exists, just update events
-            if (calendar) {
-                updateCalendarEvents();
-                return;
-            }
-
-            const calendarEl = document.getElementById('calendar');
-            if (!calendarEl) return;
-
-            const isMobile = window.innerWidth < 768;
-            const events = mapBookingsToEvents(getFilteredBookings());
-
-            calendar = new FullCalendar.Calendar(calendarEl, {
-                initialView: isMobile ? 'listWeek' : 'dayGridMonth',
-                height: 'auto', // Expands to fit content
-                contentHeight: 'auto',
-                aspectRatio: isMobile ? 0.8 : 1.35,
-                headerToolbar: {
-                    left: 'prev,next today',
-                    center: 'title',
-                    right: 'dayGridMonth,listWeek'
-                },
-                views: {
-                    dayGridMonth: {
-                        dayMaxEvents: 2
-                    },
-                    listWeek: {
-                        buttonText: 'სია'
-                    }
-                },
-                events: events,
-                windowResize: function (view) {
-                    // Adjust view on resize
-                    if (window.innerWidth < 768) {
-                        calendar.changeView('listWeek');
-                    } else {
-                        calendar.changeView('dayGridMonth');
-                    }
-                },
-                eventDidMount: function (info) {
-                    tippy(info.el, {
-                        content: `
-                            <div class="text-sm p-1">
-                                <p class="font-bold">${info.event.extendedProps.guestName}</p>
-                                <p class="text-xs text-gray-200">${info.event.extendedProps.propName}</p>
-                                ${info.event.extendedProps.roomName ? `<p class="text-xs text-amber-200 flex items-center mt-1"><svg class="w-3 h-3 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>${info.event.extendedProps.roomName}</p>` : ''}
-                                <p class="text-xs opacity-75 mt-1">${info.event.extendedProps.phone}</p>
-                                <p class="text-xs text-amber-300 mt-1 font-mono">${info.event.extendedProps.bookingCode}</p>
-                             </div>
-                        `,
-                        allowHTML: true,
-                        theme: 'material'
-                    });
-                }
-            });
-            calendar.render();
-        }
-
-        function subscribeToBookings() {
-            State.supabase
-                .channel('public:bookings')
-                .on('postgres_changes', { event: '*', schema: 'public', table: 'bookings' }, (payload) => {
-                    console.log('Real-time update:', payload);
-                    // Refresh data
-                    loadBookings();
-                })
-                .subscribe();
-        }
-
-        function renderGuestBookings() {
-            const grid = document.getElementById('guestBookingsGrid');
-            const empty = document.getElementById('guestEmptyState');
-            if (!grid) return;
-
-            if (myBookings.length === 0) {
-                grid.innerHTML = '';
-                if (empty) empty.classList.remove('hidden');
-                empty.classList.add('flex');
-                return;
-            }
-
-            if (empty) empty.classList.add('hidden');
-
-            grid.innerHTML = myBookings.map(b => {
-                let image = CONFIG.DEFAULT_IMAGE;
-                const p = b.property;
-                if (p) {
-                    if (p.images && Array.isArray(p.images) && p.images.length > 0) image = p.images[0];
-                    else if (p.image_url) image = p.image_url;
-                }
-
-                const statusColor = b.status === 'confirmed' ? 'bg-green-100 text-green-700' :
-                    b.status === 'pending' ? 'bg-amber-100 text-amber-700' : 'bg-gray-100 text-gray-700';
-
-                return `
-                    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden flex flex-col md:flex-row h-auto md:h-48">
-                        <div class="w-full md:w-1/3 h-48 md:h-full relative">
-                            <img src="${image}" class="w-full h-full object-cover">
-                            <div class="absolute top-2 left-2 bg-black/60 backdrop-blur-sm text-white text-xs font-mono px-2 py-1 rounded">
-                                ${b.booking_code || '#BK'}
-                            </div>
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 min-h-[700px]">
+                <!-- Left Column: Room Selector -->
+                <div class="lg:col-span-4 flex flex-col gap-6">
+                    <div class="material-card overflow-hidden h-fit">
+                        <div class="p-6 border-b border-gray-100 flex justify-between items-center">
+                            <h3 class="font-bold text-gray-900 text-lg">თქვენი ოთახები</h3>
+                            <span id="roomCountLabel"
+                                class="bg-emerald-100 text-emerald-700 px-3 py-1 rounded-full text-xs font-bold">0</span>
                         </div>
-                        <div class="p-5 flex flex-col justify-between w-full md:w-2/3">
-                            <div>
-                                <div class="flex justify-between items-start">
-                                    <h3 class="font-bold text-gray-900 text-lg mb-1">${p?.name || 'Deleted Property'}</h3>
-                                    <span class="px-2 py-1 rounded text-xs font-bold ${statusColor}">${b.status}</span>
+                        <div id="roomList" class="p-4 space-y-2 max-h-[600px] overflow-y-auto custom-scrollbar">
+                            <!-- Rooms injected here -->
+                            <div class="flex items-center justify-center py-10">
+                                <div
+                                    class="animate-spin h-8 w-8 border-4 border-emerald-500 border-t-transparent rounded-full">
                                 </div>
-                                <p class="text-gray-500 text-sm mb-3">
-                                    <span class="font-semibold">${b.check_in}</span> - <span class="font-semibold">${b.check_out}</span>
-                                </p>
-                            </div>
-                            <div class="flex items-center justify-between border-t pt-3">
-                                 <div>
-                                    <p class="text-xs text-gray-400 uppercase">Total Price</p>
-                                    <p class="text-amber-600 font-bold text-xl">₾${b.total_price}</p>
-                                 </div>
                             </div>
                         </div>
                     </div>
-                 `;
-            }).join('');
-        }
+                </div>
 
-        function getRandomColor() {
-            const colors = ['#f59e0b', '#10b981', '#3b82f6', '#8b5cf6', '#ec4899', '#ef4444', '#6366f1'];
-            return colors[Math.floor(Math.random() * colors.length)];
-        }
-
-        // --- AUTH UI ---
-        async function updateAuthUI() {
-            let container = document.getElementById('navAuthBtnContainer');
-            if (!container) return;
-
-            if (State.user) {
-                const name = State.user.user_metadata.full_name || State.user.email;
-                const avatar = State.user.user_metadata.avatar_url || 'https://www.gravatar.com/avatar/?d=mp';
-
-                let tier = 'Free';
-                try {
-                    const { data } = await State.supabase.from('profiles').select('subscription_tier').eq('id', State.user.id).single();
-                    if (data) tier = data.subscription_tier || 'Free';
-                } catch (e) { }
-
-                let tierDisplay = '';
-                if (tier === 'super_vip') tierDisplay = `<span class="super-vip-text ml-1">✨ Super VIP</span>`;
-                else if (tier === 'vip') tierDisplay = `<span style="color: #4F46E5; font-weight: 800; text-transform: uppercase;" class="ml-1">💎 VIP</span>`;
-                else if (tier === 'regular') tierDisplay = `<span style="color: #10B981; font-weight: bold;" class="ml-1">Standard</span>`;
-                else tierDisplay = `<span style="color: #6B7280;" class="ml-1">Free Plan</span><a href="pricing.html" class="ml-2 text-[10px] bg-amber-500 text-white px-2 py-0.5 rounded-full hover:bg-amber-600 transition-colors uppercase font-bold tracking-wide shadow-sm">Upgrade</a>`;
-
-                container.innerHTML = `
-                    <div class="relative ml-2">
-                        <button id="profileTrigger" onclick="toggleProfileDropdown(event)" class="flex items-center space-x-2 focus:outline-none bg-white hover:bg-gray-50 rounded-full pl-1 pr-3 py-1 transition-colors border border-gray-200 shadow-sm">
-                            <img src="${avatar}" class="w-8 h-8 rounded-full border border-emerald-400 object-cover">
-                            <span class="hidden sm:inline text-sm font-bold text-gray-700 max-w-[100px] truncate">${name.split(' ')[0]}</span>
-                            <svg class="w-4 h-4 text-gray-500 opacity-80" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>
-                        </button>
-                        <div id="profileDropdown" class="absolute right-0 mt-3 w-64 bg-white rounded-2xl shadow-2xl border border-gray-100 py-2 hidden opacity-0 transform scale-95 origin-top-right transition-all duration-200 z-[100]">
-                             <div class="px-5 py-3 border-b border-gray-100 mb-1">
-                                <p class="text-xs text-gray-400 font-medium uppercase tracking-wider">ანგარიში</p>
-                                <p class="text-sm font-bold text-gray-900 truncate mt-0.5">${name}</p>
-                                <div class="text-xs text-gray-500 mt-1 flex items-center">პაკეტი: ${tierDisplay}</div>
+                <!-- Right Column: Details -->
+                <div class="lg:col-span-8 flex flex-col gap-6">
+                    <!-- Calendar Widget Container -->
+                    <div class="material-card overflow-hidden flex flex-col">
+                        <div
+                            class="p-6 md:p-8 border-b border-gray-100 flex flex-col md:flex-row md:items-center justify-between gap-6">
+                            <div class="flex items-center gap-4">
+                                <div id="roomAvatar"
+                                    class="w-14 h-14 rounded-2xl bg-gray-100 overflow-hidden shadow-inner">
+                                    <img src="images/gh_logo.webp" class="w-full h-full object-cover">
+                                </div>
+                                <div>
+                                    <h2 id="activeRoomName" class="text-2xl font-bold text-gray-900">...</h2>
+                                    <p id="currentMonthYear"
+                                        class="text-orange-500 font-bold text-sm uppercase tracking-wide">...</p>
+                                </div>
                             </div>
-                            <div class="py-1">
-                                <a href="profile.html" class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-amber-50 hover:text-amber-600 transition-colors">
-                                    <svg class="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
-                                    ჩემი განცხადებები
-                                </a>
-                                <a href="bookings.html" class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-indigo-50 hover:text-indigo-600 transition-colors">
-                                    <svg class="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
-                                    ჯავშნები / კალენდარი
-                                </a>
-                            </div>
-                            <div class="border-t border-gray-100 py-1">
-                                <button onclick="handleLogout()" class="flex w-full items-center px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors">
-                                    <svg class="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"/></svg>
-                                    გასვლა
+                            <div class="flex items-center bg-gray-100 p-1.5 rounded-2xl">
+                                <button onclick="changeMonth(-1)"
+                                    class="p-2.5 hover:bg-white hover:shadow-sm rounded-xl transition-all text-gray-600">
+                                    <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M15 19l-7-7 7-7" />
+                                    </svg>
+                                </button>
+                                <button onclick="changeMonth(1)"
+                                    class="p-2.5 hover:bg-white hover:shadow-sm rounded-xl transition-all text-gray-600">
+                                    <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M9 5l7 7-7 7" />
+                                    </svg>
                                 </button>
                             </div>
                         </div>
-                    </div>`;
 
-            } else {
-                container.innerHTML = `
-                    <button id="navAuthBtn" onclick="window.location.href='index.html?auth=register'"
-                        class="bg-[#2d78b1] hover:bg-[#236a9e] text-white font-bold py-2 px-6 rounded-full transition-all shadow-sm">
-                        შესვლა
-                    </button>`;
+                        <div class="flex flex-col xl:flex-row">
+                            <!-- Calendar Side -->
+                            <div class="xl:w-3/5 p-6 md:p-8">
+                                <div class="calendar-grid mb-6" id="calendarHeader">
+                                    <div class="text-center text-xs font-bold text-gray-400 uppercase py-2">ორშ</div>
+                                    <div class="text-center text-xs font-bold text-gray-400 uppercase py-2">სამ</div>
+                                    <div class="text-center text-xs font-bold text-gray-400 uppercase py-2">ოთხ</div>
+                                    <div class="text-center text-xs font-bold text-gray-400 uppercase py-2">ხუთ</div>
+                                    <div class="text-center text-xs font-bold text-gray-400 uppercase py-2">პარ</div>
+                                    <div class="text-center text-xs font-bold text-gray-400 uppercase py-2">შაბ</div>
+                                    <div class="text-center text-xs font-bold text-orange-400 uppercase py-2">კვი</div>
+                                </div>
+                                <div class="calendar-grid" id="calendarBody">
+                                    <!-- Days -->
+                                </div>
+
+                                <div
+                                    class="mt-8 flex flex-wrap gap-4 text-xs font-medium border-t border-gray-100 pt-6">
+                                    <div class="flex items-center gap-2">
+                                        <span class="w-3 h-3 bg-white border border-gray-300 rounded-full"></span>
+                                        <span class="text-gray-500">თავისუფალი</span>
+                                    </div>
+                                    <div class="flex items-center gap-2">
+                                        <span class="w-3 h-3 bg-red-500 rounded-full"></span>
+                                        <span class="text-gray-500">დაკავებული</span>
+                                    </div>
+                                    <div class="flex items-center gap-2">
+                                        <span class="w-3 h-3 border-2 border-orange-500 rounded-full"></span>
+                                        <span class="text-gray-500">დღეს</span>
+                                    </div>
+                                    <div class="flex items-center gap-2">
+                                        <span class="w-3 h-3 bg-emerald-500 rounded-full"></span>
+                                        <span class="text-gray-500">არჩეული</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Upcoming Bookings Side -->
+                            <div class="xl:w-2/5 bg-gray-50 p-6 md:p-8 flex flex-col border-l border-gray-100">
+                                <div class="flex items-center justify-between mb-6">
+                                    <h3 class="text-sm font-bold text-gray-900 uppercase tracking-widest">უახლოესი
+                                        ჯავშნები</h3>
+                                </div>
+                                <div id="bookingDetailsList"
+                                    class="space-y-4 overflow-y-auto max-h-[450px] custom-scrollbar pr-2">
+                                    <!-- Bookings injected -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Loading Spinner -->
+        <div id="loadingSpinner" class="flex flex-col items-center justify-center py-40">
+            <div class="animate-spin h-12 w-12 border-4 border-emerald-500 border-t-transparent rounded-full mb-4">
+            </div>
+            <p class="text-gray-500 font-medium">იტვირთება მონაცემები...</p>
+        </div>
+
+        <!-- Empty State (No Property Found) -->
+        <div id="emptyState" class="hidden flex flex-col items-center justify-center py-32 text-center">
+            <div class="bg-orange-50 p-8 rounded-full mb-6">
+                <svg class="w-16 h-16 text-orange-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                </svg>
+            </div>
+            <h2 class="text-3xl font-bold text-gray-900 mb-2">ობიექტი ვერ მოიძებნა</h2>
+            <p class="text-gray-500 max-w-md mb-8">თქვენ არ გაქვთ რეგისტრირებული სასტუმრო. გთხოვთ დააჭიროთ '+' ღილაკს
+                დამატებისთვის.</p>
+            <button onclick="window.location.href='add-property.html'"
+                class="bg-emerald-500 hover:bg-emerald-600 text-white font-bold py-4 px-10 rounded-2xl shadow-xl shadow-emerald-200 transition-all flex items-center text-lg">
+                <svg class="w-6 h-6 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                </svg>
+                სასტუმროს დამატება
+            </button>
+        </div>
+    </main>
+
+
+    <script>
+        const SUPABASE_URL = 'https://akmbyvovhubccznrzotv.supabase.co';
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFrbWJ5dm92aHViY2N6bnJ6b3R2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjY3NTgwMTAsImV4cCI6MjA4MjMzNDAxMH0.oHLvbx5_4hYATF-hQkJvp0oxZ6ljUfGKYP-Mf7_CVtM';
+        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+        const MONTHS = ["იანვარი", "თებერვალი", "მარტი", "აპრილი", "მაისი", "ივნისი", "ივლისი", "აგვისტო", "სექტემბერი", "ოქტომბერი", "ნოევმერი", "დეკემბერი"];
+
+        let STATE = {
+            user: null,
+            property: null,
+            rooms: [],
+            allBookings: [],
+            activeRoomId: null,
+            selectedDate: null,
+            viewDate: new Date()
+        };
+
+        async function initDashboard() {
+            try {
+                // 1. Get User
+                const { data: { user }, error: authError } = await supabaseClient.auth.getUser();
+                if (authError || !user) {
+                    window.location.href = 'index.html?auth=login';
+                    return;
+                }
+                STATE.user = user;
+                updateNavigation(user);
+
+                // Auth state listener
+                supabaseClient.auth.onAuthStateChange((event, session) => {
+                    if (event === 'SIGNED_OUT') window.location.href = 'index.html';
+                });
+
+                // 2. Get Property (Specifically guesthouse_ge)
+                const { data: properties, error: propError } = await supabaseClient
+                    .from('guesthouse_ge')
+                    .select('*')
+                    .eq('user_id', user.id);
+
+                if (propError) throw propError;
+
+                const property = properties && properties.length > 0 ? properties[0] : null;
+                console.log('Fetched Property:', property);
+
+                // 3. Crucial Check: If no property found, stop and show UI
+                if (!property) {
+                    console.warn("No property found for user. Showing empty state.");
+                    // Hide loader
+                    document.getElementById('loadingSpinner').classList.add('hidden');
+                    // Show empty state
+                    document.getElementById('emptyState').classList.remove('hidden');
+                    return; // STOP EXECUTION HERE. Do not fetch rooms.
+                }
+                STATE.property = property;
+
+                // 4. Fetch Rooms and Bookings in Parallel
+                const [roomsRes, bookingsRes] = await Promise.all([
+                    supabaseClient.from('rooms').select('*').eq('property_id', property.id),
+                    supabaseClient.from('bookings').select('*').eq('property_id', property.id)
+                ]);
+
+                if (roomsRes.error) throw roomsRes.error;
+                if (bookingsRes.error) throw bookingsRes.error;
+
+                console.log('Fetched Bookings:', bookingsRes.data);
+
+                STATE.rooms = roomsRes.data || [];
+                STATE.allBookings = bookingsRes.data || [];
+
+                // 5. Render
+                document.getElementById('loadingSpinner').classList.add('hidden');
+                document.getElementById('dashboardContent').classList.remove('hidden');
+
+                if (STATE.rooms.length > 0) {
+                    STATE.activeRoomId = STATE.rooms[0].id;
+                    renderRooms();
+                    updateActiveRoomUI();
+                } else {
+                    document.getElementById('roomList').innerHTML = `
+                        <div class="flex flex-col items-center justify-center py-10 text-center px-4">
+                            <p class="text-gray-400 text-sm italic">ოთახები ჯერ არ გაქვთ დამატებული</p>
+                        </div>
+                    `;
+                }
+
+            } catch (err) {
+                console.error("Dashboard Error:", err.message || err);
+                const loader = document.getElementById('loadingSpinner');
+                if (loader) {
+                    loader.innerHTML = `
+                        <div class="text-center p-8">
+                            <div class="w-16 h-16 bg-red-50 text-red-500 rounded-full flex items-center justify-center mx-auto mb-4">
+                                <svg class="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
+                            </div>
+                            <h3 class="text-xl font-bold text-gray-900 mb-2">შეცდომა ჩატვირთვისას</h3>
+                            <p class="text-gray-500 mb-4">${err.message || 'გთხოვთ სცადოთ მოგვიანებით'}</p>
+                            <button onclick="location.reload()" class="text-emerald-600 font-bold border-b-2 border-emerald-600">თავიდან სცადეთ</button>
+                        </div>
+                    `;
+                }
             }
         }
 
-        window.toggleProfileDropdown = function (e) {
-            e.stopPropagation();
-            const d = document.getElementById('profileDropdown');
-            if (d) {
-                if (d.classList.contains('hidden')) {
-                    d.classList.remove('hidden');
-                    setTimeout(() => d.classList.remove('opacity-0', 'scale-95'), 10);
-                } else {
-                    d.classList.add('opacity-0', 'scale-95');
-                    setTimeout(() => d.classList.add('hidden'), 200);
-                }
-            }
-        };
+        async function updateNavigation(user) {
+            const container = document.getElementById('navAuthBtnContainer');
+            if (!container || !user) return;
 
-        // window.handleLogout already exists but ensuring it redirects to index.html is good (it does)
-        window.handleLogout = async function () {
-            await State.supabase.auth.signOut();
-            window.location.href = 'index.html';
-        };
+            const name = user.user_metadata.full_name || user.email;
+            const avatar = user.user_metadata.avatar_url || 'https://www.gravatar.com/avatar/?d=mp';
 
-        document.addEventListener('click', e => {
+            container.innerHTML = `
+                <div class="relative">
+                    <button id="profileTrigger" onclick="toggleProfileDropdown(event)" class="flex items-center space-x-2 focus:outline-none bg-gray-50 hover:bg-gray-100 rounded-2xl pl-1 pr-3 py-1 transition-all border border-gray-100">
+                        <img src="${avatar}" class="w-8 h-8 rounded-xl object-cover shadow-sm">
+                        <span class="hidden sm:inline text-sm font-bold text-gray-700 max-w-[120px] truncate">${name.split('@')[0]}</span>
+                        <svg class="w-4 h-4 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>
+                    </button>
+                    <div id="profileDropdown" class="absolute right-0 mt-3 w-56 bg-white rounded-2xl shadow-2xl border border-gray-100 py-2 hidden z-[1000] animate-fade-in">
+                        <div class="px-4 py-2 border-b border-gray-50 mb-1">
+                            <p class="text-[10px] text-gray-400 font-bold uppercase tracking-wider">ანგარიში</p>
+                            <p class="text-sm font-bold text-gray-900 truncate">${name}</p>
+                        </div>
+                        <a href="profile.html" class="flex items-center px-4 py-2.5 text-sm text-gray-700 hover:bg-emerald-50 hover:text-emerald-700 transition-colors">
+                            <svg class="w-4 h-4 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
+                            ჩემი განცხადებები
+                        </a>
+                        <button onclick="handleLogout()" class="flex w-full items-center px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 transition-colors">
+                            <svg class="w-4 h-4 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"/></svg>
+                            გასვლა
+                        </button>
+                    </div>
+                </div>`;
+        }
+
+        window.toggleProfileDropdown = (e) => { e.stopPropagation(); document.getElementById('profileDropdown').classList.toggle('hidden'); };
+        window.handleLogout = async () => { await supabaseClient.auth.signOut(); window.location.href = 'index.html'; };
+
+        document.addEventListener('click', () => {
             const d = document.getElementById('profileDropdown');
-            const t = document.getElementById('profileTrigger');
-            if (d && !d.classList.contains('hidden') && !d.contains(e.target) && (!t || !t.contains(e.target))) {
-                d.classList.add('opacity-0', 'scale-95');
-                setTimeout(() => d.classList.add('hidden'), 200);
-            }
+            if (d) d.classList.add('hidden');
         });
 
-        window.handleLogout = async function () {
-            await State.supabase.auth.signOut();
-            window.location.href = 'index.html';
-        };
+        function renderRooms() {
+            const list = document.getElementById('roomList');
+            document.getElementById('roomCountLabel').innerText = STATE.rooms.length;
 
-        // --- BOOKING MODAL LOGIC (Host) ---
-        let profileCalendar;
-
-        function initProfileCalendar() {
-            if (profileCalendar) return;
-            profileCalendar = flatpickr("#profileBookingCalendar", {
-                mode: "range",
-                inline: true,
-                dateFormat: "Y-m-d",
-                minDate: "today",
-                locale: { firstDayOfWeek: 1 },
-                onChange: function (selectedDates) {
-                    const countEl = document.getElementById('profileSelectedDaysText');
-                    if (countEl) {
-                        if (selectedDates.length === 2) {
-                            const diff = Math.abs(selectedDates[1] - selectedDates[0]);
-                            const days = Math.ceil(diff / (1000 * 60 * 60 * 24));
-                            countEl.textContent = days + " ღამე";
-                        } else {
-                            countEl.textContent = "0 ღამე";
-                        }
-                    }
-                }
-            });
+            list.innerHTML = STATE.rooms.map(room => `
+                <div onclick="selectRoom('${room.id}')" 
+                     class="room-card group flex items-center gap-4 p-4 rounded-2xl cursor-pointer hover:bg-gray-50 ${room.id == STATE.activeRoomId ? 'active shadow-lg shadow-emerald-100/50' : ''}">
+                    <div class="w-14 h-14 rounded-2xl bg-gray-100 overflow-hidden flex-shrink-0 border border-gray-100">
+                        <img src="${(room.images && room.images[0]) || 'images/gh_logo.webp'}" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500">
+                    </div>
+                    <div class="flex-grow min-w-0">
+                        <h4 class="font-bold text-gray-900 text-base truncate mb-0.5">${room.name}</h4>
+                        <p class="text-[11px] text-gray-500 font-bold uppercase tracking-wider flex items-center gap-1.5">
+                            <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
+                            ${room.beds || 0} საწოლი
+                        </p>
+                    </div>
+                </div>
+            `).join('');
         }
 
-        window.openBookingModal = () => {
-            document.getElementById('bookingModal').classList.remove('hidden');
-            setTimeout(initProfileCalendar, 50);
+        function selectRoom(id) {
+            STATE.activeRoomId = id;
+            renderRooms();
+            updateActiveRoomUI();
         }
 
-        window.closeBookingModal = () => {
-            document.getElementById('bookingModal').classList.add('hidden');
-            if (profileCalendar) {
-                profileCalendar.clear();
+        function updateActiveRoomUI() {
+            const room = STATE.rooms.find(r => r.id == STATE.activeRoomId);
+            if (!room) return;
+
+            document.getElementById('roomAvatar').querySelector('img').src = (room.images && room.images[0]) || 'images/gh_logo.webp';
+            document.getElementById('activeRoomName').innerText = room.name;
+
+            renderCalendar();
+            renderBookingDetails();
+        }
+
+        function renderCalendar() {
+            const body = document.getElementById('calendarBody');
+            const monthLabel = document.getElementById('currentMonthYear');
+            const year = STATE.viewDate.getFullYear();
+            const month = STATE.viewDate.getMonth();
+
+            monthLabel.innerText = `${MONTHS[month]} ${year}`;
+
+            const firstDay = new Date(year, month, 1).getDay();
+            const daysInMonth = new Date(year, month + 1, 0).getDate();
+            let startOffset = (firstDay === 0) ? 6 : firstDay - 1;
+
+            body.innerHTML = '';
+            for (let i = 0; i < startOffset; i++) {
+                body.innerHTML += '<div class="calendar-day opacity-0">.</div>';
+            }
+
+            const roomBookings = STATE.allBookings.filter(b => b.room_id == STATE.activeRoomId);
+            const todayStr = new Date().toISOString().split('T')[0];
+
+            for (let d = 1; d <= daysInMonth; d++) {
+                const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+
+                const isBooked = roomBookings.some(b => {
+                    const start = b.start_date || b.check_in;
+                    const end = b.end_date || b.check_out;
+                    return dateStr >= start && dateStr <= end;
+                });
+
+                const isToday = dateStr === todayStr;
+                const isSelected = dateStr === STATE.selectedDate;
+
+                body.innerHTML += `
+                    <div onclick="selectDate('${dateStr}')" 
+                         class="calendar-day ${isBooked ? 'booked' : ''} ${isToday ? 'today' : ''} ${isSelected ? 'selected' : ''}">
+                        ${d}
+                    </div>
+                `;
             }
         }
 
-        window.handleBookingSubmit = async (e) => {
-            e.preventDefault();
-            const guestName = document.getElementById('guestName').value;
-            const propertyId = document.getElementById('bookingProperty').value;
+        function selectDate(dateStr) {
+            STATE.selectedDate = dateStr;
+            renderCalendar();
+        }
 
-            // Validate Dates
-            const selectedDates = profileCalendar ? profileCalendar.selectedDates : [];
-            if (!selectedDates || selectedDates.length !== 2) {
-                alert("გთხოვთ მონიშნოთ შესვლის და გასვლის თარიღები");
+        function renderBookingDetails() {
+            const list = document.getElementById('bookingDetailsList');
+            const roomBookings = STATE.allBookings
+                .filter(b => b.room_id == STATE.activeRoomId)
+                .sort((a, b) => new Date(a.start_date || a.check_in) - new Date(b.start_date || b.check_in));
+
+            if (roomBookings.length === 0) {
+                list.innerHTML = `
+                    <div class="flex flex-col items-center justify-center py-16 text-gray-400">
+                        <div class="bg-white p-4 rounded-full shadow-sm mb-4">
+                            <svg class="w-8 h-8 opacity-20" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+                        </div>
+                        <p class="text-xs font-bold uppercase tracking-wider">ჯავშნები არ არის</p>
+                    </div>
+                `;
                 return;
             }
 
-            const checkIn = flatpickr.formatDate(selectedDates[0], "Y-m-d");
-            const checkOut = flatpickr.formatDate(selectedDates[1], "Y-m-d");
+            list.innerHTML = roomBookings.map(b => {
+                const start = b.start_date || b.check_in;
+                const end = b.end_date || b.check_out;
+                const d1 = new Date(start);
+                const d2 = new Date(end);
+                const range = `${d1.getDate()} ${MONTHS[d1.getMonth()].slice(0, 3)} - ${d2.getDate()} ${MONTHS[d2.getMonth()].slice(0, 3)}`;
 
-            // Calculate Price
-            const prop = myProperties.find(p => p.id == propertyId);
-            let totalPrice = 0;
-            if (prop) {
-                // Approximate calc if price string is simple
-                // In real app, might want better parsing
-                const priceText = prop.price || (prop.seasonal_prices ? prop.seasonal_prices[0] : '0');
-                // Assuming standard price property or something similar exists or using helper
-                // Reuse calculateCurrentPrice logic if available, but for now simple:
-                const pVal = parseFloat(priceText) || 0;
-                const diffDays = Math.ceil(Math.abs(selectedDates[1] - selectedDates[0]) / (1000 * 60 * 60 * 24));
-                totalPrice = pVal * diffDays;
-            }
+                return `
+                    <div class="bg-white p-5 rounded-3xl shadow-sm border border-gray-100 flex flex-col gap-4 animate-fade-in group hover:shadow-md transition-shadow">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <p class="text-[10px] font-bold text-emerald-600 uppercase tracking-widest mb-1">პერიოდი</p>
+                                <p class="text-lg font-bold text-gray-900 leading-none">${range}</p>
+                                <p class="text-[10px] text-gray-400 font-medium mt-1">${d2.getFullYear()}</p>
+                            </div>
+                            <span class="px-3 py-1 bg-gray-50 text-gray-600 rounded-full text-[10px] font-bold uppercase tracking-wider border border-gray-100">
+                                ${b.status === 'confirmed' ? '✅ დადასტურებული' : '⏳ მოლოდინი'}
+                            </span>
+                        </div>
+                        <div class="flex items-center gap-3 pt-3 border-t border-gray-50">
+                            <div class="w-9 h-9 rounded-xl bg-orange-50 text-orange-600 flex items-center justify-center font-bold text-sm">
+                                ${b.guest_name ? b.guest_name[0] : 'G'}
+                            </div>
+                            <div>
+                                <p class="text-[10px] text-gray-400 font-bold uppercase tracking-widest">სტუმარი</p>
+                                <p class="text-sm font-bold text-gray-700">${b.guest_name || 'GUEST'}</p>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
 
-            try {
-                // Manual Booking by Host
-                const bookingCode = '#' + 'BK-' + Math.floor(10000 + Math.random() * 90000);
-
-                const { error } = await State.supabase.from('bookings').insert([{
-                    property_id: propertyId,
-                    check_in: checkIn,
-                    check_out: checkOut,
-                    guest_name: guestName,
-                    guest_phone: 'Manual Entry',
-                    total_price: totalPrice,
-                    status: 'confirmed',
-                    user_id: State.user.id,
-                    booking_code: bookingCode
-                }]);
-
-                if (error) throw error;
-
-                alert("ჯავშანი დამატებულია");
-                closeBookingModal();
-                e.target.reset();
-                if (profileCalendar) profileCalendar.clear();
-                loadBookings();
-
-            } catch (err) {
-                console.error(err);
-                alert("შეცდომა: " + err.message);
-            }
+        window.changeMonth = (offset) => {
+            STATE.viewDate.setMonth(STATE.viewDate.getMonth() + offset);
+            renderCalendar();
         };
 
         // Initialize on load
-        document.addEventListener('DOMContentLoaded', init);
-
+        initDashboard();
     </script>
 </body>
 
 </html>
+```

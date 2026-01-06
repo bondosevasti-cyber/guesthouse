@@ -143,18 +143,74 @@
         .animate-fade-in-down {
             animation: fadeInDown 0.3s ease-out forwards;
         }
+
+        /* Calendar Styles */
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 2px;
+        }
+
+        .calendar-day {
+            aspect-ratio: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.875rem;
+            cursor: pointer;
+            border-radius: 0.5rem;
+            transition: all 0.2s;
+        }
+
+        .calendar-day:hover:not(.booked) {
+            background-color: #f3f4f6;
+        }
+
+        .calendar-day.booked {
+            background-color: #ef4444 !important;
+            color: white !important;
+            cursor: not-allowed;
+        }
+
+        .calendar-day.selected {
+            background-color: #22c55e !important;
+            color: white !important;
+        }
+
+        .calendar-day.in-range {
+            background-color: #dcfce7 !important;
+        }
+
+        .calendar-day.other-month {
+            color: #d1d5db;
+        }
+
+        .calendar-day.today {
+            border: 2px solid #22c55e;
+            font-weight: bold;
+        }
     </style>
 </head>
 
 <body class="bg-white">
 
+    <!-- Global Loader -->
+    <div id="loadingSpinner"
+        class="fixed inset-0 z-[100] bg-white flex flex-col items-center justify-center transition-opacity duration-500">
+        <div class="relative">
+            <div class="w-16 h-16 border-4 border-emerald-100 border-t-emerald-500 rounded-full animate-spin"></div>
+            <div class="absolute inset-0 flex items-center justify-center">
+                <div class="w-8 h-8 bg-emerald-50 rounded-full"></div>
+            </div>
+        </div>
+        <p class="mt-4 text-emerald-600 font-bold tracking-widest animate-pulse uppercase text-xs">იტვირთება...</p>
+    </div>
+
     <!-- Navbar -->
-    <nav class="fixed top-0 left-0 w-full z-50 bg-white shadow-md py-3 transition-all duration-300" id="navbar">
+    <nav class="fixed top-0 left-0 w-full z-40 bg-white shadow-md py-3 transition-all duration-300" id="navbar">
         <div class="max-w-7xl mx-auto px-4 flex justify-between items-center">
-            <a href="index.html">
-                <img src="images/gh_logo.webp" alt="GeorgiaTravel"
-                    class="h-10 max-h-[40px] w-auto drop-shadow-md object-contain cursor-pointer transition-transform hover:scale-105 active:scale-95">
-            </a>
+            <img src="images/gh_logo.webp" alt="GeorgiaTravel" onclick="window.location.href='index.html'"
+                class="h-10 max-h-[40px] w-auto drop-shadow-md object-contain cursor-pointer transition-transform hover:scale-105 active:scale-95">
             <div class="flex items-center space-x-3">
                 <a href="pricing.html"
                     class="hidden md:flex items-center bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-lg shadow-md transition-all animate-flag">
@@ -164,7 +220,7 @@
                     </svg>
                     ფასების ნახვა
                 </a>
-                <button onclick="window.location.href='add-property.html'"
+                <button onclick="openAddModal()"
                     class="bg-amber-500 hover:bg-amber-600 text-white font-bold p-2.5 rounded-full transition-all shadow-md hover:shadow-lg flex items-center justify-center transform hover:-translate-y-0.5"
                     title="დამატება">
                     <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -172,10 +228,7 @@
                     </svg>
                 </button>
                 <div id="navAuthBtnContainer">
-                    <button id="navAuthBtn" onclick="window.location.href='index.html?auth=register'"
-                        class="bg-[#2d78b1] hover:bg-[#236a9e] text-white font-bold py-2 px-6 rounded-full transition-all shadow-sm">
-                        შესვლა
-                    </button>
+                    <!-- Dynamic Auth Content -->
                 </div>
             </div>
         </div>
@@ -241,12 +294,22 @@
                             <!-- Tabs JS Generated -->
                         </section>
                         <div id="roomInfoDisplay"
-                            class="hidden mt-3 bg-gray-50 border border-gray-100 rounded-2xl p-4 animate-fade-in flex items-center gap-3">
-                            <span class="text-indigo-600 bg-indigo-50 p-2 rounded-lg">🛏️</span>
-                            <div>
-                                <h4 id="displayRoomName" class="font-bold text-gray-900"></h4>
-                                <p id="displayRoomBeds" class="text-sm text-gray-500"></p>
+                            class="hidden mt-3 bg-gray-50 border border-gray-100 rounded-2xl p-6 animate-fade-in space-y-3">
+                            <div class="flex items-center gap-3">
+                                <span class="text-indigo-600 bg-indigo-50 p-2 rounded-lg">🛏️</span>
+                                <div>
+                                    <h4 id="displayRoomName" class="font-bold text-gray-900"></h4>
+                                    <div class="flex gap-4 mt-1">
+                                        <p id="displayRoomBeds"
+                                            class="text-xs text-gray-500 font-medium uppercase tracking-wider"></p>
+                                        <p id="displayRoomSq"
+                                            class="text-xs text-indigo-600 font-bold uppercase tracking-wider"></p>
+                                    </div>
+                                </div>
                             </div>
+                            <p id="displayRoomDesc"
+                                class="text-sm text-gray-600 leading-relaxed italic border-t border-gray-100 pt-3 hidden">
+                            </p>
                         </div>
                     </div>
 
@@ -290,24 +353,74 @@
                         class="w-full bg-gray-900 hover:bg-black text-white py-4 rounded-2xl font-bold text-lg shadow-lg transition active:scale-95 mb-4">
                         დაჯავშნა
                     </button>
-                    <p class="text-center text-xs text-gray-400">თანხის გადახდა ხდება მასპინძელთან</p>
-                </div>
+                    <p class="text-center text-xs text-gray-400 mb-6">თანხის გადახდა ხდება მასპინძელთან</p>
 
-                <!-- Host Card -->
-                <div class="bg-gray-50 rounded-3xl p-6 flex items-center gap-4">
-                    <div id="hostAvatar"
-                        class="w-14 h-14 rounded-full bg-gray-200 overflow-hidden border-2 border-white shadow-sm">
-                        <img src="https://www.gravatar.com/avatar/?d=mp" class="w-full h-full object-cover">
-                    </div>
-                    <div>
-                        <p class="text-[10px] text-gray-400 font-bold uppercase">მასპინძელი</p>
-                        <h3 id="hostName" class="font-bold text-gray-800 text-lg">...</h3>
-                        <p id="hostPhone" class="text-sm text-gray-500 font-medium">...</p>
+                    <!-- Host Info Section -->
+                    <div class="pt-6 border-t border-gray-100">
+                        <p class="text-[10px] text-gray-400 font-bold uppercase mb-3 tracking-widest">მასპინძელი</p>
+                        <div class="flex items-center gap-3">
+                            <div
+                                class="w-12 h-12 bg-emerald-100 rounded-full flex items-center justify-center text-emerald-600 font-bold text-xl shadow-inner">
+                                <span id="hostAvatarChar">?</span>
+                            </div>
+                            <div class="overflow-hidden">
+                                <h4 id="hostName" class="font-bold text-gray-900 truncate">...</h4>
+                                <p id="hostPhone" class="text-xs text-emerald-600 font-bold">...</p>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
+        </div>
     </main>
+
+    <!-- Booking Modal -->
+    <div id="bookingModal" class="fixed inset-0 z-[100] hidden overflow-y-auto">
+        <div class="flex items-center justify-center min-h-screen p-4">
+            <div class="fixed inset-0 bg-black/60 backdrop-blur-sm" onclick="closeBookingModal()"></div>
+
+            <div class="relative bg-white w-full max-w-5xl rounded-3xl shadow-2xl overflow-hidden animate-fade-in-down">
+                <!-- Header -->
+                <div class="bg-gray-900 text-white px-8 py-6 flex justify-between items-center">
+                    <div>
+                        <h2 class="text-2xl font-bold">აირჩიეთ ოთახი და თარიღები</h2>
+                        <p class="text-gray-400 text-sm mt-1">დაჯავშნეთ თქვენი სასურველი ოთახი სასურველ დროს</p>
+                    </div>
+                    <button onclick="closeBookingModal()" class="text-gray-400 hover:text-white transition-colors">
+                        <svg class="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </button>
+                </div>
+
+                <!-- Content Area -->
+                <div id="bookingRoomsList" class="p-8 space-y-8 max-h-[70vh] overflow-y-auto custom-scrollbar">
+                    <!-- Rooms will be injected here -->
+                    <div class="flex flex-col items-center justify-center py-20">
+                        <div
+                            class="animate-spin h-10 w-10 border-4 border-amber-500 border-t-transparent rounded-full mb-4">
+                        </div>
+                        <p class="text-gray-500 font-medium">ოთახების ჩატვირთვა...</p>
+                    </div>
+                </div>
+
+                <!-- Footer (Optional Informational) -->
+                <div class="bg-gray-50 px-8 py-4 border-t border-gray-100 flex justify-between items-center">
+                    <div class="flex items-center gap-4 text-sm">
+                        <div class="flex items-center gap-1.5"><span
+                                class="w-3 h-3 bg-white border border-gray-200 rounded-sm"></span> თავისუფალი</div>
+                        <div class="flex items-center gap-1.5"><span class="w-3 h-3 bg-red-500 rounded-sm"></span>
+                            დაკავებული</div>
+                        <div class="flex items-center gap-1.5"><span class="w-3 h-3 bg-green-500 rounded-sm"></span>
+                            არჩეული</div>
+                    </div>
+                    <p class="text-xs text-gray-400">* დაჯავშნის შემდეგ დაგიკავშირდებათ მასპინძელი</p>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <script>
         const SUPABASE_URL = 'https://akmbyvovhubccznrzotv.supabase.co';
@@ -327,36 +440,60 @@
             const id = urlParams.get('id');
             if (!id) { window.location.href = 'index.html'; return; }
 
-            // Fetch Prop and Rooms in parallel
-            const [propRes, roomsRes] = await Promise.all([
-                supabaseClient.from('guesthouse_ge').select('*').eq('id', id).single(),
-                supabaseClient.from('rooms').select('*').eq('property_id', id)
-            ]);
+            try {
+                // Fetch Prop and Rooms in parallel (Outside of Auth)
+                const [propRes, roomsRes] = await Promise.all([
+                    supabaseClient.from('guesthouse_ge').select('*').eq('id', id).single(),
+                    supabaseClient.from('rooms').select('*').eq('property_id', id)
+                ]);
 
-            if (propRes.error || !propRes.data) {
-                Swal.fire('შეცდომა', 'განცხადება ვერ მოიძებნა', 'error');
-                return;
+                if (propRes.error || !propRes.data) {
+                    Swal.fire('შეცდომა', 'განცხადება ვერ მოიძებნა', 'error');
+                    return;
+                }
+
+                GSTATE.property = propRes.data;
+                GSTATE.rooms = roomsRes.data || [];
+
+                renderProperty(GSTATE.property);
+                if (GSTATE.rooms.length > 0) {
+                    initRoomTabs(GSTATE.property, GSTATE.rooms);
+                }
+                updateNavigation();
+
+                // Auth listener
+                supabaseClient.auth.onAuthStateChange((event, session) => {
+                    updateNavigation();
+                });
+            } catch (err) {
+                console.error("Initialization Error:", err);
+                Swal.fire('შეცდომა', 'მონაცემების ჩატვირთვა ვერ მოხერხდა', 'error');
+            } finally {
+                // ALWAYS hide global loader
+                setTimeout(() => {
+                    const loader = document.getElementById('loadingSpinner');
+                    if (loader) {
+                        loader.classList.add('opacity-0');
+                        setTimeout(() => loader.classList.add('hidden'), 500);
+                    }
+                }, 800);
             }
-
-            GSTATE.property = propRes.data;
-            GSTATE.rooms = roomsRes.data || [];
-
-            renderProperty(GSTATE.property);
-            if (GSTATE.rooms.length > 0) {
-                initRoomTabs(GSTATE.property, GSTATE.rooms);
-            }
-            updateAuthUI();
         }
 
         function renderProperty(p) {
             document.title = `${p.name} | GuesthouseGE`;
-            document.getElementById('propName').innerText = p.name;
-            document.getElementById('propLocation').querySelector('span').innerText = p.location;
-            document.getElementById('propType').innerText = p.type;
-            document.getElementById('propDescription').innerText = p.description;
-            document.getElementById('propPrice').innerText = p.price_display;
-            document.getElementById('hostName').innerText = p.host_name;
-            document.getElementById('hostPhone').innerText = p.phone;
+            document.getElementById('propName').innerText = p.name || '...';
+            document.getElementById('propLocation').querySelector('span').innerText = p.location || '...';
+            document.getElementById('propType').innerText = p.type || '...';
+            document.getElementById('propDescription').innerText = p.description || '...';
+            document.getElementById('propPrice').innerText = p.price_display || '...';
+
+            // Host Info
+            if (document.getElementById('hostName')) document.getElementById('hostName').innerText = p.host_name || 'მასპინძელი';
+            if (document.getElementById('hostPhone')) document.getElementById('hostPhone').innerText = p.phone || 'ნომერი არ არის';
+            if (document.getElementById('hostAvatarChar') && p.host_name) {
+                document.getElementById('hostAvatarChar').innerText = p.host_name.charAt(0).toUpperCase();
+            }
 
             // Tier Badge
             const tb = document.getElementById('tierBadge');
@@ -413,8 +550,7 @@
         let slideImages = [];
 
         window.updateHeroGallery = function (imgs) {
-            slideImages = imgs && imgs.length > 0 ? imgs : ['images/gh_logo.webp'];
-            currentSlideIndex = 0;
+            slideImages = Array.isArray(imgs) && imgs.length > 0 ? imgs : [GSTATE.property.image_url || 'images/gh_logo.webp'];
             updateGallery();
         };
 
@@ -422,45 +558,65 @@
             const hero = document.getElementById('heroContainer');
             if (!hero) return;
 
-            const src = slideImages[currentSlideIndex];
-
-            hero.innerHTML = `
-                <div class="relative w-full h-[500px] group overflow-hidden bg-gray-100">
-                    <img src="${src}" class="w-full h-full object-cover transition-opacity duration-500" alt="Property Image">
-                    
-                    <!-- Navigation Arrows -->
-                    ${slideImages.length > 1 ? `
-                        <button onclick="window.prevSlide(event)" class="absolute left-4 top-1/2 -translate-y-1/2 z-30 bg-white/70 hover:bg-white text-gray-800 p-3 rounded-full backdrop-blur-md shadow-lg transition-all opacity-0 group-hover:opacity-100 transform active:scale-90">
-                            <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
-                            </svg>
-                        </button>
-                        <button onclick="window.nextSlide(event)" class="absolute right-4 top-1/2 -translate-y-1/2 z-30 bg-white/70 hover:bg-white text-gray-800 p-3 rounded-full backdrop-blur-md shadow-lg transition-all opacity-0 group-hover:opacity-100 transform active:scale-90">
-                            <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-                            </svg>
-                        </button>
-                    ` : ''}
-
-                    <!-- Counter Badge -->
-                    <div class="absolute top-4 right-4 z-30 bg-black/60 text-white text-xs font-bold px-3 py-1.5 rounded-full backdrop-blur-md">
-                        ${currentSlideIndex + 1} / ${slideImages.length}
+            if (slideImages.length === 1) {
+                hero.innerHTML = `
+                    <div class="h-[300px] md:h-[500px] w-full overflow-hidden">
+                        <img src="${slideImages[0]}" class="w-full h-full object-cover cursor-pointer" onclick="window.expandImage('${slideImages[0]}')">
                     </div>
-                </div>
-            `;
+                `;
+            } else {
+                let gridHtml = `
+                    <div class="grid grid-cols-2 md:grid-cols-4 md:grid-rows-2 gap-2 h-[300px] md:h-[500px] relative">
+                        <div class="col-span-2 row-span-2 h-full overflow-hidden">
+                            <img src="${slideImages[0]}" class="w-full h-full object-cover cursor-pointer hover:opacity-95 transition duration-300" onclick="window.expandImage('${slideImages[0]}')">
+                        </div>
+                `;
+
+                const sideImages = slideImages.slice(1, 5);
+                sideImages.forEach(src => {
+                    gridHtml += `
+                        <div class="hidden md:block h-full overflow-hidden">
+                            <img src="${src}" class="w-full h-full object-cover cursor-pointer hover:scale-105 hover:opacity-95 transition duration-500" onclick="window.expandImage('${src}')">
+                        </div>
+                    `;
+                });
+
+                if (slideImages.length > 1) {
+                    gridHtml += `
+                         <button onclick="window.showAllPhotos()" class="absolute bottom-4 right-4 bg-white text-gray-900 px-4 py-2 rounded-xl font-bold shadow-md hover:bg-gray-50 transition border border-gray-200 z-10 flex items-center gap-2">
+                            <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+                            ყველა ფოტო (${slideImages.length})
+                         </button>
+                    `;
+                }
+
+                gridHtml += `</div>`;
+                hero.innerHTML = gridHtml;
+            }
         }
 
-        window.nextSlide = (e) => {
-            if (e) e.stopPropagation();
-            currentSlideIndex = (currentSlideIndex + 1) % slideImages.length;
-            updateGallery();
+        window.showAllPhotos = function () {
+            let imagesHtml = slideImages.map(img => `
+                <div class="aspect-video rounded-xl overflow-hidden shadow-sm">
+                    <img src="${img}" class="w-full h-full object-cover cursor-pointer hover:scale-105 transition duration-500" onclick="window.expandImage('${img}')">
+                </div>
+            `).join('');
+
+            Swal.fire({
+                title: 'გალერეა',
+                html: `<div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">${imagesHtml}</div>`,
+                width: '90%',
+                showConfirmButton: false,
+                showCloseButton: true,
+                customClass: {
+                    container: 'z-[1000]',
+                    popup: 'rounded-3xl'
+                }
+            });
         };
 
-        window.prevSlide = (e) => {
-            if (e) e.stopPropagation();
-            currentSlideIndex = (currentSlideIndex - 1 + slideImages.length) % slideImages.length;
-            updateGallery();
-        };
+        window.nextSlide = () => { }; // No longer needed but keeping to avoid errors if called
+        window.prevSlide = () => { };
 
         function initRoomTabs(property, rooms) {
             const section = document.getElementById('roomTabsSection');
@@ -502,12 +658,30 @@
                 infoBox.classList.remove('hidden');
                 document.getElementById('displayRoomName').innerText = roomData.name;
                 document.getElementById('displayRoomBeds').innerText = `${roomData.beds} საწოლი`;
+
+                // Sq Meters
+                const sqEl = document.getElementById('displayRoomSq');
+                if (roomData.sq_meters) {
+                    sqEl.innerText = `${roomData.sq_meters} m²`;
+                    sqEl.classList.remove('hidden');
+                } else {
+                    sqEl.classList.add('hidden');
+                }
+
+                // Description
+                const descEl = document.getElementById('displayRoomDesc');
+                if (roomData.description) {
+                    descEl.innerText = roomData.description;
+                    descEl.classList.remove('hidden');
+                } else {
+                    descEl.classList.add('hidden');
+                }
             } else {
                 infoBox.classList.add('hidden');
             }
         }
 
-        async function updateAuthUI() {
+        async function updateNavigation() {
             const container = document.getElementById('navAuthBtnContainer');
             if (!container) return;
 
@@ -518,7 +692,6 @@
                 const name = user.user_metadata.full_name || user.email;
                 const avatar = user.user_metadata.avatar_url || 'https://www.gravatar.com/avatar/?d=mp';
 
-                // პაკეტის შემოწმება
                 let tier = 'Free';
                 try {
                     const { data } = await supabaseClient.from('profiles').select('subscription_tier').eq('id', user.id).single();
@@ -564,26 +737,376 @@
                 </div>`;
             } else {
                 container.innerHTML = `
-                <button onclick="window.location.href='index.html?auth=register'" class="bg-[#2d78b1] hover:bg-[#236a9e] text-white font-bold py-2 px-6 rounded-full transition-all shadow-sm">
+                <button id="navAuthBtn" onclick="openAuthModal('register')"
+                    class="bg-[#2d78b1] hover:bg-[#236a9e] text-white font-bold py-2 px-6 rounded-full transition-all shadow-sm">
                     შესვლა
                 </button>`;
             }
         }
 
-        window.handleLogout = async function () {
-            try {
-                const { error } = await supabaseClient.auth.signOut();
-                if (error) throw error;
-                window.location.reload();
-            } catch (err) {
-                console.error("Logout Error:", err.message);
-            }
+        window.handleLogout = async function () { await supabaseClient.auth.signOut(); window.location.reload(); };
+
+        window.toggleProfileDropdown = function (e) { e.stopPropagation(); const d = document.getElementById('profileDropdown'); if (d) d.classList.toggle('hidden'); };
+
+        window.openAddModal = async () => {
+            const { data: { session } } = await supabaseClient.auth.getSession();
+            if (session) window.location.href = 'add-property.html';
+            else window.location.href = 'index.html?auth=register';
         };
 
-        window.toggleProfileDropdown = function (e) {
-            e.stopPropagation();
+        window.openAuthModal = (type) => { window.location.href = `index.html?auth=${type}`; };
+
+        document.addEventListener('click', (e) => {
             const d = document.getElementById('profileDropdown');
-            if (d) d.classList.toggle('hidden');
+            const t = document.getElementById('profileTrigger');
+            if (d && !d.classList.contains('hidden') && !d.contains(e.target) && (!t || !t.contains(e.target))) {
+                d.classList.add('hidden');
+            }
+        });
+
+        init();
+
+        // --- Booking System Logic ---
+        let BSTATE = {
+            allBookings: [],
+            selections: {} // { roomId: { start: null, end: null } }
+        };
+
+        document.getElementById('bookBtn').onclick = async function () {
+            const { data: { session } } = await supabaseClient.auth.getSession();
+            if (!session) {
+                Swal.fire({
+                    title: 'ავტორიზაცია',
+                    text: 'ჯავშნისთვის საჭიროა სისტემაში შესვლა.',
+                    icon: 'info',
+                    showCancelButton: true,
+                    confirmButtonText: 'შესვლა',
+                    cancelButtonText: 'გაუქმება',
+                    confirmButtonColor: '#2d78b1'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        window.location.href = 'index.html?auth=login';
+                    }
+                });
+                return;
+            }
+            openBookingModal();
+        };
+
+        async function openBookingModal() {
+            document.getElementById('bookingModal').classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
+
+            const propId = GSTATE.property.id;
+
+            // Fetch bookings for this property
+            const today = new Date().toISOString().split('T')[0];
+            const { data: bookings, error: bError } = await supabaseClient
+                .from('bookings')
+                .select('*')
+                .eq('property_id', propId)
+                .gte('end_date', today);
+
+            if (bError) {
+                console.error("Error fetching bookings:", bError);
+            }
+
+            BSTATE.allBookings = bookings || [];
+            renderBookingRooms();
+        }
+
+        function closeBookingModal() {
+            document.getElementById('bookingModal').classList.add('hidden');
+            document.body.style.overflow = 'auto';
+            BSTATE.selections = {};
+        }
+
+        function renderBookingRooms() {
+            const list = document.getElementById('bookingRoomsList');
+            if (!GSTATE.rooms || GSTATE.rooms.length === 0) {
+                list.innerHTML = `
+                    <div class="text-center py-12">
+                        <p class="text-gray-500 text-lg font-medium">ამ ობიექტზე ოთახები არაა დამატებული.</p>
+                        <p class="text-gray-400 text-sm mt-2">დაუკავშირდით მასპინძელს დეტალებისთვის.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            list.innerHTML = GSTATE.rooms.map(room => `
+                <div class="bg-white border border-gray-100 rounded-3xl overflow-hidden shadow-sm hover:shadow-md transition-shadow">
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-0">
+                        <!-- Info & Gallery Section -->
+                        <div class="lg:col-span-2 p-6 flex flex-col md:flex-row gap-6">
+                            <!-- Image Gallery -->
+                            <div class="w-full md:w-1/2 space-y-3">
+                                <div class="relative aspect-video rounded-2xl overflow-hidden bg-gray-100">
+                                    <img id="hero-${room.id}" src="${(room.images && room.images[0]) || 'images/gh_logo.webp'}" 
+                                         class="w-full h-full object-cover cursor-pointer hover:scale-105 transition-transform duration-500"
+                                         onclick="expandImage(this.src)">
+                                </div>
+                                <div class="mb-4">
+                                ${room.images && room.images.length > 0 ? `
+                                    <h4 class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3">ფოტოები</h4>
+                                    <div class="grid grid-cols-4 sm:grid-cols-6 gap-2">
+                                        ${room.images.map((img, idx) => `
+                                            <div class="aspect-square rounded-lg overflow-hidden border-2 transition-all ${idx === 0 ? 'border-amber-500 shadow-md' : 'border-transparent hover:border-gray-200'}">
+                                                <img src="${img}" 
+                                                     class="w-full h-full object-cover cursor-pointer"
+                                                     onclick="updateRoomHero('${room.id}', this)">
+                                            </div>
+                                        `).join('')}
+                                    </div>
+                                ` : ''}
+                            </div>
+
+                            <!-- Room Details -->
+                            <div class="flex-1 space-y-4">
+                                <div class="flex items-center justify-between">
+                                    <h3 class="text-xl font-extrabold text-gray-900">${room.name}</h3>
+                                    <span class="bg-indigo-50 text-indigo-600 px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1">
+                                        🛏️ ${room.beds} საწოლი
+                                    </span>
+                                </div>
+                                <div class="text-sm text-gray-500 leading-relaxed italic">
+                                    ${room.description || 'ოთახის აღწერა არ არის.'}
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Calendar Section -->
+                        <div class="bg-gray-50/50 p-6 border-l border-gray-100">
+                            <h4 class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-4">აირჩიეთ პერიოდი</h4>
+                            <div id="calendar-${room.id}" class="mb-4">
+                                ${renderMonthlyCalendar(room.id)}
+                            </div>
+                            <div class="flex justify-between items-center mb-4">
+                                <div id="rangeText-${room.id}" class="text-xs font-bold text-gray-700">
+                                    მონიშნეთ თარიღები
+                                </div>
+                                <button onclick="confirmRoomBooking('${room.id}')" 
+                                        id="confirmBtn-${room.id}"
+                                        class="bg-green-500 hover:bg-green-600 disabled:bg-gray-300 disabled:cursor-not-allowed text-white px-5 py-2 rounded-xl text-sm font-bold shadow-md transition-all active:scale-95"
+                                        disabled>
+                                    დაჯავშნა
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        window.updateRoomHero = function (roomId, thumb) {
+            const hero = document.getElementById(`hero-${roomId}`);
+            hero.src = thumb.src;
+            // Update border
+            const parent = thumb.parentElement;
+            parent.querySelectorAll('img').forEach(img => img.classList.remove('border-amber-500'));
+            parent.querySelectorAll('img').forEach(img => img.classList.add('border-transparent'));
+            thumb.classList.remove('border-transparent');
+            thumb.classList.add('border-amber-500');
+        };
+
+        window.expandImage = function (src) {
+            Swal.fire({
+                imageUrl: src,
+                imageAlt: 'Room Image',
+                showConfirmButton: false,
+                width: '80%',
+                background: 'transparent',
+                customClass: {
+                    image: 'rounded-2xl shadow-2xl'
+                }
+            });
+        };
+
+        function renderMonthlyCalendar(roomId) {
+            const now = new Date();
+            const year = now.getFullYear();
+            const month = now.getMonth();
+
+            const firstDay = new Date(year, month, 1).getDay(); // 0 (Sun) - 6 (Sat)
+            const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+            // Adjust for Monday start (0: Mon, 6: Sun)
+            let startOffset = (firstDay === 0) ? 6 : firstDay - 1;
+
+            const days = [];
+
+            // Header
+            const weekDays = ['ო', 'ს', 'ო', 'ხ', 'პ', 'შ', 'კ'];
+
+            let html = `
+                <div class="text-center font-bold text-xs text-indigo-600 mb-2 uppercase tracking-wide">
+                    ${MONTHS[month]} ${year}
+                </div>
+                <div class="calendar-grid">
+                    ${weekDays.map(d => `<div class="text-[10px] text-gray-300 font-bold text-center pb-2">${d}</div>`).join('')}
+            `;
+
+            const roomBookings = BSTATE.allBookings.filter(b => b.room_id == roomId);
+
+            // Previous month empty slots
+            for (let i = 0; i < startOffset; i++) {
+                html += `<div class="calendar-day other-month"></div>`;
+            }
+
+            for (let d = 1; d <= daysInMonth; d++) {
+                const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+                const isBooked = roomBookings.some(b => dateStr >= b.start_date && dateStr <= b.end_date);
+                const isToday = d === now.getDate();
+
+                html += `
+                    <div class="calendar-day ${isBooked ? 'booked' : ''} ${isToday ? 'today' : ''}" 
+                         data-date="${dateStr}"
+                         onclick="${isBooked ? '' : `handleDayClick('${roomId}', '${dateStr}')`}">
+                        ${d}
+                    </div>
+                `;
+            }
+
+            html += `</div>`;
+            return html;
+        }
+
+        window.handleDayClick = function (roomId, date) {
+            if (!BSTATE.selections[roomId]) {
+                BSTATE.selections[roomId] = { start: null, end: null };
+            }
+
+            const sel = BSTATE.selections[roomId];
+
+            if (!sel.start || (sel.start && sel.end)) {
+                // New selection
+                sel.start = date;
+                sel.end = null;
+            } else if (sel.start && !sel.end) {
+                if (date < sel.start) {
+                    sel.start = date;
+                } else if (date === sel.start) {
+                    sel.start = null;
+                } else {
+                    // Check if any booked day is in between
+                    if (isRangeBlocked(roomId, sel.start, date)) {
+                        Swal.fire({
+                            icon: 'warning',
+                            title: 'შეუძლებელი პერიოდი',
+                            text: 'არჩეულ პერიოდში არის უკვე დაკავებული დღეები.',
+                            confirmButtonColor: '#111827'
+                        });
+                        return;
+                    }
+                    sel.end = date;
+                }
+            }
+
+            updateCalendarUI(roomId);
+        };
+
+        function isRangeBlocked(roomId, start, end) {
+            const roomBookings = BSTATE.allBookings.filter(b => b.room_id == roomId);
+            return roomBookings.some(b => {
+                // If a booking starts or ends or is within our selection
+                return (b.start_date >= start && b.start_date <= end) ||
+                    (b.end_date >= start && b.end_date <= end) ||
+                    (start >= b.start_date && start <= b.end_date);
+            });
+        }
+
+        function updateCalendarUI(roomId) {
+            const container = document.getElementById(`calendar-${roomId}`);
+            const sel = BSTATE.selections[roomId];
+            const days = container.querySelectorAll('.calendar-day:not(.booked):not(.other-month)');
+
+            days.forEach(day => {
+                const d = day.getAttribute('data-date');
+                day.classList.remove('selected', 'in-range');
+
+                if (sel.start === d || sel.end === d) {
+                    day.classList.add('selected');
+                } else if (sel.start && sel.end && d > sel.start && d < sel.end) {
+                    day.classList.add('in-range');
+                }
+            });
+
+            const txt = document.getElementById(`rangeText-${roomId}`);
+            const btn = document.getElementById(`confirmBtn-${roomId}`);
+
+            if (sel.start && sel.end) {
+                txt.innerText = `${sel.start} - ${sel.end}`;
+                btn.disabled = false;
+            } else if (sel.start) {
+                txt.innerText = `მონიშნეთ დასასრული`;
+                btn.disabled = true;
+            } else {
+                txt.innerText = `მონიშნეთ თარიღები`;
+                btn.disabled = true;
+            }
+        }
+
+        window.confirmRoomBooking = async function (roomId) {
+            const sel = BSTATE.selections[roomId];
+            if (!sel.start || !sel.end) return;
+
+            const { value: confirm } = await Swal.fire({
+                title: 'დაადასტურეთ ჯავშანი',
+                text: `${sel.start}-დან ${sel.end}-მდე`,
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonText: 'დასტური',
+                cancelButtonText: 'გაუქმება',
+                confirmButtonColor: '#22c55e',
+                cancelButtonColor: '#6b7280'
+            });
+
+            if (!confirm) return;
+
+            try {
+                const { data: { session } } = await supabaseClient.auth.getSession();
+                if (!session) {
+                    Swal.fire({
+                        title: 'ავტორიზაცია',
+                        text: 'ჯავშნისთვის საჭიროა სისტემაში შესვლა.',
+                        icon: 'info',
+                        showCancelButton: true,
+                        confirmButtonText: 'შესვლა',
+                        cancelButtonText: 'გაუქმება',
+                        confirmButtonColor: '#2d78b1'
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            window.location.href = 'index.html?auth=login';
+                        }
+                    });
+                    return;
+                }
+
+                const { error } = await supabaseClient.from('bookings').insert({
+                    property_id: GSTATE.property.id,
+                    room_id: roomId,
+                    start_date: sel.start,
+                    end_date: sel.end,
+                    user_id: session.user.id,
+                    status: 'pending', // Default status
+                    guest_name: session.user.user_metadata.full_name || session.user.email,
+                    guest_phone: GSTATE.property.phone, // Or user phone if available
+                    booking_code: 'BK' + Math.random().toString(36).substr(2, 6).toUpperCase()
+                });
+
+                if (error) throw error;
+
+                await Swal.fire({
+                    icon: 'success',
+                    title: 'გილოცავთ!',
+                    text: 'თქვენი ჯავშანი წარმატებით გაიგზავნა. მასპინძელი მალე დაგიკავშირდებათ.',
+                    confirmButtonColor: '#22c55e'
+                });
+
+                closeBookingModal();
+            } catch (err) {
+                console.error(err);
+                Swal.fire('შეცდომა', 'ჯავშნის გაგზავნა ვერ მოხერხდა: ' + err.message, 'error');
+            }
         };
 
         document.addEventListener('click', (e) => {

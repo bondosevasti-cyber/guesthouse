@@ -104,7 +104,7 @@
 <body class="bg-gray-50 pb-32">
 
     <!-- Navbar -->
-    <nav class="fixed top-0 left-0 w-full z-50 bg-white shadow-md py-3 transition-all duration-300" id="navbar">
+    <nav class="fixed top-0 left-0 w-full z-40 bg-white shadow-md py-3 transition-all duration-300" id="navbar">
         <div class="max-w-7xl mx-auto px-4 flex justify-between items-center">
             <a href="index.html">
                 <img src="images/gh_logo.webp" alt="GeorgiaTravel"
@@ -119,7 +119,7 @@
                     </svg>
                     ფასების ნახვა
                 </a>
-                <button onclick="window.location.href='add-property.html'"
+                <button onclick="openAddModal()"
                     class="bg-amber-500 hover:bg-amber-600 text-white font-bold p-2.5 rounded-full transition-all shadow-md hover:shadow-lg flex items-center justify-center transform hover:-translate-y-0.5"
                     title="დამატება">
                     <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -127,7 +127,7 @@
                     </svg>
                 </button>
                 <div id="navAuthBtnContainer">
-                    <button id="navAuthBtn" onclick="window.location.href='index.html?auth=register'"
+                    <button id="navAuthBtn" onclick="openAuthModal('register')"
                         class="bg-[#2d78b1] hover:bg-[#236a9e] text-white font-bold py-2 px-6 rounded-full transition-all shadow-sm">
                         შესვლა
                     </button>
@@ -395,11 +395,93 @@
         };
 
         // 1. AUTH & INIT
+        async function updateNavigation() {
+            const container = document.getElementById('navAuthBtnContainer');
+            if (!container) return;
+
+            const { data: { session } } = await supabaseClient.auth.getSession();
+            const user = session ? session.user : null;
+
+            if (user) {
+                const name = user.user_metadata.full_name || user.email;
+                const avatar = user.user_metadata.avatar_url || 'https://www.gravatar.com/avatar/?d=mp';
+
+                let tier = 'Free';
+                try {
+                    const { data } = await supabaseClient.from('profiles').select('subscription_tier').eq('id', user.id).single();
+                    if (data) tier = data.subscription_tier || 'Free';
+                } catch (e) { console.error(e); }
+
+                let tierDisplay = '';
+                if (tier === 'super_vip') tierDisplay = `<span class="ml-1 text-amber-500 font-extrabold text-xs uppercase">✨ Super VIP</span>`;
+                else if (tier === 'vip') tierDisplay = `<span class="ml-1 text-indigo-600 font-bold text-xs uppercase">💎 VIP</span>`;
+                else tierDisplay = `<span class="ml-1 text-gray-500 text-xs">Standard</span><a href="pricing.html" class="ml-2 text-[9px] bg-amber-500 text-white px-1.5 py-0.5 rounded uppercase font-bold hover:bg-amber-600">Upgrade</a>`;
+
+                container.innerHTML = `
+                <div class="relative ml-2">
+                    <button id="profileTrigger" onclick="toggleProfileDropdown(event)" class="flex items-center space-x-2 focus:outline-none bg-white hover:bg-gray-50 rounded-full pl-1 pr-3 py-1 transition-colors border border-gray-200 shadow-sm">
+                        <img src="${avatar}" class="w-8 h-8 rounded-full border border-gray-200 object-cover">
+                        <span class="hidden sm:inline text-sm font-bold text-gray-700 max-w-[100px] truncate">${name.split(' ')[0]}</span>
+                        <svg class="w-4 h-4 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>
+                    </button>
+                    <div id="profileDropdown" class="absolute right-0 mt-3 w-64 bg-white rounded-2xl shadow-2xl border border-gray-100 py-2 hidden z-50 animate-fade-in-down">
+                        <div class="px-5 py-3 border-b border-gray-100 mb-1">
+                            <p class="text-xs text-gray-400 font-medium uppercase tracking-wider">ანგარიში</p>
+                            <p class="text-sm font-bold text-gray-900 truncate mt-0.5">${name}</p>
+                            <div class="mt-1 flex items-center">${tierDisplay}</div>
+                        </div>
+                        <div class="py-1">
+                            <a href="profile.html" class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-amber-50 hover:text-amber-600 transition-colors">
+                                <svg class="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
+                                ჩემი განცხადებები
+                            </a>
+                            <a href="bookings.html" class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-indigo-50 hover:text-indigo-600 transition-colors">
+                                <svg class="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                                ჯავშნები / კალენდარი
+                            </a>
+                        </div>
+                        <div class="border-t border-gray-100 py-1">
+                            <button onclick="handleLogout()" class="flex w-full items-center px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors">
+                                <svg class="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"/></svg>
+                                გასვლა
+                            </button>
+                        </div>
+                    </div>
+                </div>`;
+            } else {
+                container.innerHTML = `
+                <button id="navAuthBtn" onclick="openAuthModal('register')"
+                    class="bg-[#2d78b1] hover:bg-[#236a9e] text-white font-bold py-2 px-6 rounded-full transition-all shadow-sm">
+                    შესვლა
+                </button>`;
+            }
+        }
+
+        window.updateNavigation = updateNavigation;
+        window.toggleProfileDropdown = function (e) { e.stopPropagation(); const d = document.getElementById('profileDropdown'); if (d) d.classList.toggle('hidden'); };
+        window.handleLogout = async function () { await supabaseClient.auth.signOut(); window.location.reload(); };
+        window.openAddModal = () => { if (GSTATE.user) window.location.href = 'add-property.html'; else openAuthModal('register'); };
+        window.openAuthModal = (type) => { window.location.href = `index.html?auth=${type}`; };
+
+        document.addEventListener('click', (e) => {
+            const d = document.getElementById('profileDropdown');
+            const t = document.getElementById('profileTrigger');
+            if (d && !d.classList.contains('hidden') && !d.contains(e.target) && (!t || !t.contains(e.target))) {
+                d.classList.add('hidden');
+            }
+        });
+
         window.checkAuth = async function () {
             const { data: { session } } = await supabaseClient.auth.getSession();
             GSTATE.user = session ? session.user : null;
-            window.updateAuthUI();
+            updateNavigation();
             if (GSTATE.editId) await window.loadPropertyForEdit();
+
+            // Auth Changes
+            supabaseClient.auth.onAuthStateChange((event, session) => {
+                GSTATE.user = session ? session.user : null;
+                updateNavigation();
+            });
         };
 
         window.loadPropertyForEdit = async function () {
@@ -448,6 +530,8 @@
                         isNew: false,
                         name: r.name,
                         beds: r.beds,
+                        description: r.description || "",
+                        sq_meters: r.sq_meters || "",
                         images: r.images || [],
                         prices: sp && Array.isArray(sp.prices) ? sp.prices : Array(12).fill('')
                     };
@@ -463,7 +547,7 @@
             }
         };
 
-        window.updateAuthUI = async function () {
+        window.updateNavigation = async function () {
             const container = document.getElementById('navAuthBtnContainer');
             if (!container) return;
 
@@ -550,6 +634,18 @@
             }
         });
 
+        window.openAddModal = () => {
+            if (GSTATE.user) {
+                window.location.href = 'add-property.html';
+            } else {
+                window.location.href = 'index.html?auth=register';
+            }
+        };
+
+        window.openAuthModal = (type) => {
+            window.location.href = `index.html?auth=${type}`;
+        };
+
         // 2. MAIN IMAGES
         window.handleMainImages = function (input) {
             const files = Array.from(input.files);
@@ -580,7 +676,16 @@
         // 3. ROOMS
         window.addRoom = function () {
             const roomId = "new_" + Date.now().toString();
-            GSTATE.rooms.push({ id: roomId, isNew: true, name: `Room ${GSTATE.rooms.length + 1}`, beds: 2, images: [], prices: Array(12).fill('') });
+            GSTATE.rooms.push({
+                id: roomId,
+                isNew: true,
+                name: `Room ${GSTATE.rooms.length + 1}`,
+                beds: 2,
+                description: "",
+                sq_meters: "",
+                images: [],
+                prices: Array(12).fill('')
+            });
             window.renderRooms();
             window.renderSeasonalTable();
         };
@@ -613,11 +718,42 @@
                 div.innerHTML = `
                     <button onclick="window.removeRoom('${room.id}')" class="absolute top-4 right-4 text-gray-400 hover:text-red-500 bg-gray-50 p-2 rounded-full transition"><svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg></button>
                     <div class="flex items-center gap-2 mb-4"><span class="bg-indigo-100 text-indigo-600 font-bold px-2 py-1 rounded text-xs">ოთახი #${index + 1}</span></div>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                        <div><label class="block text-xs font-bold text-gray-500 uppercase mb-1">ოთახის სახელი</label><input type="text" value="${room.name}" oninput="window.updateRoom('${room.id}', 'name', this.value)" class="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl outline-none focus:border-indigo-500 transition"></div>
-                        <div><label class="block text-xs font-bold text-gray-500 uppercase mb-1">საწოლების რაოდენობა</label><input type="number" value="${room.beds}" min="1" oninput="window.updateRoom('${room.id}', 'beds', this.value)" class="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl outline-none focus:border-indigo-500 transition"></div>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-4">
+                        <div>
+                            <label class="block text-xs font-bold text-gray-500 uppercase mb-1">ოთახის სახელი</label>
+                            <input type="text" value="${room.name}" oninput="window.updateRoom('${room.id}', 'name', this.value)" class="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl outline-none focus:border-indigo-500 transition" placeholder="მაგ: საძინებელი 1">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-gray-500 uppercase mb-1">საწოლების რაოდენობა</label>
+                            <input type="number" value="${room.beds}" min="1" oninput="window.updateRoom('${room.id}', 'beds', this.value)" class="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl outline-none focus:border-indigo-500 transition">
+                        </div>
                     </div>
-                    <div class="border-t border-gray-100 pt-4"><div class="flex justify-between items-end mb-3"><label class="text-xs font-bold text-gray-500 uppercase">ფოტოები (მაქს. 15)</label><span class="text-xs font-bold ${room.images.length >= 15 ? 'text-red-500' : 'text-gray-400'}">${room.images.length} / 15</span></div><div class="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 gap-3">${imageThumbnails}${addBtn}</div></div>`;
+
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+                        <div class="md:col-span-2">
+                            <label class="block text-xs font-bold text-gray-500 uppercase mb-1">ოთახის აღწერა</label>
+                            <textarea oninput="window.updateRoom('${room.id}', 'description', this.value)" class="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl outline-none focus:border-indigo-500 transition h-24 resize-none text-sm" placeholder="აღწერეთ ოთახი...">${room.description || ""}</textarea>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-gray-500 uppercase mb-1">კვადრატულობა (m²)</label>
+                            <div class="relative">
+                                <input type="number" value="${room.sq_meters}" min="1" oninput="window.updateRoom('${room.id}', 'sq_meters', this.value)" class="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl outline-none focus:border-indigo-500 transition" placeholder="25">
+                                <span class="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 font-bold text-xs uppercase">m²</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="border-t border-gray-100 pt-4">
+                        <div class="flex justify-between items-end mb-3">
+                            <label class="text-xs font-bold text-gray-500 uppercase">ფოტოები (მაქს. 15)</label>
+                            <span class="text-xs font-bold ${room.images.length >= 15 ? 'text-red-500' : 'text-gray-400'}">${room.images.length} / 15</span>
+                        </div>
+                        <div class="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 gap-3">
+                            ${imageThumbnails}
+                            ${addBtn}
+                        </div>
+                    </div>`;
                 container.appendChild(div);
             });
         };
@@ -864,7 +1000,14 @@
                 if (toDelete.length > 0) await supabaseClient.from('rooms').delete().in('id', toDelete);
 
                 for (const pr of processedRooms) {
-                    const rData = { property_id: pId, name: pr.name, beds: parseInt(pr.beds), images: pr.finalImages };
+                    const rData = {
+                        property_id: pId,
+                        name: pr.name,
+                        beds: parseInt(pr.beds),
+                        description: pr.description || "",
+                        sq_meters: pr.sq_meters ? parseInt(pr.sq_meters) : null,
+                        images: pr.finalImages
+                    };
                     if (pr.isNew) await supabaseClient.from('rooms').insert([rData]);
                     else await supabaseClient.from('rooms').update(rData).eq('id', pr.id);
                 }
