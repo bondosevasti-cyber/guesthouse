@@ -1025,21 +1025,21 @@
                 }
 
                 // 4. Send to Supabase
-                const bookingData = {
-                    property_id: STATE.property.id,
-                    room_id: STATE.activeRoomId,
-                    user_id: STATE.user.id, // Owner's ID
-                    guest_name: guestName,
-                    guest_phone: guestPhone,
-                    check_in: STATE.checkIn,
-                    check_out: STATE.checkOut,
-                    total_price: finalPrice || 0, // Ensure strictly number
-                    status: 'confirmed'
-                };
-
+                // 4. Send to Supabase
                 const { error } = await supabaseClient
                     .from('bookings')
-                    .insert([bookingData]);
+                    .insert([{
+                        property_id: STATE.property.id,
+                        room_id: STATE.activeRoomId,
+                        user_id: STATE.user.id,
+                        guest_name: guestName,
+                        guest_phone: guestPhone,
+                        start_date: STATE.checkIn, // Corrected column
+                        end_date: STATE.checkOut,   // Corrected column
+                        total_price: finalPrice || 0,
+                        status: 'confirmed',
+                        booking_code: 'MANUAL-' + Date.now().toString().slice(-6)
+                    }]);
 
                 if (error) throw error;
 
