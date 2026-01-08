@@ -157,107 +157,125 @@
     </div>
 
     <script>
-        const CONFIG = {
-            SUPABASE_URL: 'https://akmbyvovhubccznrzotv.supabase.co',
-            SUPABASE_KEY: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFrbWJ5dm92aHViY2N6bnJ6b3R2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjY3NTgwMTAsImV4cCI6MjA4MjMzNDAxMH0.oHLvbx5_4hYATF-hQkJvp0oxZ6ljUfGKYP-Mf7_CVtM'
-        };
+        document.addEventListener('DOMContentLoaded', function () {
+            // 1. Initialize Supabase (Hardcoded for stability in this file)
+            const sbUrl = 'https://akmbyvovhubccznrzotv.supabase.co';
+            const sbKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFrbWJ5dm92aHViY2N6bnJ6b3R2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjY3NTgwMTAsImV4cCI6MjA4MjMzNDAxMH0.oHLvbx5_4hYATF-hQkJvp0oxZ6ljUfGKYP-Mf7_CVtM';
+            const supabase = window.supabase.createClient(sbUrl, sbKey);
 
-        const supabase = window.supabase.createClient(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_KEY);
+            // 2. DOM Elements
+            const tabLogin = document.getElementById('tabLogin');
+            const tabRegister = document.getElementById('tabRegister');
+            const nameContainer = document.getElementById('nameFieldContainer');
+            const submitText = document.getElementById('authSubmitText');
+            const footerText = document.getElementById('authFooterText');
+            const btnGoogle = document.getElementById('btn-google-auth');
+            const btnFacebook = document.getElementById('btn-facebook-auth');
+            const authForm = document.getElementById('authForm');
+            const authEmail = document.getElementById('authEmail');
+            const authPassword = document.getElementById('authPassword');
+            const authName = document.getElementById('authName');
 
-        let currentMode = 'login';
+            let currentMode = 'login'; // 'login' or 'register'
 
-        const DOM = {
-            tabLogin: document.getElementById('tabLogin'),
-            tabRegister: document.getElementById('tabRegister'),
-            nameFieldContainer: document.getElementById('nameFieldContainer'),
-            authSubmitText: document.getElementById('authSubmitText'),
-            authFooterText: document.getElementById('authFooterText'),
-            authForm: document.getElementById('authForm'),
-            authName: document.getElementById('authName'),
-            authEmail: document.getElementById('authEmail'),
-            authPassword: document.getElementById('authPassword'),
-            btnGoogle: document.getElementById('btn-google-auth'),
-            btnFacebook: document.getElementById('btn-facebook-auth')
-        };
+            // 3. Tab Switching Logic
+            function switchTab(mode) {
+                currentMode = mode;
+                if (mode === 'login') {
+                    // UI Updates
+                    tabLogin.classList.add('text-amber-600', 'border-amber-600');
+                    tabLogin.classList.remove('text-gray-400', 'border-transparent');
 
-        function switchTab(mode) {
-            currentMode = mode;
-            if (mode === 'login') {
-                DOM.tabLogin.classList.replace('auth-tab-inactive', 'auth-tab-active');
-                DOM.tabRegister.classList.replace('auth-tab-active', 'auth-tab-inactive');
-                DOM.nameFieldContainer.classList.add('hidden');
-                DOM.authSubmitText.textContent = 'შესვლა';
-                DOM.authFooterText.textContent = 'დაგავიწყდათ პაროლი?';
-            } else {
-                DOM.tabRegister.classList.replace('auth-tab-inactive', 'auth-tab-active');
-                DOM.tabLogin.classList.replace('auth-tab-active', 'auth-tab-inactive');
-                DOM.nameFieldContainer.classList.remove('hidden');
-                DOM.authSubmitText.textContent = 'რეგისტრაცია';
-                DOM.authFooterText.textContent = 'უკვე გაქვთ ანგარიში? შესვლა';
-            }
-        }
-
-        DOM.tabLogin.onclick = () => switchTab('login');
-        DOM.tabRegister.onclick = () => switchTab('register');
-        DOM.authFooterText.onclick = () => {
-            if (currentMode === 'register') switchTab('login');
-        };
-
-        // Social Auth
-        DOM.btnGoogle.addEventListener('click', async () => {
-            console.log('Google Button Clicked');
-            const { error } = await supabase.auth.signInWithOAuth({
-                provider: 'google',
-                options: { redirectTo: window.location.origin + '/index.html' }
-            });
-            if (error) alert(error.message);
-        });
-
-        DOM.btnFacebook.addEventListener('click', async () => {
-            console.log('Facebook Button Clicked');
-            const { error } = await supabase.auth.signInWithOAuth({
-                provider: 'facebook',
-                options: { redirectTo: window.location.origin + '/index.html' }
-            });
-            if (error) alert(error.message);
-        });
-
-        // Email Auth
-        DOM.authForm.onsubmit = async (e) => {
-            e.preventDefault();
-            const email = DOM.authEmail.value;
-            const password = DOM.authPassword.value;
-            const name = DOM.authName.value;
-
-            try {
-                if (currentMode === 'login') {
-                    const { error } = await supabase.auth.signInWithPassword({ email, password });
-                    if (error) throw error;
+                    tabRegister.classList.add('text-gray-400', 'border-transparent');
+                    tabRegister.classList.remove('text-amber-600', 'border-amber-600');
+                    nameContainer.classList.add('hidden');
+                    submitText.textContent = 'შესვლა';
+                    footerText.innerHTML = 'დაგავიწყდათ პაროლი?';
                 } else {
-                    const { error } = await supabase.auth.signUp({
-                        email,
-                        password,
-                        options: { data: { full_name: name } }
-                    });
-                    if (error) throw error;
-                    alert('რეგისტრაცია წარმატებულია! გთხოვთ შეამოწმოთ ელ-ფოსტა.');
+                    // Register Mode
+                    tabRegister.classList.add('text-amber-600', 'border-amber-600');
+                    tabRegister.classList.remove('text-gray-400', 'border-transparent');
+
+                    tabLogin.classList.add('text-gray-400', 'border-transparent');
+                    tabLogin.classList.remove('text-amber-600', 'border-amber-600');
+                    nameContainer.classList.remove('hidden');
+                    submitText.textContent = 'რეგისტრაცია';
+                    footerText.innerHTML = 'უკვე გაქვთ ანგარიში? <span class="font-bold cursor-pointer">შესვლა</span>';
                 }
-                window.location.href = 'index.html';
-            } catch (err) {
-                alert(err.message);
             }
-        };
 
-        // Redirect if already logged in
-        async function checkSession() {
-            const { data: { session } } = await supabase.auth.getSession();
-            if (session) window.location.href = 'index.html';
-        }
-        checkSession();
+            // Attach Tab Listeners
+            if (tabLogin) tabLogin.addEventListener('click', () => switchTab('login'));
+            if (tabRegister) tabRegister.addEventListener('click', () => switchTab('register'));
 
-        // Listen for auth state changes
-        supabase.auth.onAuthStateChange((event, session) => {
-            if (event === 'SIGNED_IN') window.location.href = 'index.html';
+            // Handle footer text click for switching
+            if (footerText) {
+                footerText.addEventListener('click', () => {
+                    if (currentMode === 'register') switchTab('login');
+                });
+            }
+
+            // 4. Social Auth Logic (Safe Event Listeners)
+            async function handleSocialLogin(provider) {
+                console.log(`${provider} login clicked`);
+                const { error } = await supabase.auth.signInWithOAuth({
+                    provider: provider,
+                    options: {
+                        redirectTo: window.location.origin + '/index.html'
+                    }
+                });
+                if (error) alert(error.message);
+            }
+
+            if (btnGoogle) {
+                btnGoogle.addEventListener('click', () => handleSocialLogin('google'));
+            }
+            if (btnFacebook) {
+                btnFacebook.addEventListener('click', () => handleSocialLogin('facebook'));
+            }
+
+            // 5. Email Auth Logic
+            if (authForm) {
+                authForm.addEventListener('submit', async (e) => {
+                    e.preventDefault();
+                    const email = authEmail.value;
+                    const password = authPassword.value;
+                    const name = authName ? authName.value : '';
+
+                    try {
+                        if (currentMode === 'login') {
+                            const { error } = await supabase.auth.signInWithPassword({ email, password });
+                            if (error) throw error;
+                        } else {
+                            const { error } = await supabase.auth.signUp({
+                                email,
+                                password,
+                                options: { data: { full_name: name } }
+                            });
+                            if (error) throw error;
+                            alert('რეგისტრაცია წარმატებულია! გთხოვთ შეამოწმოთ ელ-ფოსტა.');
+                        }
+                        window.location.href = 'index.html';
+                    } catch (err) {
+                        alert(err.message);
+                    }
+                });
+            }
+
+            // Initialize
+            switchTab('login');
+
+            // Redirect if already logged in
+            async function checkSession() {
+                const { data: { session } } = await supabase.auth.getSession();
+                if (session) window.location.href = 'index.html';
+            }
+            checkSession();
+
+            // Listen for auth state changes
+            supabase.auth.onAuthStateChange((event, session) => {
+                if (event === 'SIGNED_IN') window.location.href = 'index.html';
+            });
         });
     </script>
 </body>

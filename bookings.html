@@ -172,6 +172,26 @@
             <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 min-h-[700px]">
                 <!-- Left Column: Room Selector -->
                 <div class="lg:col-span-4 flex flex-col gap-6">
+                    <!-- Property Selector -->
+                    <div class="material-card overflow-hidden h-fit">
+                        <div class="p-6">
+                            <h3 class="font-bold text-gray-900 text-lg mb-4">აირჩიეთ ობიექტი</h3>
+                            <div class="relative">
+                                <select id="propertySelect"
+                                    class="w-full bg-gray-50 border border-gray-200 text-gray-900 text-sm rounded-2xl focus:ring-emerald-500 focus:border-emerald-500 block p-4 appearance-none font-bold cursor-pointer transition-all hover:bg-white">
+                                    <option value="">იტვირთება...</option>
+                                </select>
+                                <div
+                                    class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-gray-500">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M19 9l-7 7-7-7"></path>
+                                    </svg>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
                     <div class="material-card overflow-hidden h-fit">
                         <div class="p-6 border-b border-gray-100 flex justify-between items-center">
                             <h3 class="font-bold text-gray-900 text-lg">თქვენი ოთახები</h3>
@@ -317,6 +337,7 @@
         let STATE = {
             user: null,
             property: null,
+            allProperties: [],
             rooms: [],
             allBookings: [],
             activeRoomId: null,
@@ -348,49 +369,25 @@
 
                 if (propError) throw propError;
 
-                const property = properties && properties.length > 0 ? properties[0] : null;
-                console.log('Fetched Property:', property);
+                STATE.allProperties = properties || [];
+                console.log('Fetched All Properties:', STATE.allProperties);
 
                 // 3. Crucial Check: If no property found, stop and show UI
-                if (!property) {
+                if (STATE.allProperties.length === 0) {
                     console.warn("No property found for user. Showing empty state.");
-                    // Hide loader
                     document.getElementById('loadingSpinner').classList.add('hidden');
-                    // Show empty state
                     document.getElementById('emptyState').classList.remove('hidden');
-                    return; // STOP EXECUTION HERE. Do not fetch rooms.
+                    return;
                 }
-                STATE.property = property;
 
-                // 4. Fetch Rooms and Bookings in Parallel
-                const [roomsRes, bookingsRes] = await Promise.all([
-                    supabaseClient.from('rooms').select('*').eq('property_id', property.id),
-                    supabaseClient.from('bookings').select('*').eq('property_id', property.id)
-                ]);
+                renderPropertySelector();
 
-                if (roomsRes.error) throw roomsRes.error;
-                if (bookingsRes.error) throw bookingsRes.error;
+                // Initial switch to first property
+                await switchProperty(STATE.allProperties[0].id);
 
-                console.log('Fetched Bookings:', bookingsRes.data);
-
-                STATE.rooms = roomsRes.data || [];
-                STATE.allBookings = bookingsRes.data || [];
-
-                // 5. Render
+                // Show Dashboard
                 document.getElementById('loadingSpinner').classList.add('hidden');
                 document.getElementById('dashboardContent').classList.remove('hidden');
-
-                if (STATE.rooms.length > 0) {
-                    STATE.activeRoomId = STATE.rooms[0].id;
-                    renderRooms();
-                    updateActiveRoomUI();
-                } else {
-                    document.getElementById('roomList').innerHTML = `
-                        <div class="flex flex-col items-center justify-center py-10 text-center px-4">
-                            <p class="text-gray-400 text-sm italic">ოთახები ჯერ არ გაქვთ დამატებული</p>
-                        </div>
-                    `;
-                }
 
             } catch (err) {
                 console.error("Dashboard Error:", err.message || err);
@@ -448,6 +445,71 @@
             const d = document.getElementById('profileDropdown');
             if (d) d.classList.add('hidden');
         });
+
+        function renderPropertySelector() {
+            const select = document.getElementById('propertySelect');
+            if (!select) return;
+
+            select.innerHTML = STATE.allProperties.map(p => `
+                <option value="${p.id}" ${STATE.property && p.id === STATE.property.id ? 'selected' : ''}>
+                    ${p.name}
+                </option>
+            `).join('');
+
+            select.onchange = (e) => switchProperty(e.target.value);
+        }
+
+        async function switchProperty(propertyId) {
+            try {
+                // Show loading layout or simple spinner on room list
+                document.getElementById('roomList').innerHTML = `
+                    <div class="flex items-center justify-center py-20">
+                        <div class="animate-spin h-8 w-8 border-4 border-emerald-500 border-t-transparent rounded-full"></div>
+                    </div>
+                `;
+
+                const property = STATE.allProperties.find(p => p.id == propertyId);
+                if (!property) return;
+
+                STATE.property = property;
+
+                // Fetch Rooms and Bookings
+                const [roomsRes, bookingsRes] = await Promise.all([
+                    supabaseClient.from('rooms').select('*').eq('property_id', property.id),
+                    supabaseClient.from('bookings').select('*').eq('property_id', property.id)
+                ]);
+
+                if (roomsRes.error) throw roomsRes.error;
+                if (bookingsRes.error) throw bookingsRes.error;
+
+                STATE.rooms = roomsRes.data || [];
+                STATE.allBookings = bookingsRes.data || [];
+
+                if (STATE.rooms.length > 0) {
+                    STATE.activeRoomId = STATE.rooms[0].id;
+                    renderRooms();
+                    updateActiveRoomUI();
+                } else {
+                    document.getElementById('roomCountLabel').innerText = '0';
+                    document.getElementById('roomList').innerHTML = `
+                        <div class="flex flex-col items-center justify-center py-10 text-center px-4">
+                            <p class="text-gray-400 text-sm italic">ოთახები ჯერ არ გაქვთ დამატებული</p>
+                        </div>
+                    `;
+                    // Clear details
+                    document.getElementById('activeRoomName').innerText = "...";
+                    document.getElementById('calendarBody').innerHTML = "";
+                    document.getElementById('bookingDetailsList').innerHTML = "";
+                }
+            } catch (err) {
+                console.error("Switch Property Error:", err);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'შეცდომა',
+                    text: 'მონაცემების ჩატვირთვა ვერ მოხერხდა'
+                });
+            }
+        }
 
         function renderRooms() {
             const list = document.getElementById('roomList');
