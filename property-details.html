@@ -146,6 +146,7 @@
         }
 
         /* Calendar Styles */
+        /* Calendar Styles */
         .calendar-grid {
             display: grid;
             grid-template-columns: repeat(7, 1fr);
@@ -159,36 +160,84 @@
             justify-content: center;
             font-size: 0.875rem;
             cursor: pointer;
-            border-radius: 0.5rem;
-            transition: all 0.2s;
+            border-radius: 8px;
+            /* Start softer */
+            /* Critical: Animate background and transform */
+            transition: background-color 0.25s cubic-bezier(0.4, 0, 0.2, 1), color 0.25s ease, transform 0.2s ease, box-shadow 0.2s ease;
+            position: relative;
+            overflow: hidden;
+            transform: scale(1);
         }
 
-        .calendar-day:hover:not(.booked) {
-            background-color: #f3f4f6;
+        .calendar-day:hover:not(.booked):not(.selected):not(.in-range) {
+            background-color: #ecfdf5;
+            /* Emerald-50 */
+            transform: scale(1.05);
+            z-index: 2;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
         }
 
         .calendar-day.booked {
             background-color: #ef4444 !important;
             color: white !important;
+            font-weight: 600;
             cursor: not-allowed;
+            opacity: 0.8;
         }
 
+        /* Animated Endpoints */
+        .calendar-day.selected.range-start,
+        .calendar-day.selected.range-end {
+            background-color: #10b981 !important;
+            /* Emerald-500 */
+            color: white !important;
+            font-weight: 700;
+            border-radius: 50% !important;
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+            transform: scale(1.1);
+            z-index: 5;
+            animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        /* Fallback for just 'selected' if logic hasn't updated yet */
         .calendar-day.selected {
-            background-color: #22c55e !important;
+            background-color: #10b981 !important;
             color: white !important;
         }
 
+        /* Smooth Range Connecting */
         .calendar-day.in-range {
-            background-color: #dcfce7 !important;
+            background-color: #d1fae5 !important;
+            /* Emerald-100 */
+            color: #065f46;
+            border-radius: 0 !important;
+            /* Connect visually */
+            margin: 0 -1px;
+            width: calc(100% + 2px);
+            z-index: 1;
+            transform: scale(1.02);
         }
 
         .calendar-day.other-month {
             color: #d1d5db;
+            pointer-events: none;
         }
 
         .calendar-day.today {
             border: 2px solid #22c55e;
             font-weight: bold;
+        }
+
+        @keyframes popIn {
+            0% {
+                transform: scale(0.5);
+                opacity: 0;
+            }
+
+            100% {
+                transform: scale(1);
+                opacity: 1;
+            }
         }
     </style>
 </head>
@@ -1041,11 +1090,17 @@
 
             days.forEach(day => {
                 const d = day.getAttribute('data-date');
-                day.classList.remove('selected', 'in-range');
+                // Reset - remove all potential styling classes
+                day.classList.remove('selected', 'range-start', 'range-end', 'in-range');
 
-                if (sel.start === d || sel.end === d) {
-                    day.classList.add('selected');
-                } else if (sel.start && sel.end && d > sel.start && d < sel.end) {
+                if (sel.start === d) {
+                    day.classList.add('selected', 'range-start');
+                }
+                if (sel.end === d) {
+                    day.classList.add('selected', 'range-end');
+                }
+
+                if (sel.start && sel.end && d > sel.start && d < sel.end) {
                     day.classList.add('in-range');
                 }
             });

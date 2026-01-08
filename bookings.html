@@ -39,8 +39,45 @@
             display: grid;
             grid-template-columns: repeat(7, 1fr);
             gap: 8px;
+            touch-action: none;
+            /* Prevents scrolling while dragging dates */
         }
 
+        /* PREMIUM UI: Soft Shadows & Card Styles */
+        .material-card {
+            box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.05), 0 10px 30px -5px rgba(16, 185, 129, 0.08) !important;
+            border: 1px solid rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(10px);
+            /* Glass-lite feel */
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            background-color: white;
+            border-radius: 1.5rem;
+        }
+
+        .material-card:hover {
+            box-shadow: 0 10px 30px -3px rgba(0, 0, 0, 0.08), 0 20px 40px -5px rgba(16, 185, 129, 0.12) !important;
+            transform: translateY(-2px);
+        }
+
+        /* Inputs & Selects Polish */
+        select,
+        input,
+        textarea {
+            transition: all 0.3s ease !important;
+            border: 1px solid #e5e7eb !important;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.02) !important;
+        }
+
+        select:focus,
+        input:focus,
+        textarea:focus {
+            border-color: #10b981 !important;
+            /* Emerald-500 */
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.15) !important;
+            transform: translateY(-1px);
+        }
+
+        /* CALENDAR CORE: Zero-Flicker Transitions */
         .calendar-day {
             aspect-ratio: 1;
             display: flex;
@@ -48,29 +85,72 @@
             justify-content: center;
             font-size: 0.95rem;
             font-weight: 500;
-            border-radius: 9999px;
-            /* Perfectly circular */
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            position: relative;
             cursor: pointer;
+            overflow: hidden;
+            transition: all 0.2s cubic-bezier(0.25, 0.8, 0.25, 1);
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.5);
+            backdrop-filter: blur(4px);
         }
 
-        .calendar-day:hover:not(.booked):not(.selected) {
-            background-color: #f1f5f9;
+        .calendar-day:hover:not(.booked):not(.selected):not(.in-range) {
+            background-color: #ecfdf5;
+            /* Emerald-50 */
+            transform: scale(1.05);
+            z-index: 2;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+        }
+
+        .calendar-day:active {
+            transform: scale(0.95);
         }
 
         .calendar-day.booked {
             background-color: #ef4444;
             color: white !important;
             font-weight: 600;
+            cursor: not-allowed !important;
         }
 
+        /* Animated Endpoints */
         .calendar-day.selected {
-            background-color: #10b981;
-            /* Emerald-500 */
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%) !important;
+            box-shadow: 0 4px 15px rgba(16, 185, 129, 0.4);
+            transform: scale(1.05);
+            z-index: 10;
+            border-radius: 12px !important;
             color: white !important;
             font-weight: 700;
-            box-shadow: 0 0 15px rgba(16, 185, 129, 0.4);
+        }
+
+        /* Smooth Range Connecting */
+        .calendar-day.in-range {
+            background: rgba(16, 185, 129, 0.15) !important;
+            color: #047857;
+            border-radius: 0 !important;
+            margin: 0;
+            width: 100%;
+            z-index: 1;
+        }
+
+        .calendar-day.range-start {
+            border-radius: 12px 0 0 12px !important;
+        }
+
+        .calendar-day.range-end {
+            border-radius: 0 12px 12px 0 !important;
+        }
+
+        @keyframes popIn {
+            0% {
+                transform: scale(0.5);
+                opacity: 0;
+            }
+
+            100% {
+                transform: scale(1);
+                opacity: 1;
+            }
         }
 
         .calendar-day.today {
@@ -112,6 +192,62 @@
 
         .animate-fade-in {
             animation: fadeInScale 0.4s ease-out forwards;
+        }
+
+        /* Toast Notification Container */
+        #toast-container {
+            position: fixed;
+            bottom: 2rem;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 9999;
+            pointer-events: none;
+        }
+
+        /* The Toast Itself */
+        .bouncy-toast {
+            background: rgba(255, 255, 255, 0.95);
+            border-left: 5px solid #ef4444;
+            /* Red for error */
+            color: #1f2937;
+            padding: 1rem 2rem;
+            border-radius: 1rem;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            font-weight: 700;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            backdrop-filter: blur(5px);
+            animation: bounceIn 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55) forwards;
+        }
+
+        .bouncy-toast.fade-out {
+            animation: fadeOutDown 0.5s forwards;
+        }
+
+        @keyframes bounceIn {
+            0% {
+                opacity: 0;
+                transform: translateY(100%) scale(0.5);
+            }
+
+            100% {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+
+        @keyframes fadeOutDown {
+            0% {
+                opacity: 1;
+                transform: translateY(0);
+            }
+
+            100% {
+                opacity: 0;
+                transform: translateY(20px);
+            }
         }
     </style>
 </head>
@@ -367,6 +503,21 @@
         const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFrbWJ5dm92aHViY2N6bnJ6b3R2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjY3NTgwMTAsImV4cCI6MjA4MjMzNDAxMH0.oHLvbx5_4hYATF-hQkJvp0oxZ6ljUfGKYP-Mf7_CVtM';
         const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
+        const Toast = Swal.mixin({
+            toast: true,
+            position: 'top-end',
+            showConfirmButton: false,
+            timer: 3000,
+            timerProgressBar: true,
+            didOpen: (toast) => {
+                toast.addEventListener('mouseenter', Swal.stopTimer)
+                toast.addEventListener('mouseleave', Swal.resumeTimer)
+            },
+            customClass: {
+                popup: 'rounded-2xl shadow-xl border border-gray-100 backdrop-blur-md bg-white/90'
+            }
+        });
+
         const MONTHS = ["იანვარი", "თებერვალი", "მარტი", "აპრილი", "მაისი", "ივნისი", "ივლისი", "აგვისტო", "სექტემბერი", "ოქტომბერი", "ნოევმერი", "დეკემბერი"];
 
         let STATE = {
@@ -588,6 +739,28 @@
             renderBookingDetails();
         }
 
+        // Global State for Dragging
+        let isDragging = false;
+        let dragStartStr = null;
+
+        function updateCalendarVisuals() {
+            const dayCells = document.querySelectorAll('.calendar-day[data-date]');
+            dayCells.forEach(cell => {
+                const dateStr = cell.getAttribute('data-date');
+                // Reset visual classes
+                cell.classList.remove('selected', 'range-start', 'range-end', 'in-range');
+
+                // Re-apply based on STATE
+                if (STATE.checkIn === dateStr) {
+                    cell.classList.add('selected', 'range-start');
+                } else if (STATE.checkOut === dateStr) {
+                    cell.classList.add('selected', 'range-end');
+                } else if (STATE.checkIn && STATE.checkOut && dateStr > STATE.checkIn && dateStr < STATE.checkOut) {
+                    cell.classList.add('in-range');
+                }
+            });
+        }
+
         function renderCalendar() {
             const body = document.getElementById('calendarBody');
             const monthLabel = document.getElementById('currentMonthYear');
@@ -597,7 +770,6 @@
             monthLabel.innerText = `${MONTHS[month]} ${year}`;
 
             // Sync Dropdown
-            // Sync Dropdown
             const select = document.getElementById('monthSelector');
             if (select) select.value = `${year}-${month}`;
 
@@ -606,81 +778,155 @@
             let startOffset = (firstDay === 0) ? 6 : firstDay - 1;
 
             body.innerHTML = '';
+
+            // Add empty slots for offset
             for (let i = 0; i < startOffset; i++) {
-                body.innerHTML += '<div class="calendar-day opacity-0">.</div>';
+                body.innerHTML += '<div class="calendar-day opacity-0 pointer-events-none"></div>';
             }
 
             const roomBookings = STATE.allBookings.filter(b => b.room_id == STATE.activeRoomId);
-            const todayStr = new Date().toISOString().split('T')[0];
 
             for (let d = 1; d <= daysInMonth; d++) {
                 const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
 
+                // Check Booking Status
                 const isBooked = roomBookings.some(b => {
-                    const start = b.start_date || b.check_in;
-                    const end = b.end_date || b.check_out;
-                    return dateStr >= start && dateStr <= end;
+                    const s = b.start_date || b.check_in;
+                    const e = b.end_date || b.check_out;
+                    return dateStr >= s && dateStr <= e;
                 });
 
-                const isToday = dateStr === todayStr;
+                const div = document.createElement('div');
+                div.className = `calendar-day relative flex items-center justify-center font-medium select-none ${isBooked ? 'booked text-gray-300 cursor-not-allowed' : 'cursor-pointer text-gray-700'}`;
+                div.innerText = d;
+                div.setAttribute('data-date', dateStr);
 
-                let rangeClass = '';
-                if (STATE.checkIn === dateStr || STATE.checkOut === dateStr) {
-                    rangeClass = 'selected';
-                } else if (STATE.checkIn && STATE.checkOut && dateStr > STATE.checkIn && dateStr < STATE.checkOut) {
-                    rangeClass = 'bg-emerald-100 text-emerald-700 font-bold';
+                if (!isBooked) {
+                    // MOUSE EVENTS
+                    div.onmousedown = (e) => startDrag(dateStr);
+                    div.onmouseenter = (e) => updateDrag(dateStr);
+                    div.onmouseup = (e) => endDrag(dateStr);
+
+                    // TOUCH EVENTS (Mobile)
+                    div.ontouchstart = (e) => {
+                        e.preventDefault(); // Prevent scrolling
+                        startDrag(dateStr);
+                    };
+                    // Touch move is handled globally on the grid/body
                 }
 
-                body.innerHTML += `
-                    <div onclick="selectDate('${dateStr}')" 
-                         class="calendar-day ${isBooked ? 'booked' : ''} ${isToday ? 'today' : ''} ${rangeClass}">
-                        ${d}
-                    </div>
-                `;
+                body.appendChild(div);
             }
+            updateCalendarVisuals(); // Apply initial colors
         }
 
-        function selectDate(dateStr) {
-            const isBooked = STATE.allBookings.some(b => {
-                if (b.room_id != STATE.activeRoomId) return false;
-                const start = b.start_date || b.check_in;
-                const end = b.end_date || b.check_out;
-                return dateStr >= start && dateStr <= end;
-            });
+        // Global Touch Move Handler (Needed because touchmove doesn't fire on elements in the way we want for drag-select)
+        document.addEventListener('touchmove', function (e) {
+            if (!isDragging) return;
+            const touch = e.touches[0];
 
-            if (isBooked) {
-                Swal.fire({ icon: 'warning', title: 'დაკავებულია', text: 'ეს თარიღი უკვე დაკავებულია' });
+            // Find element under finger
+            const target = document.elementFromPoint(touch.clientX, touch.clientY);
+            if (target && target.hasAttribute('data-date')) {
+                updateDrag(target.getAttribute('data-date'));
+            }
+        }, { passive: false });
+
+        document.addEventListener('touchend', () => {
+            if (isDragging) endDrag(STATE.checkOut || STATE.checkIn);
+        });
+
+        // 2. Drag Logic
+        function startDrag(dateStr) {
+            // Hybrid: Check for Second Click
+            if (STATE.checkIn && !STATE.checkOut && dateStr !== STATE.checkIn) {
+                let start = STATE.checkIn;
+                let end = dateStr;
+                if (end < start) [start, end] = [end, start];
+
+                // If valid range, complete it
+                if (isRangeAvailable(start, end)) {
+                    STATE.checkIn = start;
+                    STATE.checkOut = end;
+
+                    // Enable drag adjustment
+                    isDragging = true;
+                    dragStartStr = start;
+
+                    updateCalendarVisuals();
+                    updateBookingFormDisplay();
+                    return;
+                }
+                // If INVALID range (Jumped over red), fall through to default behavior below...
+                // This effectively resets selection to the new click.
+            }
+
+            // Default: New Selection
+            isDragging = true;
+            dragStartStr = dateStr;
+            STATE.checkIn = dateStr;
+            STATE.checkOut = null;
+
+            updateCalendarVisuals();
+            updateBookingFormDisplay();
+        }
+
+        function updateDrag(currentDateStr) {
+            if (!isDragging) return;
+
+            // 1. Calculate potential range
+            let start = dragStartStr;
+            let end = currentDateStr;
+            if (end < start) [start, end] = [end, start]; // Swap if backwards
+
+            // 2. Check for Conflicts (The Smart Logic)
+            if (!isRangeAvailable(start, end)) {
+                // Conflict detected! (User jumped over a red wall)
+
+                // Behavior: Drop the old anchor, start fresh here.
+                // Only if the current cell itself is NOT booked
+                const roomBookings = STATE.allBookings.filter(b => b.room_id == STATE.activeRoomId);
+                const isCurrentBooked = roomBookings.some(b => {
+                    const s = b.start_date || b.check_in;
+                    const e = b.end_date || b.check_out;
+                    return currentDateStr >= s && currentDateStr <= e;
+                });
+
+                if (!isCurrentBooked) {
+                    // Reset anchor to here
+                    dragStartStr = currentDateStr;
+                    STATE.checkIn = currentDateStr;
+                    STATE.checkOut = null;
+
+                    updateCalendarVisuals();
+                    updateBookingFormDisplay();
+                }
                 return;
             }
 
-            if (!STATE.checkIn || (STATE.checkIn && STATE.checkOut)) {
-                // Start new selection
-                STATE.checkIn = dateStr;
-                STATE.checkOut = null;
-            } else {
-                // Selection second date
-                if (dateStr <= STATE.checkIn) {
-                    STATE.checkIn = dateStr; // Reset check-in if clicked earlier date
-                } else {
-                    // Check if range contains booked dates
-                    const hasConflict = STATE.allBookings.some(b => {
-                        if (b.room_id != STATE.activeRoomId) return false;
-                        const start = b.start_date || b.check_in;
-                        const end = b.end_date || b.check_out;
-                        return (start < dateStr && end > STATE.checkIn);
-                    });
+            // 3. Valid Range - Proceed normally
+            STATE.checkIn = start;
+            STATE.checkOut = end;
+            updateCalendarVisuals();
+            updateBookingFormDisplay();
+        }
 
-                    if (hasConflict) {
-                        Swal.fire({ icon: 'error', title: 'შეცდომა', text: 'არჩეული პერიოდი მოიცავს უკვე დაკავებულ თარიღებს' });
-                        return;
-                    }
-                    STATE.checkOut = dateStr;
-                }
+        function endDrag(finalDateStr) {
+            isDragging = false;
+
+            // Final validation check (Optional, but usually clean)
+            if (STATE.checkIn && STATE.checkOut && !isRangeAvailable(STATE.checkIn, STATE.checkOut)) {
+                STATE.checkOut = null; // Just reset, no scary toast
             }
 
+            updateCalendarVisuals();
             updateBookingFormDisplay();
-            renderCalendar();
         }
+
+        // Stop dragging if mouse leaves grid (existing logic adapted)
+        document.addEventListener('mouseup', () => {
+            if (isDragging) endDrag(STATE.checkOut || STATE.checkIn);
+        });
 
         // Helper to calculate total price using seasonal data
         // Helper to calculate total price using seasonal data
@@ -912,9 +1158,150 @@
             renderCalendar();
         };
 
+        // --- FIXED FUNCTIONS ---
+        // 1. Robust Price Calculator
+        function calculateTotalPrice(startDate, endDate, room) {
+            console.log("🧮 Calculating price...", startDate, endDate);
+            let total = 0;
+            let current = new Date(startDate);
+            const end = new Date(endDate);
+
+            // A. FIND PRICE SOURCE (Check Room first, then Property)
+            let rawData = room.seasonal_prices;
+            if ((!rawData || rawData.length === 0) && STATE.property && STATE.property.seasonal_prices) {
+                console.log("Using Property-level seasonal prices");
+                rawData = STATE.property.seasonal_prices;
+            }
+
+            // B. PARSE JSON DATA
+            let monthlyPrices = [];
+            try {
+                let parsed = rawData;
+                // If it's a string from DB, parse it
+                if (typeof rawData === 'string') parsed = JSON.parse(rawData);
+
+                if (Array.isArray(parsed) && parsed.length > 0) {
+                    // Format 1: [{ label: 'Standard', prices: [100, 100...] }]
+                    if (parsed[0].prices && Array.isArray(parsed[0].prices)) {
+                        monthlyPrices = parsed[0].prices;
+                    }
+                    // Format 2: Flat array [100, 100, 120...]
+                    else if (typeof parsed[0] === 'number' || typeof parsed[0] === 'string') {
+                        monthlyPrices = parsed;
+                    }
+                }
+            } catch (e) {
+                console.warn("Price parsing error:", e);
+            }
+
+            // C. GET BASE PRICE (Fallback)
+            let basePrice = 0;
+            if (room.price) basePrice = parseFloat(room.price);
+            else if (room.price_display) basePrice = parseFloat(room.price_display.replace(/[^0-9.]/g, ''));
+
+            // D. LOOP DAYS
+            while (current < end) {
+                const monthIndex = current.getMonth(); // 0 = Jan
+                let nightly = 0;
+
+                // Try Seasonal Price
+                if (monthlyPrices[monthIndex]) {
+                    nightly = parseFloat(monthlyPrices[monthIndex]);
+                }
+
+                // Fallback to Base Price
+                if (!nightly || isNaN(nightly) || nightly === 0) {
+                    nightly = basePrice;
+                }
+
+                total += nightly;
+                current.setDate(current.getDate() + 1);
+            }
+            return total || 0;
+        }
+
+        // 2. Ensure UI updates correctly
+        // 2. Ensure UI updates correctly
+        function updateBookingFormDisplay() {
+            const display = document.getElementById('manualSelectionDisplay');
+            const priceLabel = document.getElementById('manualTotalPrice');
+
+            if (!STATE.checkIn || !STATE.checkOut) {
+                if (display) display.innerText = "-";
+                if (priceLabel) priceLabel.innerText = "0 ₾";
+                return;
+            }
+
+            // Calculate Nights
+            const start = new Date(STATE.checkIn);
+            const end = new Date(STATE.checkOut);
+            const diffTime = Math.abs(end - start);
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+            // Update UI with explicit explanation
+            if (display) {
+                display.innerHTML = `
+                    <div class="flex flex-col items-end">
+                        <span class="text-xs font-bold text-gray-900">${STATE.checkIn} - ${STATE.checkOut}</span>
+                        <span class="text-[10px] text-emerald-600 font-bold">
+                            (${diffDays} ღამე - ${STATE.checkOut} გასვლის დღეა)
+                        </span>
+                    </div>
+                `;
+            }
+
+            // Calculate Price (existing logic)
+            const room = STATE.rooms.find(r => r.id == STATE.activeRoomId);
+            if (room) {
+                const total = calculateTotalPrice(STATE.checkIn, STATE.checkOut, room);
+                if (priceLabel) priceLabel.innerText = `${total} ₾`;
+                console.log("✅ Price Updated:", total);
+            }
+        }
+
+        // --- Helper Functions ---
+        function showToast(message) {
+            const container = document.getElementById('toast-container') || document.body;
+            const toast = document.createElement('div');
+            toast.className = 'bouncy-toast';
+            toast.innerHTML = `
+                <svg class="w-6 h-6 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                ${message}
+            `;
+
+            // Append to container (create if missing logic implied)
+            let box = document.getElementById('toast-container');
+            if (!box) {
+                box = document.createElement('div');
+                box.id = 'toast-container';
+                document.body.appendChild(box);
+            }
+            box.appendChild(toast);
+            // Remove after 3 seconds
+            setTimeout(() => {
+                toast.classList.add('fade-out');
+                setTimeout(() => toast.remove(), 500);
+            }, 3000);
+        }
+
+        function isRangeAvailable(start, end) {
+            const roomBookings = STATE.allBookings.filter(b => b.room_id == STATE.activeRoomId);
+            return !roomBookings.some(b => {
+                const s = b.start_date || b.check_in;
+                const e = b.end_date || b.check_out;
+                // Check if booking is strictly INSIDE the range
+                // OR if range overlaps booking
+                // Logic: (BookingStart <= RangeEnd) AND (BookingEnd >= RangeStart)
+                return (s <= end && e >= start);
+            });
+        }
+
         // Initialize on load
         initDashboard();
     </script>
+
 </body>
 
 </html>
