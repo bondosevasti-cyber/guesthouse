@@ -159,13 +159,7 @@
                     <p class="text-gray-500 font-medium mt-1">აკონტროლეთ თქვენი განცხადებები და ჯავშნები მარტივად</p>
                 </div>
                 <div class="flex gap-3">
-                    <button onclick="window.location.href='add-property.html'"
-                        class="bg-emerald-500 hover:bg-emerald-600 text-white font-bold py-3 px-6 rounded-2xl shadow-lg shadow-emerald-200 transition-all flex items-center">
-                        <svg class="w-5 h-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-                        </svg>
-                        დამატება
-                    </button>
+                    <!-- Manual Booking System - Button removed as requested -->
                 </div>
             </div>
 
@@ -226,21 +220,18 @@
                                         class="text-orange-500 font-bold text-sm uppercase tracking-wide">...</p>
                                 </div>
                             </div>
-                            <div class="flex items-center bg-gray-100 p-1.5 rounded-2xl">
-                                <button onclick="changeMonth(-1)"
-                                    class="p-2.5 hover:bg-white hover:shadow-sm rounded-xl transition-all text-gray-600">
-                                    <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <div class="relative min-w-[180px]">
+                                <select id="monthSelector" onchange="changeCalendarMonth(this.value)"
+                                    class="w-full bg-gray-50 border border-gray-100 text-gray-900 text-sm rounded-2xl focus:ring-emerald-500 focus:border-emerald-500 block p-2.5 pl-4 pr-10 appearance-none font-bold cursor-pointer transition-all hover:bg-white outline-none">
+                                    <!-- Options populated by JS -->
+                                </select>
+                                <div
+                                    class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-gray-500">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                            d="M15 19l-7-7 7-7" />
+                                            d="M19 9l-7 7-7-7"></path>
                                     </svg>
-                                </button>
-                                <button onclick="changeMonth(1)"
-                                    class="p-2.5 hover:bg-white hover:shadow-sm rounded-xl transition-all text-gray-600">
-                                    <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                            d="M9 5l7 7-7 7" />
-                                    </svg>
-                                </button>
+                                </div>
                             </div>
                         </div>
 
@@ -283,6 +274,50 @@
 
                             <!-- Upcoming Bookings Side -->
                             <div class="xl:w-2/5 bg-gray-50 p-6 md:p-8 flex flex-col border-l border-gray-100">
+                                <!-- Manual Booking Form -->
+                                <div class="mb-8 p-6 bg-white rounded-3xl border border-emerald-100 shadow-sm">
+                                    <h3 class="text-sm font-bold text-gray-900 uppercase tracking-widest mb-4">ახალი
+                                        ჯავშნის დამატება</h3>
+                                    <div class="space-y-4">
+                                        <div>
+                                            <label
+                                                class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1 block">სტუმრის
+                                                სახელი</label>
+                                            <input type="text" id="manualGuestName" placeholder="სახელი, გვარი"
+                                                class="w-full bg-gray-50 border border-gray-100 rounded-xl p-3 text-sm focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-all">
+                                        </div>
+                                        <div>
+                                            <label
+                                                class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1 block">ტელეფონი</label>
+                                            <input type="tel" id="manualGuestPhone" placeholder="5xx xx xx xx"
+                                                class="w-full bg-gray-50 border border-gray-100 rounded-xl p-3 text-sm focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-all">
+                                        </div>
+                                        <div class="p-3 bg-emerald-50 rounded-2xl border border-emerald-100">
+                                            <div class="flex justify-between items-center mb-2">
+                                                <span
+                                                    class="text-[10px] font-bold text-emerald-700 uppercase">პერიოდი:</span>
+                                                <span id="manualSelectionDisplay"
+                                                    class="text-xs font-bold text-emerald-900">-</span>
+                                            </div>
+                                            <div class="flex justify-between items-center">
+                                                <span class="text-[10px] font-bold text-emerald-700 uppercase">ჯამური
+                                                    ფასი:</span>
+                                                <span id="manualTotalPrice"
+                                                    class="text-sm font-black text-emerald-900">0 ₾</span>
+                                            </div>
+                                        </div>
+                                        <button onclick="createManualBooking()"
+                                            class="w-full bg-gray-900 hover:bg-black text-white font-bold py-3.5 rounded-2xl shadow-lg transition-all flex items-center justify-center gap-2 group">
+                                            <span>დაჯავშნა</span>
+                                            <svg class="w-4 h-4 group-hover:translate-x-1 transition-transform"
+                                                fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                    d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                                            </svg>
+                                        </button>
+                                    </div>
+                                </div>
+
                                 <div class="flex items-center justify-between mb-6">
                                     <h3 class="text-sm font-bold text-gray-900 uppercase tracking-widest">უახლოესი
                                         ჯავშნები</h3>
@@ -341,7 +376,8 @@
             rooms: [],
             allBookings: [],
             activeRoomId: null,
-            selectedDate: null,
+            checkIn: null,
+            checkOut: null,
             viewDate: new Date()
         };
 
@@ -388,6 +424,9 @@
                 // Show Dashboard
                 document.getElementById('loadingSpinner').classList.add('hidden');
                 document.getElementById('dashboardContent').classList.remove('hidden');
+
+                // Initialize Month Selector
+                setupMonthSelector();
 
             } catch (err) {
                 console.error("Dashboard Error:", err.message || err);
@@ -557,6 +596,11 @@
 
             monthLabel.innerText = `${MONTHS[month]} ${year}`;
 
+            // Sync Dropdown
+            // Sync Dropdown
+            const select = document.getElementById('monthSelector');
+            if (select) select.value = `${year}-${month}`;
+
             const firstDay = new Date(year, month, 1).getDay();
             const daysInMonth = new Date(year, month + 1, 0).getDate();
             let startOffset = (firstDay === 0) ? 6 : firstDay - 1;
@@ -579,11 +623,17 @@
                 });
 
                 const isToday = dateStr === todayStr;
-                const isSelected = dateStr === STATE.selectedDate;
+
+                let rangeClass = '';
+                if (STATE.checkIn === dateStr || STATE.checkOut === dateStr) {
+                    rangeClass = 'selected';
+                } else if (STATE.checkIn && STATE.checkOut && dateStr > STATE.checkIn && dateStr < STATE.checkOut) {
+                    rangeClass = 'bg-emerald-100 text-emerald-700 font-bold';
+                }
 
                 body.innerHTML += `
                     <div onclick="selectDate('${dateStr}')" 
-                         class="calendar-day ${isBooked ? 'booked' : ''} ${isToday ? 'today' : ''} ${isSelected ? 'selected' : ''}">
+                         class="calendar-day ${isBooked ? 'booked' : ''} ${isToday ? 'today' : ''} ${rangeClass}">
                         ${d}
                     </div>
                 `;
@@ -591,9 +641,220 @@
         }
 
         function selectDate(dateStr) {
-            STATE.selectedDate = dateStr;
+            const isBooked = STATE.allBookings.some(b => {
+                if (b.room_id != STATE.activeRoomId) return false;
+                const start = b.start_date || b.check_in;
+                const end = b.end_date || b.check_out;
+                return dateStr >= start && dateStr <= end;
+            });
+
+            if (isBooked) {
+                Swal.fire({ icon: 'warning', title: 'დაკავებულია', text: 'ეს თარიღი უკვე დაკავებულია' });
+                return;
+            }
+
+            if (!STATE.checkIn || (STATE.checkIn && STATE.checkOut)) {
+                // Start new selection
+                STATE.checkIn = dateStr;
+                STATE.checkOut = null;
+            } else {
+                // Selection second date
+                if (dateStr <= STATE.checkIn) {
+                    STATE.checkIn = dateStr; // Reset check-in if clicked earlier date
+                } else {
+                    // Check if range contains booked dates
+                    const hasConflict = STATE.allBookings.some(b => {
+                        if (b.room_id != STATE.activeRoomId) return false;
+                        const start = b.start_date || b.check_in;
+                        const end = b.end_date || b.check_out;
+                        return (start < dateStr && end > STATE.checkIn);
+                    });
+
+                    if (hasConflict) {
+                        Swal.fire({ icon: 'error', title: 'შეცდომა', text: 'არჩეული პერიოდი მოიცავს უკვე დაკავებულ თარიღებს' });
+                        return;
+                    }
+                    STATE.checkOut = dateStr;
+                }
+            }
+
+            updateBookingFormDisplay();
             renderCalendar();
         }
+
+        // Helper to calculate total price using seasonal data
+        // Helper to calculate total price using seasonal data
+        function calculateTotalPrice(startDate, endDate, room) {
+            let total = 0;
+            let current = new Date(startDate);
+            const end = new Date(endDate);
+
+            // 1. Prepare Price Data
+            let monthlyPrices = [];
+            try {
+                let raw = room.seasonal_prices;
+                // Parse if string
+                if (typeof raw === 'string') raw = JSON.parse(raw);
+
+                if (Array.isArray(raw) && raw.length > 0) {
+                    // Scenario A: Flat array of numbers [100, 100, 120...]
+                    if (typeof raw[0] === 'number' || typeof raw[0] === 'string') {
+                        monthlyPrices = raw;
+                    }
+                    // Scenario B: Array of objects [{ label: 'Standard', prices: [100, 100...] }]
+                    else if (raw[0].prices && Array.isArray(raw[0].prices)) {
+                        monthlyPrices = raw[0].prices;
+                    }
+                }
+            } catch (e) {
+                console.warn("Price parsing warning:", e);
+            }
+
+            // 2. Iterate Days
+            while (current < end) {
+                const monthIndex = current.getMonth(); // 0 = Jan, 11 = Dec
+                let nightlyPrice = 0;
+
+                // Try fetching seasonal price for this month
+                if (monthlyPrices[monthIndex]) {
+                    nightlyPrice = parseFloat(monthlyPrices[monthIndex]);
+                }
+
+                // Fallback to base price if seasonal is 0 or missing
+                if (!nightlyPrice || isNaN(nightlyPrice) || nightlyPrice === 0) {
+                    nightlyPrice = parseFloat(room.price) || parseFloat(room.price_display) || 0;
+                }
+
+                total += nightlyPrice;
+
+                // Next day
+                current.setDate(current.getDate() + 1);
+            }
+            return total;
+        }
+
+        function updateBookingFormDisplay() {
+            const display = document.getElementById('manualSelectionDisplay');
+            const priceLabel = document.getElementById('manualTotalPrice');
+
+            if (!STATE.checkIn) {
+                display.innerText = "-";
+                priceLabel.innerText = "0 ₾";
+                return;
+            }
+
+            if (!STATE.checkOut) {
+                display.innerText = `${STATE.checkIn} - ...`;
+                priceLabel.innerText = "0 ₾";
+                return;
+            }
+
+            display.innerText = `${STATE.checkIn} - ${STATE.checkOut}`;
+
+            // Calculate Price
+            const room = STATE.rooms.find(r => r.id == STATE.activeRoomId);
+            if (room) {
+                const total = calculateTotalPrice(STATE.checkIn, STATE.checkOut, room);
+                priceLabel.innerText = `${total} ₾`;
+            }
+        }
+
+        async function createManualBooking() {
+            try {
+                // 1. Get Inputs
+                const guestName = document.getElementById('manualGuestName').value;
+                const guestPhone = document.getElementById('manualGuestPhone').value;
+
+                // 2. Validate Dates & Room
+                if (!STATE.checkIn || !STATE.checkOut || !STATE.activeRoomId) {
+                    return Swal.fire({ icon: 'warning', title: 'შეცდომა', text: 'აირჩიეთ თარიღები და ოთახი' });
+                }
+
+                // 3. HARD CALCULATION (Don't trust UI text)
+                const room = STATE.rooms.find(r => r.id == STATE.activeRoomId);
+                const finalPrice = calculateTotalPrice(STATE.checkIn, STATE.checkOut, room);
+
+                if (finalPrice <= 0) {
+                    console.warn("Price calculation result is 0 or invalid:", finalPrice);
+                }
+
+                // 4. Send to Supabase
+                const bookingData = {
+                    property_id: STATE.property.id,
+                    room_id: STATE.activeRoomId,
+                    user_id: STATE.user.id, // Owner's ID
+                    guest_name: guestName,
+                    guest_phone: guestPhone,
+                    check_in: STATE.checkIn,
+                    check_out: STATE.checkOut,
+                    total_price: finalPrice || 0, // Ensure strictly number
+                    status: 'confirmed'
+                };
+
+                const { error } = await supabaseClient
+                    .from('bookings')
+                    .insert([bookingData]);
+
+                if (error) throw error;
+
+                // 5. Success & Refresh
+                await Swal.fire({
+                    icon: 'success',
+                    title: 'წარმატება',
+                    text: `ჯავშანი დამატებულია! ფასი: ${finalPrice}₾`,
+                    timer: 2000,
+                    showConfirmButton: false
+                });
+
+                // Reset form
+                document.getElementById('manualGuestName').value = '';
+                document.getElementById('manualGuestPhone').value = '';
+                STATE.checkIn = null;
+                STATE.checkOut = null;
+
+                // Refresh data
+                await switchProperty(STATE.property.id);
+                updateBookingFormDisplay();
+
+            } catch (err) {
+                console.error("Manual Booking Error:", err);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'შეცდომა',
+                    text: 'ვერ მოხერხდა შენახვა: ' + (err.message || 'უცნობი შეცდომა')
+                });
+            }
+        }
+
+        // New Feature: Month Selector Setup
+        function setupMonthSelector() {
+            const select = document.getElementById('monthSelector');
+            if (!select) return;
+
+            select.innerHTML = '';
+            const today = new Date();
+
+            // Populate next 12 months
+            for (let i = 0; i < 12; i++) {
+                const d = new Date(today.getFullYear(), today.getMonth() + i, 1);
+                const year = d.getFullYear();
+                const month = d.getMonth();
+                const value = `${year}-${month}`;
+                const label = `${MONTHS[month]} ${year}`;
+                select.innerHTML += `<option value="${value}">${label}</option>`;
+            }
+
+            // Set initial value based on STATE.viewDate
+            const currentVal = `${STATE.viewDate.getFullYear()}-${STATE.viewDate.getMonth()}`;
+            select.value = currentVal;
+        }
+
+        window.changeCalendarMonth = (val) => {
+            if (!val) return;
+            const [year, month] = val.split('-');
+            STATE.viewDate = new Date(parseInt(year), parseInt(month), 1);
+            renderCalendar();
+        };
 
         function renderBookingDetails() {
             const list = document.getElementById('bookingDetailsList');
