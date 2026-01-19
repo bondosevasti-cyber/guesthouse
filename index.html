@@ -13,6 +13,29 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
     <style>
+        /* Flatpickr Customization */
+        .flatpickr-day.prevMonthDay,
+        .flatpickr-day.flatpickr-disabled,
+        .flatpickr-day.flatpickr-disabled:hover {
+            filter: grayscale(100%);
+            opacity: 0.3;
+            cursor: not-allowed;
+            background: transparent;
+            border-color: transparent;
+        }
+
+        .flatpickr-day.today {
+            border: 2px solid #f97316 !important;
+            color: #f97316 !important;
+            background: transparent !important;
+            font-weight: 700;
+        }
+
+        .flatpickr-day.today:hover {
+            background: #f97316 !important;
+            color: white !important;
+        }
+
         body {
             font-family: 'Noto Sans Georgian', sans-serif;
         }
@@ -1157,6 +1180,34 @@
             filterProperties();
         }
 
+        // Initialize Calendar when modal opens
+        let bookingCalendar;
+        function initBookingCalendar() {
+            if (bookingCalendar) return;
+            const calendarEl = document.getElementById("bookingCalendar");
+            if (!calendarEl) return;
+
+            bookingCalendar = flatpickr(calendarEl, {
+                mode: "range",
+                inline: true,
+                dateFormat: "Y-m-d",
+                minDate: "today",
+                locale: {
+                    firstDayOfWeek: 1
+                },
+                onChange: function (selectedDates) {
+                    const countEl = document.getElementById('selectedDaysText');
+                    if (selectedDates.length === 2) {
+                        const diff = Math.abs(selectedDates[1] - selectedDates[0]);
+                        const days = Math.ceil(diff / (1000 * 60 * 60 * 24));
+                        if (countEl) countEl.textContent = days + " ღამე";
+                    } else {
+                        if (countEl) countEl.textContent = "0 ღამე";
+                    }
+                }
+            });
+        }
+
         // --- PROPERTY MODAL ---
         window.openModal = function (id) {
             const prop = State.properties.find(p => p.id === id);
@@ -1169,14 +1220,13 @@
                 DOM.modalBackdrop.classList.remove('opacity-0');
                 DOM.modalContent.classList.remove('opacity-0', 'scale-95');
                 DOM.modalContent.classList.add('modal-enter');
+                initBookingCalendar();
             }, 10);
             document.body.classList.add('no-scroll');
         };
 
-
-
         // Global Calendar Instance
-        let bookingCalendar;
+        // let bookingCalendar; // Moved up
 
         window.closeModal = function () {
             DOM.modalBackdrop.classList.add('opacity-0');

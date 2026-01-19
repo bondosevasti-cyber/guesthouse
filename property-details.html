@@ -11,6 +11,8 @@
         rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
     <style>
         body {
             font-family: 'Noto Sans Georgian', sans-serif;
@@ -224,8 +226,657 @@
         }
 
         .calendar-day.today {
-            border: 2px solid #22c55e;
-            font-weight: bold;
+            border: 2px solid #f97316 !important;
+            color: #f97316 !important;
+            font-weight: 700;
+        }
+
+        /* ----- 1. Clean Up Visual Artifacts ----- */
+        .flatpickr-calendar {
+            overflow: hidden !important;
+            /* Clip corner bleeds */
+        }
+
+        .flatpickr-innerContainer {
+            overflow: hidden !important;
+        }
+
+        .flatpickr-days {
+            border-left: 1px solid rgba(0, 0, 0, 0.05);
+            /* Subtle grid definition */
+        }
+
+        /* Ensure scoped styling for days to prevent ghosting */
+        .flatpickr-innerContainer .flatpickr-day {
+            margin: 4px !important;
+            max-width: 38px !important;
+            /* Strict sizing */
+        }
+
+        /* ----- 3. Seasonal Animation ----- */
+        @keyframes springIn {
+            0% {
+                transform: scale(0.3) translateY(10px);
+                opacity: 0;
+            }
+
+            50% {
+                transform: scale(1.1);
+            }
+
+            100% {
+                transform: scale(1) translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .season-icon {
+            display: inline-block;
+            animation: springIn 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        /* Custom Counter Styling */
+        input[type=number]::-webkit-inner-spin-button,
+        input[type=number]::-webkit-outer-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+
+        /* ReactBits Counter Animation */
+        @keyframes countSlideUp {
+            0% {
+                transform: translateY(100%);
+                opacity: 0;
+            }
+
+            100% {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        @keyframes countSlideDown {
+            0% {
+                transform: translateY(-100%);
+                opacity: 0;
+            }
+
+            100% {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .animate-count-up {
+            animation: countSlideUp 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .animate-count-down {
+            animation: countSlideDown 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        /* Seasonal Dropdown smooth entrance */
+        .seasonal-dropdown-enter .flatpickr-monthDropdown-months {
+            animation: slideDownFade 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+        }
+
+        /* Ensure wrapper is wide enough */
+        .calendar-wrapper {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 2rem;
+            width: 100%;
+        }
+
+        @media (min-width: 1024px) {
+
+            /* Desktop */
+            .calendar-wrapper {
+                flex-direction: row;
+            }
+        }
+
+
+        /* Flatpickr Customization - Modern Glass Aesthetic */
+        .flatpickr-calendar {
+            backdrop-filter: blur(10px) !important;
+            background: rgba(255, 255, 255, 0.95) !important;
+            border: 1px solid rgba(0, 0, 0, 0.05) !important;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1) !important;
+            border-radius: 24px !important;
+            font-family: 'Noto Sans Georgian', sans-serif !important;
+            padding: 16px !important;
+            width: 100% !important;
+            max-width: 450px !important;
+            /* Wider Layout */
+        }
+
+        /* Hide default Flatpickr Month Header */
+        .flatpickr-month {
+            display: none !important;
+        }
+
+        .flatpickr-current-month {
+            display: none !important;
+        }
+
+        /* Collapsible Month Selector */
+        .month-selector-wrapper {
+            position: relative;
+            width: 100%;
+            margin-bottom: 24px;
+            z-index: 40;
+        }
+
+        .month-dropdown-btn {
+            width: 100%;
+            background: white;
+            border: 2px solid #000;
+            padding: 14px 20px;
+            border-radius: 16px;
+            font-weight: 700;
+            color: #1f2937;
+            font-size: 1rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: none;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .month-dropdown-btn:hover {
+            background-color: #f9fafb;
+        }
+
+        .month-dropdown-btn:active {
+            transform: scale(0.99);
+        }
+
+        .month-dropdown-menu {
+            position: absolute;
+            top: 110%;
+            left: 0;
+            width: 100%;
+            background: white;
+            border: 2px solid #000;
+            border-radius: 20px;
+            padding: 16px;
+            display: none;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            opacity: 0;
+            transform: translateY(-10px);
+            transition: all 0.3s ease;
+        }
+
+        .month-dropdown-menu.open {
+            display: grid;
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .month-dropdown-item {
+            padding: 12px;
+            border-radius: 12px;
+            text-align: center;
+            cursor: pointer;
+            border: 2px solid transparent;
+            font-weight: 700;
+            font-size: 0.85rem;
+            color: #4b5563;
+            transition: all 0.2s;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .month-dropdown-item:hover {
+            transform: scale(1.05);
+            background: white;
+            border-color: #e5e7eb;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        }
+
+        .month-dropdown-item.active {
+            border-color: #10b981;
+            background: #ecfdf5;
+            color: #047857;
+        }
+
+        /* Seasonal Backgrounds for Items */
+        .season-winter {
+            background: linear-gradient(135deg, #eff6ff 0%, #f0f9ff 100%);
+        }
+
+        .season-spring {
+            background: linear-gradient(135deg, #f0fdf4 0%, #fdf2f8 100%);
+        }
+
+        .season-summer {
+            background: linear-gradient(135deg, #fefce8 0%, #fff7ed 100%);
+        }
+
+        .season-autumn {
+            background: linear-gradient(135deg, #fff7ed 0%, #fef2f2 100%);
+        }
+
+        /* Booking Confirmation Modal (Receipt Style) */
+        .booking-modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(8px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s;
+        }
+
+        .booking-modal-overlay.open {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .booking-receipt-card {
+            background: white;
+            width: 100%;
+            max-width: 420px;
+            padding: 32px;
+            border-radius: 24px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+            transform: scale(0.95);
+            transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+            position: relative;
+            border: 1px solid rgba(0, 0, 0, 0.05);
+        }
+
+        .booking-modal-overlay.open .booking-receipt-card {
+            transform: scale(1);
+        }
+
+        .receipt-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 12px;
+            font-size: 0.95rem;
+            color: #4b5563;
+        }
+
+        .receipt-total {
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 2px dashed #e5e7eb;
+            display: flex;
+            justify-content: space-between;
+            font-weight: 900;
+            font-size: 1.25rem;
+            color: #111827;
+        }
+
+        /* Clean Flatpickr Overrides */
+        .flatpickr-calendar {
+            box-shadow: none !important;
+            border: none !important;
+            background: transparent !important;
+            margin: 0 auto !important;
+        }
+
+        .calendar-wrapper {
+            overflow: visible;
+        }
+
+        /* Seasonal Dropdown Animation */
+        .seasonal-dropdown-enter {
+            animation: slideDownFade 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+        }
+
+        @keyframes slideDownFade {
+            from {
+                opacity: 0;
+                transform: translateY(-20px) scale(0.9);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+
+        .flatpickr-months {
+            margin-bottom: 12px !important;
+        }
+
+        .flatpickr-day {
+            border-radius: 12px !important;
+            margin: 4px !important;
+            height: 38px !important;
+            width: 38px !important;
+            line-height: 38px !important;
+            border: 1px solid transparent !important;
+            color: #374151 !important;
+            font-weight: 600 !important;
+            transition: all 0.2s ease !important;
+        }
+
+        .flatpickr-day:hover {
+            background: #f3f4f6 !important;
+            transform: translateY(-2px) !important;
+        }
+
+        /* Selected State - Vibrant Gradient & Glow */
+        .flatpickr-day.selected,
+        .flatpickr-day.startRange,
+        .flatpickr-day.endRange,
+        .flatpickr-day.selected.inRange,
+        .flatpickr-day.startRange.inRange,
+        .flatpickr-day.endRange.inRange {
+            background: linear-gradient(135deg, #10b981 0%, #34d399 100%) !important;
+            color: white !important;
+            border: none !important;
+            box-shadow: 0 4px 15px rgba(16, 185, 129, 0.35) !important;
+            transform: scale(1.05) !important;
+            z-index: 10;
+            font-weight: 700 !important;
+        }
+
+        /* Range Middle */
+        .flatpickr-day.inRange {
+            background: #ecfdf5 !important;
+            /* Emerald-50 */
+            color: #059669 !important;
+            /* Emerald-600 */
+            box-shadow: none !important;
+            border-radius: 0 !important;
+            /* Connect visually */
+        }
+
+        /* Booked/Disabled - Red Tint & Lock */
+        .flatpickr-day.flatpickr-disabled,
+        .flatpickr-day.flatpickr-disabled:hover {
+            display: inline-block !important;
+            opacity: 1 !important;
+            background: #fee2e2 !important;
+            /* Red-100 */
+            color: #ef4444 !important;
+            /* Red-500 */
+            cursor: not-allowed !important;
+            text-decoration: line-through;
+            /* Strikethrough */
+            border: 1px dashed #fca5a5 !important;
+            /* Red-300 dashed */
+        }
+
+        /* Today Styling */
+        .flatpickr-day.today {
+            border: 2px solid #f97316 !important;
+            color: #f97316 !important;
+            background: transparent !important;
+        }
+
+        .flatpickr-day.today:hover {
+            background: #fff7ed !important;
+            /* Orange-50 */
+            border-color: #f97316 !important;
+        }
+
+        /* ReactBits / Neo-Brutalist Aesthetic for Counter */
+        .shadow-hard {
+            box-shadow: 4px 4px 0px #000 !important;
+        }
+
+        /* ----- Fix for Ghost Cubes (Overflow) ----- */
+        .flatpickr-calendar {
+            overflow: hidden !important;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05) !important;
+        }
+
+        .flatpickr-innerContainer {
+            overflow: hidden !important;
+            border-radius: 0 0 24px 24px !important;
+        }
+
+        .flatpickr-days {
+            overflow: hidden !important;
+        }
+
+        /* ----- Scroll Stack UI ----- */
+        .stack-wrapper {
+            position: relative;
+            width: 100%;
+            margin-bottom: 24px;
+            z-index: 50;
+            /* Higher than calendar */
+        }
+
+        .stack-trigger {
+            width: 100%;
+            background: transparent;
+            border: 2px solid #000;
+            padding: 14px 20px;
+            border-radius: 16px;
+            font-weight: 800;
+            color: #1f2937;
+            font-size: 1rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            transition: all 0.2s ease;
+        }
+
+        .stack-trigger:hover {
+            background: rgba(0, 0, 0, 0.03);
+            border-color: #374151;
+        }
+
+        .stack-menu {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            background: white;
+            /* Stack bg */
+            border-radius: 24px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+            max-height: 0;
+            overflow: hidden;
+            opacity: 0;
+            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            transform-origin: top center;
+            transform: scale(0.95);
+        }
+
+        .stack-menu.open {
+            max-height: 400px;
+            /* Adjust based on content */
+            overflow-y: auto;
+            opacity: 1;
+            transform: scale(1);
+            padding: 10px;
+            border: 2px solid #000;
+            /* Match styling */
+        }
+
+        /* Stack Items */
+        .stack-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 16px;
+            margin-bottom: 4px;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            transform: translateY(10px);
+            opacity: 0;
+            font-weight: 700;
+            color: #4b5563;
+        }
+
+        .stack-menu.open .stack-item {
+            transform: translateY(0);
+            opacity: 1;
+        }
+
+        .stack-item:hover {
+            background: #f3f4f6;
+            transform: translateX(5px);
+        }
+
+        .stack-item.active {
+            background: #ecfdf5;
+            /* Emerald 50 */
+            color: #047857;
+            border: 1px solid #10b981;
+        }
+
+        /* Stack Scrollbar */
+        .stack-menu::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .stack-menu::-webkit-scrollbar-thumb {
+            background-color: #e5e7eb;
+            border-radius: 10px;
+        }
+
+        /* Calendar Header Refinements */
+        .flatpickr-current-month {
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            padding-top: 15px !important;
+            padding-bottom: 10px !important;
+            width: 100% !important;
+            position: relative !important;
+            /* Changed from absolute to flow better */
+        }
+
+        .flatpickr-monthDropdown-months {
+            font-size: 1.4rem !important;
+            font-weight: 800 !important;
+            appearance: none !important;
+            -webkit-appearance: none !important;
+            background: transparent !important;
+            border: none !important;
+            padding: 0 5px !important;
+            margin: 0 !important;
+            cursor: pointer !important;
+            transition: all 0.3s ease !important;
+        }
+
+        /* Dropdown Animation */
+        .flatpickr-monthDropdown-months:focus {
+            outline: none;
+            color: #10b981 !important;
+            transform: scale(1.05);
+        }
+
+        .numInputWrapper {
+            margin-left: 5px !important;
+            font-size: 1.4rem !important;
+            font-weight: 800 !important;
+        }
+
+        .numInputWrapper span {
+            display: none !important;
+        }
+
+        /* Hide default up/down arrows on year */
+
+        /* Prevent Arrow Overlap & Style */
+        .flatpickr-prev-month,
+        .flatpickr-next-month {
+            z-index: 20 !important;
+            top: 22px !important;
+            padding: 0 !important;
+            height: 30px !important;
+            width: 30px !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            border-radius: 50% !important;
+            background: rgba(255, 255, 255, 0.8) !important;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1) !important;
+            transition: all 0.2s ease !important;
+        }
+
+        .flatpickr-prev-month {
+            left: 15px !important;
+        }
+
+        .flatpickr-next-month {
+            right: 15px !important;
+        }
+
+        .flatpickr-prev-month:hover,
+        .flatpickr-next-month:hover {
+            background: #10b981 !important;
+            color: white !important;
+            transform: scale(1.1);
+        }
+
+        .flatpickr-prev-month svg,
+        .flatpickr-next-month svg {
+            width: 14px !important;
+            height: 14px !important;
+            fill: currentColor !important;
+        }
+
+        /* Custom checkout date sync style */
+        .checkout-display {
+            font-family: monospace;
+            letter-spacing: 1px;
+        }
+
+        /* Helper for side-by-side counter if needed, currently stacked */
+        .booking-counter-visible {
+            display: block !important;
+            animation: fadeInCounter 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+
+        @keyframes fadeInCounter {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .flatpickr-current-month .flatpickr-monthDropdown-months {
+            font-weight: 800 !important;
+            background: transparent !important;
+        }
+
+        .flatpickr-calendar.arrowTop:before,
+        .flatpickr-calendar.arrowTop:after {
+            display: none !important;
+            /* Remove default arrows for cleaner look */
+        }
+
+        /* Navigation Arrows */
+        .flatpickr-months .flatpickr-prev-month,
+        .flatpickr-months .flatpickr-next-month {
+            color: #374151 !important;
+            /* Gray-700 */
+            fill: #374151 !important;
+        }
+
+        .flatpickr-months .flatpickr-prev-month:hover,
+        .flatpickr-months .flatpickr-next-month:hover {
+            color: #111827 !important;
+            /* Gray-900 */
         }
 
         @keyframes popIn {
@@ -238,6 +889,13 @@
                 transform: scale(1);
                 opacity: 1;
             }
+        }
+
+        .calendar-day.past-day {
+            opacity: 0.3;
+            filter: grayscale(100%);
+            cursor: not-allowed !important;
+            pointer-events: none;
         }
     </style>
 </head>
@@ -593,7 +1251,7 @@
             const body = document.getElementById('priceBody');
             MONTHS.forEach((m, idx) => {
                 const th = document.createElement('th');
-                th.className = `p-4 text-center text-[10px] font-bold uppercase transition-colors ${idx === CUR_MONTH ? 'bg-green-500 text-white' : 'text-gray-400'}`;
+                th.className = `p-4 text-left text-[10px] font-bold uppercase transition-colors ${idx === CUR_MONTH ? 'bg-green-500 text-white' : 'text-gray-400'}`;
                 th.innerText = m;
                 header.appendChild(th);
             });
@@ -944,26 +1602,118 @@
                         </div>
 
                         <!-- Calendar Section -->
+                        <!-- Calendar Section Wrapper -->
                         <div class="bg-gray-50/50 p-6 border-l border-gray-100">
                             <h4 class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-4">აირჩიეთ პერიოდი</h4>
-                            <div id="calendar-${room.id}" class="mb-4">
-                                ${renderMonthlyCalendar(room.id)}
-                            </div>
-                            <div class="flex justify-between items-center mb-4">
-                                <div id="rangeText-${room.id}" class="text-xs font-bold text-gray-700">
-                                    მონიშნეთ თარიღები
+                            
+                            <!-- 2-Column Layout Wrapper -->
+                            <div class="calendar-wrapper flex flex-col xl:flex-row gap-8 items-start justify-center w-full">
+                                
+                                <!-- Col 1: Calendar & Month Dropdown -->
+                                <div class="flex flex-col items-center w-full xl:w-auto z-20 relative">
+                                    
+                                    <!-- Scroll Stack Trigger & Menu -->
+                                    <div class="stack-wrapper">
+                                        <button class="stack-trigger" onclick="toggleStack('${room.id}', event)" id="stack-trigger-${room.id}">
+                                            <span id="stack-label-${room.id}">Loading...</span>
+                                            <svg class="w-5 h-5 transition-transform duration-300 transform group-[.open]:rotate-180" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                                            </svg>
+                                        </button>
+                                        
+                                        <div class="stack-menu custom-scrollbar" id="stack-menu-${room.id}">
+                                            <!-- Items injected by JS -->
+                                        </div>
+                                    </div>
+
+                                    <div class="scale-95 origin-top">
+                                        <div id="calendar-container-${room.id}"></div>
+                                    </div>
                                 </div>
-                                <button onclick="confirmRoomBooking('${room.id}')" 
-                                        id="confirmBtn-${room.id}"
-                                        class="bg-green-500 hover:bg-green-600 disabled:bg-gray-300 disabled:cursor-not-allowed text-white px-5 py-2 rounded-xl text-sm font-bold shadow-md transition-all active:scale-95"
-                                        disabled>
-                                    დაჯავშნა
-                                </button>
+    
+                                <!-- Col 2: Counter & Checkout -->
+                                <div id="custom-counter-${room.id}" class="hidden p-6 border-2 border-black rounded-3xl shadow-hard bg-white animate-fade-in-down w-full max-w-sm flex-shrink-0 z-10">
+                                    <p class="font-bold mb-4 text-gray-900">რამდენი დღით გსურთ დარჩენა?</p>
+                                    
+                                    <div class="flex items-center gap-4">
+                                        <button onclick="updateNightCount('${room.id}', -1)" type="button" class="w-10 h-10 flex items-center justify-center border-2 border-black rounded-full font-black text-xl hover:bg-gray-100 transition-colors active:scale-95">-</button>
+                                        <div class="relative h-8 w-10 overflow-hidden">
+                                            <span id="day-count-${room.id}" class="absolute inset-0 flex items-center justify-center text-2xl font-black">1</span>
+                                        </div>
+                                        <button onclick="updateNightCount('${room.id}', 1)" type="button" class="w-10 h-10 flex items-center justify-center border-2 border-black rounded-full font-black text-xl hover:bg-gray-100 transition-colors active:scale-95">+</button>
+                                    </div>
+                                    
+                                    <div class="mt-4 pt-4 border-t border-dashed border-gray-200">
+                                        <p class="text-xs text-gray-500 font-bold uppercase tracking-wider mb-1">გასვლის თარიღი</p>
+                                        <p id="checkout-date-display-${room.id}" class="text-lg font-black text-gray-900">მიუთითეთ...</p>
+                                    </div>
+
+                                    <!-- Booking Button (Triggers Modal) -->
+                                    <button onclick="openConfirmationModal('${room.id}')" 
+                                            id="confirmBtn-${room.id}"
+                                            class="mt-6 w-full bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 disabled:opacity-50 disabled:cursor-not-allowed text-white px-5 py-3 rounded-xl text-sm font-bold shadow-lg shadow-emerald-500/30 transition-all active:scale-95 flex justify-center items-center gap-2"
+                                            disabled>
+                                        <span>დაჯავშნა</span>
+                                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3" /></svg>
+                                    </button>
+                                </div>
                             </div>
+
+                            <!-- Receipt Confirmation Modal -->
+                            <div id="confirmationModal-${room.id}" class="booking-modal-overlay">
+                                <div class="booking-receipt-card">
+                                    <button onclick="closeConfirmationModal('${room.id}')" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition-colors">
+                                        <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                                    </button>
+                                    
+                                    <div class="text-center mb-6">
+                                        <div class="w-12 h-12 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-3 text-emerald-600">
+                                            <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                                        </div>
+                                        <h3 class="text-xl font-black text-gray-900">გადაამოწმეთ მონაცემები</h3>
+                                        <p class="text-sm text-gray-500 mt-1">გთხოვთ დაადასტუროთ ჯავშნის დეტალები</p>
+                                    </div>
+
+                                    <div class="space-y-3">
+                                        <div class="receipt-row">
+                                            <span>შესვლის თარიღი</span>
+                                            <span class="font-bold text-gray-900" id="receipt-checkin-${room.id}">-</span>
+                                        </div>
+                                        <div class="receipt-row">
+                                            <span>გასვლის თარიღი</span>
+                                            <span class="font-bold text-gray-900" id="receipt-checkout-${room.id}">-</span>
+                                        </div>
+                                        <div class="receipt-row">
+                                            <span>ღამეების რაოდენობა</span>
+                                            <span class="font-bold text-gray-900" id="receipt-nights-${room.id}">-</span>
+                                        </div>
+                                        <div class="receipt-row">
+                                            <span>ოთახის ფასი (ღამე)</span>
+                                            <span class="font-bold text-gray-900">${room.price}₾</span>
+                                        </div>
+                                    </div>
+
+                                    <div class="receipt-total">
+                                        <span>სულ გადასახდელი</span>
+                                        <span class="text-emerald-600" id="receipt-total-${room.id}">0₾</span>
+                                    </div>
+
+                                    <button onclick="processBooking('${room.id}')" class="w-full mt-8 bg-black text-white py-3.5 rounded-xl font-bold shadow-lg hover:bg-gray-800 transition-all active:scale-95">
+                                        დადასტურება და დაჯავშნა
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div id="rangeText-${room.id}" class="hidden"></div>
                         </div>
                     </div>
                 </div>
             `).join('');
+
+            // Initialize Flatpickr for each room
+            GSTATE.rooms.forEach(room => {
+                initRoomCalendar(room.id);
+            });
         }
 
         window.updateRoomHero = function (roomId, thumb) {
@@ -990,129 +1740,428 @@
             });
         };
 
-        function renderMonthlyCalendar(roomId) {
-            const now = new Date();
-            const year = now.getFullYear();
-            const month = now.getMonth();
+        // Initialize Flatpickr instances to access them outside
+        let calendarInstances = {};
 
-            const firstDay = new Date(year, month, 1).getDay(); // 0 (Sun) - 6 (Sat)
-            const daysInMonth = new Date(year, month + 1, 0).getDate();
-
-            // Adjust for Monday start (0: Mon, 6: Sun)
-            let startOffset = (firstDay === 0) ? 6 : firstDay - 1;
-
-            const days = [];
-
-            // Header
-            const weekDays = ['ო', 'ს', 'ო', 'ხ', 'პ', 'შ', 'კ'];
-
-            let html = `
-                <div class="text-center font-bold text-xs text-indigo-600 mb-2 uppercase tracking-wide">
-                    ${MONTHS[month]} ${year}
-                </div>
-                <div class="calendar-grid">
-                    ${weekDays.map(d => `<div class="text-[10px] text-gray-300 font-bold text-center pb-2">${d}</div>`).join('')}
-            `;
-
-            const roomBookings = BSTATE.allBookings.filter(b => b.room_id == roomId);
-
-            // Previous month empty slots
-            for (let i = 0; i < startOffset; i++) {
-                html += `<div class="calendar-day other-month"></div>`;
-            }
-
-            for (let d = 1; d <= daysInMonth; d++) {
-                const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
-                const isBooked = roomBookings.some(b => dateStr >= b.start_date && dateStr <= b.end_date);
-                const isToday = d === now.getDate();
-
-                html += `
-                    <div class="calendar-day ${isBooked ? 'booked' : ''} ${isToday ? 'today' : ''}" 
-                         data-date="${dateStr}"
-                         onclick="${isBooked ? '' : `handleDayClick('${roomId}', '${dateStr}')`}">
-                        ${d}
-                    </div>
-                `;
-            }
-
-            html += `</div>`;
-            return html;
-        }
-
-        window.handleDayClick = function (roomId, date) {
+        function initRoomCalendar(roomId) {
             if (!BSTATE.selections[roomId]) {
                 BSTATE.selections[roomId] = { start: null, end: null };
             }
 
-            const sel = BSTATE.selections[roomId];
+            // Convert bookings to Flatpickr disable format
+            const bookings = BSTATE.allBookings.filter(b => b.room_id == roomId).map(b => ({
+                from: b.start_date,
+                to: b.end_date
+            }));
 
-            if (!sel.start || (sel.start && sel.end)) {
-                // New selection
-                sel.start = date;
-                sel.end = null;
-            } else if (sel.start && !sel.end) {
-                if (date < sel.start) {
-                    sel.start = date;
-                } else if (date === sel.start) {
-                    sel.start = null;
-                } else {
-                    // Check if any booked day is in between
-                    if (isRangeBlocked(roomId, sel.start, date)) {
-                        Swal.fire({
-                            icon: 'warning',
-                            title: 'შეუძლებელი პერიოდი',
-                            text: 'არჩეულ პერიოდში არის უკვე დაკავებული დღეები.',
-                            confirmButtonColor: '#111827'
-                        });
-                        return;
+            const cal = flatpickr(`#calendar-container-${roomId}`, {
+                mode: "range",
+                inline: true,
+                minDate: "today",
+                showMonths: 1,
+                shorthandCurrentMonth: false,
+                dateFormat: "Y-m-d",
+                disable: bookings,
+                locale: {
+                    firstDayOfWeek: 1,
+                    weekdays: {
+                        shorthand: ["კვ", "ორ", "სა", "ოთ", "ხუ", "პა", "შა"],
+                        longhand: ["კვირა", "ორშაბათი", "სამშაბათი", "ოთხშაბათი", "ხუთშაბათი", "პარასკევი", "შაბათი"]
+                    },
+                    months: {
+                        shorthand: ["იან", "თებ", "მარ", "აპრ", "მაი", "ივნ", "ივლ", "აგვ", "სექ", "ოქტ", "ნოე", "დეკ"],
+                        longhand: ["იანვარი", "თებერვალი", "მარტი", "აპრილი", "მაისი", "ივნისი", "ივლისი", "აგვისტო", "სექტემბერი", "ოქტომბერი", "ნოემბერი", "დეკემბერი"]
                     }
-                    sel.end = date;
-                }
-            }
+                },
+                prevArrow: "",
+                nextArrow: "",
 
-            updateCalendarUI(roomId);
+                onReady: function (selectedDates, dateStr, instance) {
+                    renderStackMenu(instance, roomId);
+                    updateStackTrigger(instance, roomId);
+                },
+                onMonthChange: function (selectedDates, dateStr, instance) {
+                    updateStackTrigger(instance, roomId);
+                    // Update active class in stack
+                    updateStackActiveState(instance, roomId);
+                },
+                onYearChange: function (selectedDates, dateStr, instance) {
+                    // Re-render stack if year changes to keep year correct? 
+                    // Actually, years usually scroll. We can just update active state.
+                    updateStackTrigger(instance, roomId);
+                    updateStackActiveState(instance, roomId);
+                },
+                onChange: function (selectedDates, dateStr, instance) {
+                    const counterEl = document.getElementById(`custom-counter-${roomId}`);
+                    const countSpan = document.getElementById(`day-count-${roomId}`);
+                    const checkoutEl = document.getElementById(`checkout-date-display-${roomId}`);
+                    const btn = document.getElementById(`confirmBtn-${roomId}`);
+
+                    if (selectedDates.length > 0) {
+                        // Reveal counter
+                        if (counterEl) {
+                            counterEl.classList.remove('hidden');
+                        }
+
+                        BSTATE.selections[roomId] = {
+                            start: instance.formatDate(selectedDates[0], "Y-m-d"),
+                            end: selectedDates[1] ? instance.formatDate(selectedDates[1], "Y-m-d") : null
+                        };
+
+                        if (selectedDates.length === 2) {
+                            // --- Case: Range Selected ---
+                            const diffTime = Math.abs(selectedDates[1] - selectedDates[0]);
+                            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+                            if (countSpan) countSpan.textContent = diffDays;
+
+                            // Calc checkout
+                            const endD = selectedDates[1];
+                            if (checkoutEl) checkoutEl.innerText = `${endD.getDate().toString().padStart(2, '0')}/${(endD.getMonth() + 1).toString().padStart(2, '0')}/${endD.getFullYear()}`;
+
+                            if (btn) btn.disabled = false;
+
+                        } else {
+                            // --- Case: Single Date Selected ---
+                            if (countSpan) countSpan.textContent = "1";
+                            if (checkoutEl) checkoutEl.innerText = "მიუთითეთ...";
+
+                            // Disable confirm until range is picked
+                            if (btn) btn.disabled = true;
+                        }
+                    } else {
+                        if (counterEl) {
+                            counterEl.classList.add('hidden');
+                        }
+                        if (btn) btn.disabled = true;
+                    }
+                }
+            });
+
+            calendarInstances[roomId] = cal;
+        }
+
+        // --- Bubble Menu Logic ---
+
+        // --- Scroll Stack Logic ---
+
+        window.toggleStack = function (roomId, e) {
+            e.stopPropagation();
+            const menu = document.getElementById(`stack-menu-${roomId}`);
+            const btn = document.getElementById(`stack-trigger-${roomId}`);
+
+            // Close others
+            document.querySelectorAll('.stack-menu').forEach(el => {
+                if (el.id !== `stack-menu-${roomId}`) el.classList.remove('open');
+            });
+
+            if (menu) {
+                menu.classList.toggle('open');
+                if (btn) btn.classList.toggle('open');
+            }
         };
 
-        function isRangeBlocked(roomId, start, end) {
-            const roomBookings = BSTATE.allBookings.filter(b => b.room_id == roomId);
-            return roomBookings.some(b => {
-                // If a booking starts or ends or is within our selection
-                return (b.start_date >= start && b.start_date <= end) ||
-                    (b.end_date >= start && b.end_date <= end) ||
-                    (start >= b.start_date && start <= b.end_date);
+        window.selectStackMonth = function (e, roomId, monthIndex) {
+            e.stopPropagation();
+            const instance = calendarInstances[roomId];
+            if (instance) {
+                instance.jumpToDate(new Date(instance.currentYear, monthIndex, 1));
+
+                // Update UI immediately (though onMonthChange will also fire)
+                updateStackTrigger(instance, roomId);
+                updateStackActiveState(instance, roomId);
+
+                // Close menu
+                const menu = document.getElementById(`stack-menu-${roomId}`);
+                const btn = document.getElementById(`stack-trigger-${roomId}`);
+                if (menu) menu.classList.remove('open');
+                if (btn) btn.classList.remove('open');
+            }
+        };
+
+        function updateStackTrigger(instance, roomId) {
+            const label = document.getElementById(`stack-label-${roomId}`);
+            if (!label) return;
+
+            const monthName = instance.l10n.months.longhand[instance.currentMonth];
+            const year = instance.currentYear;
+
+            const m = instance.currentMonth;
+            let icon = '';
+            if (m === 11 || m === 0 || m === 1) icon = '❄️';
+            else if (m >= 2 && m <= 4) icon = '🌸';
+            else if (m >= 5 && m <= 7) icon = '☀️';
+            else if (m >= 8 && m <= 10) icon = '🍂';
+
+            label.innerText = `${icon} ${monthName}, ${year}`;
+        }
+
+        function renderStackMenu(instance, roomId) {
+            const container = document.getElementById(`stack-menu-${roomId}`);
+            if (!container) return;
+
+            const months = [
+                { name: "იანვარი", icon: "❄️" }, { name: "თებერვალი", icon: "❄️" },
+                { name: "მარტი", icon: "🌸" }, { name: "აპრილი", icon: "🌸" }, { name: "მაისი", icon: "🌸" },
+                { name: "ივნისი", icon: "☀️" }, { name: "ივლისი", icon: "☀️" }, { name: "აგვისტო", icon: "☀️" },
+                { name: "სექტემბერი", icon: "🍂" }, { name: "ოქტომბერი", icon: "🍂" }, { name: "ნოემბერი", icon: "🍂" },
+                { name: "დეკემბერი", icon: "❄️" }
+            ];
+
+            container.innerHTML = months.map((m, i) => `
+                <div class="stack-item" onclick="selectStackMonth(event, '${roomId}', ${i})" 
+                     style="transition-delay: ${i * 30}ms">
+                    <span class="text-xl w-8 text-center">${m.icon}</span>
+                    <span class="flex-1">${m.name}</span>
+                    ${i === instance.currentMonth ? '<span class="text-emerald-500">●</span>' : ''}
+                </div>
+            `).join('');
+
+            updateStackActiveState(instance, roomId);
+        }
+
+        function updateStackActiveState(instance, roomId) {
+            const container = document.getElementById(`stack-menu-${roomId}`);
+            if (!container) return;
+
+            const items = container.querySelectorAll('.stack-item');
+            items.forEach((item, idx) => {
+                if (idx === instance.currentMonth) {
+                    item.classList.add('active');
+                } else {
+                    item.classList.remove('active');
+                }
             });
         }
 
-        function updateCalendarUI(roomId) {
-            const container = document.getElementById(`calendar-${roomId}`);
+        // Close on outside click
+        document.addEventListener('click', function (e) {
+            if (!e.target.closest('.stack-wrapper')) {
+                document.querySelectorAll('.stack-menu').forEach(el => el.classList.remove('open'));
+                document.querySelectorAll('.stack-trigger').forEach(el => el.classList.remove('open'));
+            }
+        });
+
+
+
+        // --- Booking Modal Logic ---
+
+        // --- Booking Modal Logic ---
+
+        window.openConfirmationModal = function (roomId) {
+            try {
+                // 1. Data Gathering
+                const sel = BSTATE.selections[roomId];
+                const room = GSTATE.rooms.find(r => r.id == roomId);
+
+                console.log("DEBUG: Opening Modal");
+                console.log("Room:", room);
+                console.log("GSTATE:", GSTATE);
+
+                if (!sel || !sel.start || !sel.end || !room) {
+                    Swal.fire('Info', 'გთხოვთ აირჩიოთ თარიღები იმისათვის რომ დაჯავშნოთ.', 'info');
+                    return;
+                }
+
+                // (Old calculations removed)
+                // Robust Price Getter Fix
+                const instance = calendarInstances[roomId];
+                if (!instance) return;
+
+                const nightlyPrice = parseFloat(room.price || 50); // Fallback to 50 if null
+                const selectedDates = instance.selectedDates;
+
+                let nights = 1;
+                let totalPrice = nightlyPrice;
+
+                if (selectedDates.length === 2) {
+                    nights = Math.ceil(Math.abs(selectedDates[1] - selectedDates[0]) / (1000 * 60 * 60 * 24));
+                    totalPrice = (nightlyPrice * nights).toFixed(0);
+                } else if (selectedDates.length === 1) {
+                    nights = 1;
+                    totalPrice = nightlyPrice.toFixed(0);
+                }
+
+                // 4. Force-Inject Content
+                const receiptContainer = document.querySelector(`#confirmationModal-${roomId} .space-y-3`);
+                if (receiptContainer) {
+                    receiptContainer.innerHTML = `
+                    <div class="space-y-2 border-t pt-4 mt-4 text-sm">
+                        <div class="flex justify-between items-center text-gray-600">
+                            <span>შესვლის თარიღი:</span>
+                            <span class="font-bold text-gray-900" id="modal-checkin-date-${roomId}">
+                                ${instance.formatDate(selectedDates[0], 'd M Y')}
+                            </span>
+                        </div>
+                        <div class="flex justify-between items-center text-gray-600">
+                            <span>გასვლის თარიღი:</span>
+                            <span class="font-bold text-gray-900" id="modal-checkout-date-${roomId}">
+                                ${selectedDates[1] ? instance.formatDate(selectedDates[1], 'd M Y') : '...'}
+                            </span>
+                        </div>
+                        <div class="flex justify-between items-center mt-2">
+                            <span>1 ღამის ფასი:</span>
+                            <span class="font-bold"><span id="modal-nightly-price-${roomId}">${nightlyPrice}</span> ₾</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span>ღამეების რაოდენობა:</span>
+                            <span class="font-bold" id="modal-total-nights-${roomId}">${nights}</span>
+                        </div>
+                    </div>
+                    `;
+                }
+
+                // 5. Update Total
+                const totalEl = document.getElementById(`receipt-total-${roomId}`);
+                if (totalEl) {
+                    totalEl.innerHTML = `<span id="modal-total-price-${roomId}" class="text-xl font-black text-emerald-600">${totalPrice} ₾</span>`;
+                }
+
+                // 6. Open Modal
+                const modal = document.getElementById(`confirmationModal-${roomId}`);
+                if (modal) {
+                    modal.classList.add('open');
+                } else {
+                    console.error('Modal not found for room ' + roomId);
+                }
+
+            } catch (e) {
+                console.error("Error opening modal:", e);
+                Swal.fire('Error', 'დაფიქსირდა შეცდომა: ' + e.message, 'error');
+            }
+        };
+
+
+        window.closeConfirmationModal = function (roomId) {
+            const modal = document.getElementById(`confirmationModal-${roomId}`);
+            if (modal) modal.classList.remove('open');
+        };
+
+        // --- Process Booking (Final Step) ---
+
+        window.processBooking = async function (roomId) {
             const sel = BSTATE.selections[roomId];
-            const days = container.querySelectorAll('.calendar-day:not(.booked):not(.other-month)');
+            if (!sel || !sel.start || !sel.end) {
+                Swal.fire('ყურადღება', 'გთხოვთ აირჩიოთ სასურველი პერიოდი.', 'warning');
+                return;
+            }
 
-            days.forEach(day => {
-                const d = day.getAttribute('data-date');
-                // Reset - remove all potential styling classes
-                day.classList.remove('selected', 'range-start', 'range-end', 'in-range');
+            const confirmBtn = document.querySelector(`#confirmationModal-${roomId} button:last-child`);
+            if (confirmBtn) {
+                confirmBtn.disabled = true;
+                confirmBtn.textContent = 'მუშავდება...';
+            }
 
-                if (sel.start === d) {
-                    day.classList.add('selected', 'range-start');
+            try {
+                const { data: { session } } = await supabaseClient.auth.getSession();
+                if (!session) {
+                    closeConfirmationModal(roomId); // Close first
+                    Swal.fire({
+                        title: 'ავტორიზაცია',
+                        text: 'ჯავშნისთვის საჭიროა სისტემაში შესვლა.',
+                        icon: 'info',
+                        showCancelButton: true,
+                        confirmButtonText: 'შესვლა',
+                        cancelButtonText: 'გაუქმება',
+                        confirmButtonColor: '#2d78b1'
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            window.location.href = 'index.html?auth=login';
+                        }
+                    });
+                    return;
                 }
-                if (sel.end === d) {
-                    day.classList.add('selected', 'range-end');
-                }
 
-                if (sel.start && sel.end && d > sel.start && d < sel.end) {
-                    day.classList.add('in-range');
-                }
-            });
+                const { error } = await supabaseClient.from('bookings').insert({
+                    property_id: GSTATE.property.id,
+                    room_id: roomId,
+                    start_date: sel.start,
+                    end_date: sel.end,
+                    user_id: session.user.id,
+                    status: 'pending',
+                    guest_name: session.user.user_metadata.full_name || session.user.email,
+                    guest_phone: GSTATE.property.phone,
+                    booking_code: 'BK' + Math.random().toString(36).substr(2, 6).toUpperCase()
+                });
 
+                if (error) throw error;
+
+                closeConfirmationModal(roomId);
+
+                await Swal.fire({
+                    icon: 'success',
+                    title: 'გილოცავთ!',
+                    text: 'თქვენი ჯავშანი წარმატებით გაიგზავნა. მასპინძელი მალე დაგიკავშირდებათ.',
+                    confirmButtonColor: '#22c55e'
+                });
+
+            } catch (err) {
+                console.error(err);
+                Swal.fire('შეცდომა', 'ჯავშნის გაგზავნა ვერ მოხერხდა: ' + err.message, 'error');
+            } finally {
+                if (confirmBtn) {
+                    confirmBtn.disabled = false;
+                    confirmBtn.textContent = 'დადასტურება და დაჯავშნა';
+                }
+            }
+        };
+
+
+
+
+        // --- Counter Logic (Updated to handle range/single) ---
+        window.updateNightCount = function (roomId, change) {
+            const instance = calendarInstances[roomId];
+            if (!instance || instance.selectedDates.length === 0) return;
+
+            const countSpan = document.getElementById(`day-count-${roomId}`);
+            if (!countSpan) return;
+
+            // If only 1 date selected, we can't really "add days" to it logically without picking a checkout date first visually?
+            // Actually, if they click +, we can force select the range starting from start date.
+
+            let currentVal = parseInt(countSpan.textContent);
+            let newVal = currentVal + change;
+            if (newVal < 1) newVal = 1;
+
+            if (instance.selectedDates.length === 1) {
+                // If single date, treat + as setting range to startDate + 1 night
+                newVal = 1 + change;
+                if (newVal < 1) newVal = 1;
+            }
+
+            // Animation
+            if (newVal !== currentVal) {
+                countSpan.classList.remove('animate-count-up', 'animate-count-down');
+                void countSpan.offsetWidth; // trigger reflow
+                if (change > 0) countSpan.classList.add('animate-count-up');
+                else countSpan.classList.add('animate-count-down');
+            }
+
+            countSpan.textContent = newVal;
+
+            // Recalculate Calendar Range
+            const startDate = instance.selectedDates[0];
+            const endDate = new Date(startDate);
+            endDate.setDate(startDate.getDate() + newVal);
+
+            // Update Flatpickr
+            instance.setDate([startDate, endDate], true); // true = trigger onChange
+        };
+
+
+        function updateRoomSelectionUI(roomId) {
+            const sel = BSTATE.selections[roomId];
             const txt = document.getElementById(`rangeText-${roomId}`);
             const btn = document.getElementById(`confirmBtn-${roomId}`);
+
+            if (!txt || !btn) return;
 
             if (sel.start && sel.end) {
                 txt.innerText = `${sel.start} - ${sel.end}`;
                 btn.disabled = false;
             } else if (sel.start) {
-                txt.innerText = `მონიშნეთ დასასრული`;
+                txt.innerHTML = `<span class="text-indigo-600">მონიშნეთ დასასრული...</span>`;
                 btn.disabled = true;
             } else {
                 txt.innerText = `მონიშნეთ თარიღები`;
